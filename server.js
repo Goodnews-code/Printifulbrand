@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 const dbPath = path.join(__dirname, 'ecommerce.db');
 const rootDir = __dirname;          // Storefront lives here
 const publicDir = path.join(__dirname, 'public');
-const assetsDir = path.join(publicDir, 'assets');
+const assetsDir = path.join(rootDir, 'assets');
 const uploadsDir = path.join(publicDir, 'uploads');
 
 // Ensure directory structure exists
@@ -55,25 +55,7 @@ app.use('/uploads', express.static(uploadsDir));
 app.use('/assets',  express.static(assetsDir));
 
 
-// Copy default assets from project assets to public assets
-const originalAssetsDir = path.join(__dirname, 'assets');
-if (fs.existsSync(originalAssetsDir)) {
-  fs.readdirSync(originalAssetsDir).forEach(file => {
-    const srcPath = path.join(originalAssetsDir, file);
-    const destPath = path.join(assetsDir, file);
-    if (!fs.existsSync(destPath)) {
-      try {
-        const stat = fs.statSync(srcPath);
-        if (stat.isFile()) {
-          fs.copyFileSync(srcPath, destPath);
-          console.log(`Copied asset: ${file}`);
-        }
-      } catch (err) {
-        console.error(`Failed to copy asset ${file}:`, err);
-      }
-    }
-  });
-}
+// Default assets are served directly from the root assets/ directory; no copying required.
 
 // Database helper variables
 let db;
