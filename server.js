@@ -149,25 +149,53 @@ function initializeSchema() {
   if (productCount && productCount.count === 0) {
     const defaultProducts = [
       {
-        title: "Cute Dino Sweatshirt",
-        description: "Super soft pastel sweatshirt featuring our adorable cartoon dinosaur graphic. Perfect for cozy days.",
-        price: 49.99,
-        image_url: "/assets/graphic_cute_dino.svg",
-        category: "Sweatshirts"
-      },
-      {
-        title: "Retro Wave Tee",
-        description: "Classic 80s neon aesthetic printed on a heavy-weight organic cotton streetwear t-shirt.",
+        title: "Stand Still Black Tee",
+        description: "Heavyweight streetwear tee featuring premium black cotton with a minimalist signature chest print.",
         price: 29.99,
-        image_url: "/assets/graphic_retro_wave.svg",
+        image_url: "/assets/Image/Stand Still Black.jpeg",
         category: "T-Shirts"
       },
       {
-        title: "Streetwear Skull Cap",
-        description: "Premium embroidered beanie with the signature streetwear skull logo. Ribbed knit style.",
-        price: 19.99,
-        image_url: "/assets/graphic_streetwear_skull.svg",
-        category: "Caps"
+        title: "Love Won Premium Tee",
+        description: "Vibrant custom streetwear graphic printed on combed pre-shrunk cotton blank.",
+        price: 29.99,
+        image_url: "/assets/Image/Love won tee.jpeg",
+        category: "T-Shirts"
+      },
+      {
+        title: "Affirmation Statement Tee",
+        description: "Streetwear graphic tee highlighting bold positive statements on front and back panels.",
+        price: 27.99,
+        image_url: "/assets/Image/Affirmation Tees.jpeg",
+        category: "T-Shirts"
+      },
+      {
+        title: "Printiful Branded Blank Tee",
+        description: "Classic heavyweight streetwear basic tee, ideal for matching layers or raw branding.",
+        price: 24.99,
+        image_url: "/assets/Image/Branded Teeshirts.jpeg",
+        category: "T-Shirts"
+      },
+      {
+        title: "Branded Hardcover Journal",
+        description: "Sleek embossed leather notebook with grid pages, standard ribbons, and pen loops.",
+        price: 15.99,
+        image_url: "/assets/Image/Branded Journals.jpeg",
+        category: "Stationery"
+      },
+      {
+        title: "Magic Heat-Activated Mug",
+        description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
+        price: 14.99,
+        image_url: "/assets/Image/Magic mug.jpeg",
+        category: "Accessories"
+      },
+      {
+        title: "Custom Matte Bookmark Set",
+        description: "Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.",
+        price: 5.99,
+        image_url: "/assets/Image/Book marks.jpeg",
+        category: "Stationery"
       }
     ];
 
@@ -465,6 +493,78 @@ initSqlJs().then(sqlLibrary => {
       }
     } catch (err) {
       console.error("Failed to run database settings migration:", err);
+    }
+
+    // Check if the products table has legacy Dino products and migrate them to Printiful default products
+    try {
+      const dinoProduct = get("SELECT id FROM products WHERE title = 'Cute Dino Sweatshirt'");
+      if (dinoProduct) {
+        console.log("Migrating database products to Printiful defaults...");
+        // Clear old products
+        run("DELETE FROM products");
+        
+        const printifulDefaultProducts = [
+          {
+            title: "Stand Still Black Tee",
+            description: "Heavyweight streetwear tee featuring premium black cotton with a minimalist signature chest print.",
+            price: 29.99,
+            image_url: "/assets/Image/Stand Still Black.jpeg",
+            category: "T-Shirts"
+          },
+          {
+            title: "Love Won Premium Tee",
+            description: "Vibrant custom streetwear graphic printed on combed pre-shrunk cotton blank.",
+            price: 29.99,
+            image_url: "/assets/Image/Love won tee.jpeg",
+            category: "T-Shirts"
+          },
+          {
+            title: "Affirmation Statement Tee",
+            description: "Streetwear graphic tee highlighting bold positive statements on front and back panels.",
+            price: 27.99,
+            image_url: "/assets/Image/Affirmation Tees.jpeg",
+            category: "T-Shirts"
+          },
+          {
+            title: "Printiful Branded Blank Tee",
+            description: "Classic heavyweight streetwear basic tee, ideal for matching layers or raw branding.",
+            price: 24.99,
+            image_url: "/assets/Image/Branded Teeshirts.jpeg",
+            category: "T-Shirts"
+          },
+          {
+            title: "Branded Hardcover Journal",
+            description: "Sleek embossed leather notebook with grid pages, standard ribbons, and pen loops.",
+            price: 15.99,
+            image_url: "/assets/Image/Branded Journals.jpeg",
+            category: "Stationery"
+          },
+          {
+            title: "Magic Heat-Activated Mug",
+            description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
+            price: 14.99,
+            image_url: "/assets/Image/Magic mug.jpeg",
+            category: "Accessories"
+          },
+          {
+            title: "Custom Matte Bookmark Set",
+            description: "Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.",
+            price: 5.99,
+            image_url: "/assets/Image/Book marks.jpeg",
+            category: "Stationery"
+          }
+        ];
+
+        const prodStmt = db.prepare("INSERT INTO products (title, description, price, image_url, category) VALUES (?, ?, ?, ?, ?)");
+        for (const p of printifulDefaultProducts) {
+          prodStmt.run([p.title, p.description, p.price, p.image_url, p.category]);
+        }
+        prodStmt.free();
+        saveDatabase();
+        console.log("Database products successfully migrated.");
+      }
+    } catch (err) {
+      console.error("Failed to run database products migration:", err);
     }
   } else {
     db = new SQL.Database();

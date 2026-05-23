@@ -75,11 +75,12 @@ const defaultProducts = [
 
 // App State
 let cart = [];
+let products = [...defaultProducts];
 
 /* ==========================================================================
    DOM Initialization
    ========================================================================== */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Sync cart from LocalStorage initially
   loadCartFromStorage();
   updateCartUI();
@@ -92,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Mobile Hamburger Menu
   initMobileMenu();
+
+  // Load dynamic products from DB
+  await loadDynamicProducts();
   
   // Product Catalog Store Rendering
   initCatalog();
@@ -262,7 +266,7 @@ function initCatalog() {
     productGrid.innerHTML = '';
 
     // Filter items
-    let filtered = defaultProducts.filter(p => {
+    let filtered = products.filter(p => {
       const matchesCategory = currentFilter === 'all' || p.category === currentFilter;
       const matchesSearch = p.name.toLowerCase().includes(searchQuery) || 
                             p.description.toLowerCase().includes(searchQuery);
@@ -767,4 +771,58 @@ function initAdminAuth() {
       errorMsg.style.display = 'block';
     }
   });
+}
+
+/* ==========================================================================
+   Dynamic Database Products Curation
+   ========================================================================== */
+async function loadDynamicProducts() {
+  try {
+    const res = await fetch('/api/products');
+    if (res.ok) {
+      const dbProducts = await res.json();
+      if (dbProducts && dbProducts.length > 0) {
+        // Map database products to the storefront format
+        products = dbProducts.map(p => {
+          // Normalize category
+          const category = normalizeCategory(p.category);
+          
+          // Set brand swatches based on category or default
+          let swatches = ['#000000', '#ffffff', '#53009B'];
+          const titleLower = p.title.toLowerCase();
+          if (titleLower.includes('love won') || titleLower.includes('blank tee')) {
+            swatches = ['#ffffff', '#000000', '#FFFF00'];
+          } else if (titleLower.includes('journal')) {
+            swatches = ['#000000', '#53009B'];
+          } else if (titleLower.includes('mug')) {
+            swatches = ['#000000'];
+          } else if (titleLower.includes('bookmark')) {
+            swatches = ['#FFFF00', '#000000', '#53009B'];
+          }
+          
+          return {
+            id: p.id,
+            name: p.title,
+            category: category,
+            basePrice: parseFloat(p.price) || 29.99,
+            image: p.image_url || 'assets/tshirt_base.svg',
+            description: p.description || '',
+            swatches: swatches
+          };
+        });
+        
+        console.log("Successfully loaded products from database API.");
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to load products from database, falling back to local archive defaults.", err);
+  }
+}
+
+function normalizeCategory(dbCategory) {
+  const cat = (dbCategory || '').toLowerCase();
+  if (cat.includes('shirt') || cat.includes('tee')) return 'tshirt';
+  if (cat.includes('stationery') || cat.includes('journal') || cat.includes('book')) return 'stationery';
+  if (cat.includes('access') || cat.includes('mug') || cat.includes('cap') || cat.includes('hat')) return 'accessories';
+  return 'accessories'; // default fallback
 }
