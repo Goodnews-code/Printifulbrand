@@ -82,6 +82,9 @@
         <a href="index.html#inquiry" class="nav-link">Bulk Inquiry</a>
       </nav>
       <div class="nav-actions">
+        <button class="admin-trigger" id="adminTrigger" aria-label="Admin Access">
+          <i class="fa-solid fa-user-gear"></i>
+        </button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
           <i class="fa-solid fa-moon"></i>
         </button>
@@ -108,6 +111,7 @@
         <a href="store.html" class="mobile-nav-link active">Catalog Store</a>
         <a href="index.html#timeline" class="mobile-nav-link">How We Print</a>
         <a href="index.html#inquiry" class="mobile-nav-link">Bulk Inquiry</a>
+        <a href="#" class="mobile-nav-link" id="mobileAdminTrigger" style="margin-top: 15px; border-top: 1px solid var(--color-gray-light); padding-top: 15px;"><i class="fa-solid fa-user-gear" style="margin-right: 8px;"></i>Admin Panel</a>
       </nav>
     </div>
   </header>
@@ -212,6 +216,7 @@
           <a href="store.html">Catalog Store</a>
           <a href="index.html#timeline">Step Journey</a>
           <a href="index.html#inquiry">Bulk Orders</a>
+          <a href="#" id="footerAdminTrigger">Admin Access</a>
         </div>
         <div class="links-column">
           <h4>Support & Care</h4>
@@ -289,6 +294,30 @@
       <h3 class="modal-title" id="modalTitle">Request Logged!</h3>
       <p class="modal-message" id="modalMessage">Thank you for your order. We are starting pre-flight checking.</p>
       <button class="btn btn-modal-close" id="modalCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Admin Access Modal -->
+  <div class="modal-overlay admin-auth-modal" id="adminModalOverlay">
+    <div class="modal-card">
+      <div class="modal-icon-wrapper">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h3 class="modal-title">Admin Dashboard Access</h3>
+      <p class="modal-message">Enter secret security passcode to access management rooms.</p>
+      <form id="adminPassForm" class="admin-password-form">
+        <div class="admin-password-input-group">
+          <input type="password" id="adminPassInput" placeholder="Enter password..." required>
+          <button type="button" id="toggleAdminPass" aria-label="Toggle Password Visibility">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <span class="admin-error-msg" id="adminErrorMsg" style="display: none;">Invalid security password</span>
+        <div class="admin-modal-actions">
+          <button type="button" class="btn btn-hero-secondary" id="adminModalCloseBtn" style="padding: 10px 20px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Authenticate</button>
+        </div>
+      </form>
     </div>
   </div>
 

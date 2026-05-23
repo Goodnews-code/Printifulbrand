@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // General Popup Modal Dialog
   initModals();
 
+  // Admin Authentication Modal Dialog
+  initAdminAuth();
+
   // Storage Sync Event Listener (Sync across open tabs/pages)
   window.addEventListener('storage', (e) => {
     if (e.key === 'printiful_cart') {
@@ -669,4 +672,99 @@ function showModal(title, message, accentClass = 'success-checkout') {
   
   modalOverlay.className = `modal-overlay ${accentClass}`;
   modalOverlay.classList.add('active');
+}
+
+/* ==========================================================================
+   Admin Authentication Modal Dialog
+   ========================================================================== */
+function initAdminAuth() {
+  const adminModal = document.getElementById('adminModalOverlay');
+  const adminForm = document.getElementById('adminPassForm');
+  const adminInput = document.getElementById('adminPassInput');
+  const togglePass = document.getElementById('toggleAdminPass');
+  const errorMsg = document.getElementById('adminErrorMsg');
+  
+  const triggers = [
+    document.getElementById('adminTrigger'),
+    document.getElementById('mobileAdminTrigger'),
+    document.getElementById('footerAdminTrigger')
+  ];
+  
+  const closeBtn = document.getElementById('adminModalCloseBtn');
+
+  if (!adminModal || !adminForm) return;
+
+  function openAdminModal(e) {
+    if (e) e.preventDefault();
+    adminInput.value = '';
+    errorMsg.style.display = 'none';
+    adminModal.classList.add('active');
+    setTimeout(() => adminInput.focus(), 100);
+  }
+
+  function closeAdminModal() {
+    adminModal.classList.remove('active');
+  }
+
+  // Bind all triggers
+  triggers.forEach(trigger => {
+    if (trigger) {
+      trigger.addEventListener('click', openAdminModal);
+    }
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeAdminModal);
+  }
+
+  adminModal.addEventListener('click', (e) => {
+    if (e.target === adminModal) {
+      closeAdminModal();
+    }
+  });
+
+  // Toggle Password Visibility
+  if (togglePass && adminInput) {
+    togglePass.addEventListener('click', () => {
+      const type = adminInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      adminInput.setAttribute('type', type);
+      const icon = togglePass.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+      }
+    });
+  }
+
+  // Form Submit Authenticate
+  adminForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = adminInput.value;
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Save the session token to match the admin dashboard expectations
+        localStorage.setItem('printiful_token', data.token);
+        errorMsg.style.display = 'none';
+        closeAdminModal();
+        
+        // Redirect to admin panel
+        window.location.href = '/admin';
+      } else {
+        errorMsg.style.display = 'block';
+        adminInput.focus();
+      }
+    } catch (err) {
+      console.error('Admin authentication connection error:', err);
+      errorMsg.textContent = 'Connection failed. Please check server status.';
+      errorMsg.style.display = 'block';
+    }
+  });
 }
