@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- T-shirt base silhouette -->
+  <path class="garment-colorable" d="M150,90 C170,90 190,105 250,105 C310,105 330,90 350,90 C390,95 440,120 460,150 L410,200 L370,180 L370,440 C370,460 350,470 330,470 L170,470 C150,470 130,460 130,440 L130,180 L90,200 L40,150 C60,120 110,95 150,90 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  <!-- Neck rib -->
+  <path d="M170,93 C190,110 210,115 250,115 C290,115 310,110 330,93 C320,88 300,98 250,98 C200,98 180,88 170,93 Z" fill="#e6e6e6" stroke="#1E182A" stroke-width="4" />
+  <!-- Shadow details -->
+  <path d="M130,180 L130,440 C130,450 140,460 150,460 L180,460 C160,400 160,250 140,180 Z" fill="#000000" opacity="0.08" />
+  <path d="M370,180 L370,440 C370,450 360,460 350,460 L320,460 C340,400 340,250 360,180 Z" fill="#000000" opacity="0.08" />
+  <path d="M250,115 C200,115 150,100 130,180 C150,140 200,130 250,130 C300,130 350,140 370,180 C350,100 300,115 250,115 Z" fill="#000000" opacity="0.05" />
+  <!-- Folds & details -->
+  <path d="M100,160 C110,170 120,175 130,180" fill="none" stroke="#1E182A" stroke-width="3" stroke-linecap="round" opacity="0.3" />
+  <path d="M400,160 C390,170 380,175 370,180" fill="none" stroke="#1E182A" stroke-width="3" stroke-linecap="round" opacity="0.3" />
+  <path d="M150,420 C180,425 210,420 230,430" fill="none" stroke="#1E182A" stroke-width="3" stroke-linecap="round" opacity="0.2" />
+  <path d="M350,420 C320,425 290,420 270,430" fill="none" stroke="#1E182A" stroke-width="3" stroke-linecap="round" opacity="0.2" />
+</svg>

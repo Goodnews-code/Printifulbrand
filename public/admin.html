@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Retro & Dino Shop</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+
+  <!-- Login Gate Page -->
+  <div id="login-gate" class="login-gate">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo"><i class="fa-solid fa-bolt"></i></div>
+        <h2>Storefront Admin Gate</h2>
+        <p>Enter the store password to access administrative controls.</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="admin-password">Dashboard Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="admin-password" placeholder="••••••••••••" required>
+            <button type="button" id="toggle-password-btn" class="toggle-password-btn"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <div id="login-error" class="error-message hide">Invalid password. Please try again.</div>
+        <button type="submit" class="btn btn-primary btn-block">Authorize Access &nbsp;<i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Layout -->
+  <div id="admin-layout" class="admin-layout hide">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo">
+          <span class="logo-icon"><i class="fa-solid fa-bolt"></i></span>
+          <span class="logo-text">Control Panel</span>
+        </a>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="tab-overview">
+          <i class="fa-solid fa-chart-pie"></i> Overview
+        </button>
+        <button class="nav-item" data-tab="tab-products">
+          <i class="fa-solid fa-box-archive"></i> Manage Products
+        </button>
+        <button class="nav-item" data-tab="tab-settings">
+          <i class="fa-solid fa-palette"></i> Customize Theme
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Administrator</span>
+        </div>
+        <button id="logout-btn" class="logout-btn"><i class="fa-solid fa-power-off"></i> Log Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <div class="page-title">
+          <h1 id="current-section-title">Dashboard Overview</h1>
+        </div>
+        <div class="top-bar-actions">
+          <a href="/" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-globe"></i> View Shop</a>
+          <button id="db-cleanup-btn" class="btn btn-accent btn-sm" title="Clean images deleted 3+ days ago"><i class="fa-solid fa-broom"></i> Run Image Cleanup</button>
+        </div>
+      </header>
+
+      <!-- Panel: Overview -->
+      <section id="tab-overview" class="tab-panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fa-solid fa-box"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-total-products">0</h3>
+              <p>Total Products</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="fa-solid fa-tags"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-total-categories">0</h3>
+              <p>Product Categories</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-info"><i class="fa-solid fa-dollar-sign"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-avg-price">$0.00</h3>
+              <p>Average Product Price</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-body">
+          <div class="recent-actions-card">
+            <h3>Quick Links & Guides</h3>
+            <div class="guide-grid">
+              <div class="guide-item">
+                <div class="guide-num">1</div>
+                <h4>Modify Storefront Visuals</h4>
+                <p>Change your store headers, subtext, colors and contact info under the <strong>Customize Theme</strong> panel.</p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-num">2</div>
+                <h4>Manage Products Catalog</h4>
+                <p>Add new products, adjust pricing, and upload product thumbnails under the <strong>Manage Products</strong> tab.</p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-num">3</div>
+                <h4>3-Day Image Retention</h4>
+                <p>When you delete products or upload new images, old images are kept on disk for safety. They are automatically cleared after 3 days. Use the <strong>Run Image Cleanup</strong> button above to force clear old files.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel: Products CRUD -->
+      <section id="tab-products" class="tab-panel hide">
+        <div class="panel-actions">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="product-search" placeholder="Search catalog...">
+          </div>
+          <button id="add-product-btn" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Product</button>
+        </div>
+
+        <div class="table-container shadow-sm">
+          <table class="data-table" id="products-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Thumbnail</th>
+                <th>Product Title</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Description</th>
+                <th style="width: 120px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <!-- Products rows will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel: Settings / Theme Customizer -->
+      <section id="tab-settings" class="tab-panel hide">
+        <form id="theme-settings-form" class="settings-form">
+          <div class="form-grid">
+            <div class="settings-section">
+              <h3>Store Branding</h3>
+              <div class="form-group">
+                <label for="setting-site-title">Store Name / Logo Title</label>
+                <input type="text" id="setting-site-title" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-site-description">Store Short Description (SEO/Footer)</label>
+                <textarea id="setting-site-description" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Hero Banner Header</h3>
+              <div class="form-group">
+                <label for="setting-hero-headline">Hero Headline</label>
+                <input type="text" id="setting-hero-headline" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-hero-subtext">Hero Sub-Text</label>
+                <textarea id="setting-hero-subtext" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Theme Colors</h3>
+              <div class="color-pickers-row">
+                <div class="color-picker-group">
+                  <label for="setting-primary-color">Primary Accent</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-primary-color" required>
+                    <input type="text" id="setting-primary-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+                <div class="color-picker-group">
+                  <label for="setting-secondary-color">Dark Slate (Backgrounds)</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-secondary-color" required>
+                    <input type="text" id="setting-secondary-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+                <div class="color-picker-group">
+                  <label for="setting-accent-color">Alert / Accent Color</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-accent-color" required>
+                    <input type="text" id="setting-accent-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Contact & Footer Details</h3>
+              <div class="form-group">
+                <label for="setting-contact-email">Customer Support Email</label>
+                <input type="email" id="setting-contact-email" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-contact-phone">Customer Support Phone</label>
+                <input type="text" id="setting-contact-phone" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-footer-text">Footer Copyright Text</label>
+                <input type="text" id="setting-footer-text" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-form-actions">
+            <button type="button" id="reset-settings-btn" class="btn btn-outline">Discard Changes</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Layout Settings</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Add/Edit Product -->
+  <div id="product-form-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-md">
+      <button class="modal-close-btn" id="product-modal-close" aria-label="Close form"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="product-form-title">Add New Product</h2>
+      
+      <form id="product-crud-form" class="crud-form">
+        <input type="hidden" id="crud-product-id">
+        
+        <div class="form-group">
+          <label for="crud-title">Product Title</label>
+          <input type="text" id="crud-title" placeholder="e.g. Vintage Dino Hoodie" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="crud-price">Price ($ USD)</label>
+            <input type="number" id="crud-price" step="0.01" min="0.01" placeholder="29.99" required>
+          </div>
+          <div class="form-group">
+            <label for="crud-category">Category</label>
+            <input type="text" id="crud-category" placeholder="e.g. Sweatshirts" required list="categories-list">
+            <datalist id="categories-list">
+              <option value="Sweatshirts">
+              <option value="T-Shirts">
+              <option value="Caps">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="crud-description">Description</label>
+          <textarea id="crud-description" rows="3" placeholder="Describe materials, fit, design features..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Product Thumbnail Image</label>
+          
+          <div class="image-upload-wrapper">
+            <!-- Choose Upload vs URL option -->
+            <div class="upload-options">
+              <button type="button" id="btn-opt-file" class="upload-opt-btn active">Upload File</button>
+              <button type="button" id="btn-opt-url" class="upload-opt-btn">External Image URL</button>
+            </div>
+
+            <!-- Upload File Input -->
+            <div id="wrapper-upload-file" class="upload-input-section">
+              <div class="file-drop-area">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span class="file-message">Click to choose image or drag & drop</span>
+                <input type="file" id="crud-file" accept="image/*">
+              </div>
+              <div id="file-name-preview" class="file-name-preview"></div>
+            </div>
+
+            <!-- Image URL Input -->
+            <div id="wrapper-upload-url" class="upload-input-section hide">
+              <input type="url" id="crud-image-url" placeholder="https://example.com/images/product.jpg">
+            </div>
+
+            <!-- Existing Image Preview -->
+            <div id="wrapper-existing-preview" class="existing-image-preview hide">
+              <span>Current Image:</span>
+              <div class="existing-image-frame">
+                <img id="existing-img-preview" src="" alt="preview">
+              </div>
+              <button type="button" id="btn-remove-existing-img" class="btn btn-danger btn-xs">Change Image</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-cancel-crud" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="btn-submit-crud" class="btn btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Admin logic script -->
+  <script src="/admin.js"></script>
+</body>
+</html>

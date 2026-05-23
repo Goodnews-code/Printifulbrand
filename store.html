@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ══ Primary SEO ══ -->
+  <title>Printiful | Pre-Designed Catalog Store — Browse Custom Streetwear</title>
+  <meta name="description" content="Browse Printiful's pre-designed archive collection. Heavyweight tees, branded journals, heat-activated mugs, and custom accessories — all crafted on premium blanks with high-fidelity prints.">
+  <meta name="keywords" content="custom t-shirts, pre-designed streetwear, branded merch, heavyweight tee, custom journal, magic mug, Printiful store, buy streetwear online, custom accessories">
+  <meta name="author" content="Printiful Custom Studio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://printiful.store/store.html">
+
+  <!-- ══ Open Graph ══ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Printiful">
+  <meta property="og:title" content="Printiful Store | Pre-Designed Archive Collection">
+  <meta property="og:description" content="Browse our archive of heavyweight tees, custom journals, branded mugs and accessories. Premium blanks, high-fidelity DTG prints.">
+  <meta property="og:url" content="https://printiful.store/store.html">
+  <meta property="og:image" content="https://printiful.store/assets/logo with printiful.svg">
+  <meta property="og:image:alt" content="Printiful Store - Custom Streetwear Archive">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ══ Twitter / X Card ══ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@Printiful">
+  <meta name="twitter:title" content="Printiful Store | Pre-Designed Archive Collection">
+  <meta name="twitter:description" content="Browse heavyweight tees, branded journals, custom mugs and more. Premium blanks, high-fidelity prints.">
+  <meta name="twitter:image" content="https://printiful.store/assets/logo with printiful.svg">
+
+  <!-- ══ Structured Data: CollectionPage ══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Printiful Archive Store",
+    "description": "Pre-designed heavyweight streetwear, accessories, and stationery crafted on premium blanks with high-fidelity printing.",
+    "url": "https://printiful.store/store.html",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Printiful",
+      "url": "https://printiful.store"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://printiful.store/" },
+        { "@type": "ListItem", "position": 2, "name": "Catalog Store", "item": "https://printiful.store/store.html" }
+      ]
+    }
+  }
+  </script>
+
+  <!-- ══ Favicons ══ -->
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="shortcut icon" href="assets/logo.svg">
+
+  <!-- ══ Google Fonts ══ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&family=Roboto:wght@700;900&display=swap" rel="stylesheet">
+
+  <!-- ══ FontAwesome Icons ══ -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- ══ Custom Stylesheet ══ -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/logo with printiful.svg" alt="Printiful Logo" class="logo-img header-logo">
+      </a>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html#catalog" class="nav-link">Collection</a>
+        <a href="store.html" class="nav-link active">Catalog Store</a>
+        <a href="index.html#timeline" class="nav-link">How We Print</a>
+        <a href="index.html#inquiry" class="nav-link">Bulk Inquiry</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="nav-btn btn-primary" onclick="window.location.href='index.html#inquiry'">
+          Request Quote
+        </button>
+        <button class="cart-trigger" id="cartTrigger" aria-label="Open Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+        <!-- Hamburger Menu Button (mobile only) -->
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open Menu" aria-expanded="false">
+          <span class="ham-bar"></span>
+          <span class="ham-bar"></span>
+          <span class="ham-bar"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Drawer -->
+    <div class="mobile-nav" id="mobileNav">
+      <nav class="mobile-nav-links">
+        <a href="index.html#catalog" class="mobile-nav-link">Collection</a>
+        <a href="store.html" class="mobile-nav-link active">Catalog Store</a>
+        <a href="index.html#timeline" class="mobile-nav-link">How We Print</a>
+        <a href="index.html#inquiry" class="mobile-nav-link">Bulk Inquiry</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Store Header Banner -->
+  <section class="store-hero">
+    <div class="store-hero-container">
+      <span class="store-tagline">01 / THE ARCHIVE COLLECTION</span>
+      <h1 class="store-title">THE PRINTIFUL ARCHIVE</h1>
+      <p class="store-subtitle">Browse and order high-quality garments and accessories designed in-house. Crafted with luxury heavyweight materials and print durability.</p>
+    </div>
+  </section>
+
+  <!-- Store Catalog workspace -->
+  <main class="store-container">
+    
+    <!-- Filters Toolbar -->
+    <div class="store-toolbar">
+      <!-- Search Box -->
+      <div class="search-box-wrapper">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="storeSearch" placeholder="Search archive..." class="search-input">
+      </div>
+
+      <!-- Category Navigation Tabs -->
+      <div class="store-filters">
+        <button class="filter-btn active" data-filter="all">All Items</button>
+        <button class="filter-btn" data-filter="tshirt">T-Shirts</button>
+        <button class="filter-btn" data-filter="stationery">Stationery</button>
+        <button class="filter-btn" data-filter="accessories">Accessories</button>
+      </div>
+
+      <!-- Sorting Selector -->
+      <div class="sort-wrapper">
+        <label for="storeSort" class="sort-label">Sort By:</label>
+        <select id="storeSort" class="sort-select">
+          <option value="default">Default</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="name-az">Name: A to Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="productGrid">
+      <!-- Dynamic products injected here from app.js -->
+    </div>
+  </main>
+
+  <!-- Product Care Guide Room -->
+  <section class="care-guide-room">
+    <div class="care-container">
+      <div class="care-header">
+        <span class="room-badge badge-purple">GARMENT MAINTENANCE</span>
+        <h2>Product Care Instructions</h2>
+        <p>This isn't just custom apparel — it is your vision brought to life. Maintain sharpness and fabric quality with these guidelines:</p>
+      </div>
+      <div class="care-grid">
+        <div class="care-card">
+          <i class="fa-solid fa-rotate"></i>
+          <h3>Wash Inside Out</h3>
+          <p>Protects graphic ink surfaces and embroidery stitches from abrasion during wash cycles.</p>
+        </div>
+        <div class="care-card">
+          <i class="fa-solid fa-temperature-arrow-down"></i>
+          <h3>Avoid Direct Ironing</h3>
+          <p>Do not iron directly on print designs. Iron inside-out or cover print layers with parchment paper.</p>
+        </div>
+        <div class="care-card">
+          <i class="fa-solid fa-droplet-slash"></i>
+          <h3>Do Not Bleach</h3>
+          <p>Strong bleach chemicals break down ink pigmentation binding agents and damage cotton fibers.</p>
+        </div>
+        <div class="care-card">
+          <i class="fa-solid fa-hashtag"></i>
+          <h3>Tag Us on Social</h3>
+          <p>Share your vision and prints with the community. Tag us when you rock your vision: <strong>@Printiful</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo">
+          <img src="assets/logo with printiful.svg" alt="Printiful Logo" class="logo-img footer-logo-img">
+        </a>
+        <p>Premium customized garments, heavyweight cotton blanks, and high-fidelity prints designed to stand the test of time.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        </div>
+      </div>
+      <div class="footer-links-grid">
+        <div class="links-column">
+          <h4>Studio Rooms</h4>
+          <a href="store.html">Catalog Store</a>
+          <a href="index.html#timeline">Step Journey</a>
+          <a href="index.html#inquiry">Bulk Orders</a>
+        </div>
+        <div class="links-column">
+          <h4>Support & Care</h4>
+          <a href="index.html#inquiry">Contact Designer</a>
+          <a href="store.html">Product Sizing</a>
+          <a href="index.html#timeline">Eco Commitments</a>
+          <a href="index.html#inquiry">Wholesale</a>
+        </div>
+        <div class="links-column">
+          <h4>Legal info</h4>
+          <a href="#">Terms & Conditions</a>
+          <a href="#">Privacy Curation</a>
+          <a href="#">Shipping Rates</a>
+          <a href="#">Refund Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Printiful Custom Printing. All rights reserved. Beautifully printed.</p>
+    </div>
+  </footer>
+
+  <!-- Sidebar Cart Drawer Overlay -->
+  <div class="cart-drawer-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3>Shopping Cart</h3>
+      <button class="cart-close-btn" id="cartClose" aria-label="Close Cart">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Empty Cart View -->
+    <div class="cart-empty" id="cartEmpty">
+      <i class="fa-regular fa-face-frown-open"></i>
+      <p>Your shopping cart is empty!</p>
+      <button class="btn btn-primary" onclick="document.getElementById('cartClose').click();">
+        Browse Products
+      </button>
+    </div>
+
+    <!-- Cart Items Container -->
+    <div class="cart-items" id="cartItems">
+      <!-- Dynamically injected cart items -->
+    </div>
+
+    <!-- Cart Footer -->
+    <div class="cart-footer" id="cartFooter">
+      <div class="cart-summary">
+        <div class="summary-line">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">$0.00</span>
+        </div>
+        <div class="summary-line">
+          <span>Estimated Tax (8%)</span>
+          <span id="cartTax">$0.00</span>
+        </div>
+        <div class="summary-line cart-total-line">
+          <span>Grand Total</span>
+          <span id="cartGrandTotal">$0.00</span>
+        </div>
+      </div>
+      <button class="btn btn-checkout" id="checkoutBtn">
+        Proceed to Order
+      </button>
+    </div>
+  </aside>
+
+  <!-- Notification Modal / Dialog -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <div class="modal-icon-wrapper" id="modalIcon">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 class="modal-title" id="modalTitle">Request Logged!</h3>
+      <p class="modal-message" id="modalMessage">Thank you for your order. We are starting pre-flight checking.</p>
+      <button class="btn btn-modal-close" id="modalCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>

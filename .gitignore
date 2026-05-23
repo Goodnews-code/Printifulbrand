@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# SQLite database (runtime data - not source code)
+*.db
+*.db-journal
+
+# Uploaded product images (runtime data)
+public/uploads/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+
+# Gemini / AI agent working files
+.gemini/

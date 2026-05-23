@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro & Dino Shop - Premium Apparel</title>
+  <meta name="description" content="Shop the ultimate premium collection of vintage Dino and Retro Wave streetwear apparel. Handcrafted designs, premium quality.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="/" class="logo">
+        <span class="logo-icon"><i class="fa-solid fa-bolt"></i></span>
+        <span class="logo-text" id="site-logo-text">Retro & Dino</span>
+      </a>
+      
+      <nav class="nav-menu">
+        <a href="#hero" class="nav-link">Home</a>
+        <a href="#products-section" class="nav-link">Products</a>
+        <a href="#about-section" class="nav-link">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <button id="cart-toggle-btn" class="cart-btn" aria-label="Open Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span id="cart-badge" class="cart-badge">0</span>
+        </button>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle Mobile Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section">
+    <div class="hero-bg-glow"></div>
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="badge-accent">New Streetwear Season</div>
+        <h1 id="hero-title">Unleash Your Retro Style</h1>
+        <p id="hero-desc">Explore our exclusive Dino and Retro Wave collections, built with premium materials for maximum comfort and style.</p>
+        <div class="hero-actions">
+          <a href="#products-section" class="btn btn-primary">Shop Collection <i class="fa-solid fa-arrow-right"></i></a>
+          <a href="#about-section" class="btn btn-outline">Learn More</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card-wrapper">
+          <div class="hero-card shadow-premium">
+            <img src="/assets/graphic_retro_wave.svg" alt="Retro Wave graphic" id="hero-showcase-img">
+            <div class="hero-card-tag">Retro Wave</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values / Features -->
+  <section class="features-section">
+    <div class="container grid-3">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <h3>Free Worldwide Shipping</h3>
+        <p>On all orders over $75. Fast delivery straight to your doorstep.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+        <h3>Easy 30-Day Returns</h3>
+        <p>Hassle-free exchanges or full refunds if it doesn't fit perfectly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-leaf"></i></div>
+        <h3>100% Sustainable</h3>
+        <p>Crafted using certified organic cotton and eco-friendly printing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Catalog -->
+  <section id="products-section" class="products-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Featured Collections</h2>
+        <p>Explore our premium quality items crafted for vintage style enthusiasts.</p>
+      </div>
+
+      <!-- Categories Filter -->
+      <div class="categories-filter" id="categories-container">
+        <button class="filter-btn active" data-category="all">All Items</button>
+        <button class="filter-btn" data-category="Sweatshirts">Sweatshirts</button>
+        <button class="filter-btn" data-category="T-Shirts">T-Shirts</button>
+        <button class="filter-btn" data-category="Caps">Caps</button>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-grid">
+        <!-- Products will be loaded dynamically here -->
+        <div class="loading-spinner">
+          <i class="fa-solid fa-spinner fa-spin"></i> Loading fresh threads...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about-section" class="about-section">
+    <div class="container about-container">
+      <div class="about-visual">
+        <div class="about-image-stack">
+          <img src="/assets/graphic_cute_dino.svg" alt="Cute dino apparel" class="about-img-1 shadow-premium">
+        </div>
+      </div>
+      <div class="about-content">
+        <div class="badge-accent">Our Philosophy</div>
+        <h2>Retro Aesthetics, Future Comfort</h2>
+        <p>Born at the intersection of early 90s gaming nostalgic aesthetics and modern high-quality streetwear, we create apparel that speaks for itself. Every single piece is cut, sewn, and printed using premium heavy fabrics that feel as good as they look.</p>
+        <p>We work directly with sustainable manufacturers, meaning that when you buy a Dino or Retro garment, you're not just supporting dynamic designs—you're supporting fair wages and earth-friendly practices.</p>
+        <a href="#products-section" class="btn btn-primary">Start Exploring</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="logo">
+          <span class="logo-icon"><i class="fa-solid fa-bolt"></i></span>
+          <span class="logo-text" id="footer-logo-text">Retro & Dino</span>
+        </a>
+        <p id="footer-desc">Premium quality streetwear bringing retro design systems and prehistoric cuteness back to life.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <h4>Catalog</h4>
+        <ul>
+          <li><a href="#products-section">All Products</a></li>
+          <li><a href="#products-section">Dino Collection</a></li>
+          <li><a href="#products-section">Retro Wave Series</a></li>
+          <li><a href="#products-section">Streetwear Caps</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact Us</h4>
+        <ul>
+          <li><i class="fa-solid fa-envelope"></i> <span id="footer-email">support@retro-dino.com</span></li>
+          <li><i class="fa-solid fa-phone"></i> <span id="footer-phone">+1 (555) 123-4567</span></li>
+          <li><i class="fa-solid fa-location-dot"></i> <span>Aesthetic Alley, CA 90210</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-container">
+        <p id="footer-copyright-text">© 2026 Retro & Dino Shop. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="/admin.html" class="admin-key-link" title="Admin Portal" aria-label="Admin Portal"><i class="fa-solid fa-key"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shopping Cart Sidebar (Drawer) -->
+  <div id="cart-drawer" class="cart-drawer">
+    <div class="cart-drawer-backdrop" id="cart-drawer-backdrop"></div>
+    <div class="cart-drawer-content">
+      <div class="cart-header">
+        <h3>Your Cart (<span id="cart-count">0</span>)</h3>
+        <button id="cart-close-btn" class="close-btn" aria-label="Close Cart"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="cart-items-container" id="cart-items-container">
+        <!-- Cart items loaded dynamically -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-subtotal">
+          <span>Subtotal</span>
+          <span id="cart-subtotal-amount">$0.00</span>
+        </div>
+        <button id="checkout-btn" class="btn btn-primary btn-block" disabled>Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Detail Modal -->
+  <div id="product-modal" class="modal">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-content">
+      <button id="modal-close-btn" class="modal-close-btn" aria-label="Close details"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-grid" id="modal-grid-content">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Success Modal -->
+  <div id="checkout-modal" class="modal">
+    <div class="modal-backdrop" id="checkout-backdrop"></div>
+    <div class="modal-content modal-content-sm text-center">
+      <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <h2>Order Placed Successfully!</h2>
+      <p>Thank you for shopping with us. We have sent a confirmation email along with shipping details to your email address.</p>
+      <button id="checkout-success-close" class="btn btn-primary">Continue Shopping</button>
+    </div>
+  </div>
+
+  <!-- Custom script -->
+  <script src="/app.js"></script>
+</body>
+</html>
