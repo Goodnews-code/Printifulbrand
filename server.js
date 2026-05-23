@@ -126,16 +126,16 @@ function initializeSchema() {
 
   // Insert default settings
   const defaultSettings = {
-    site_title: "Retro & Dino Shop",
-    site_description: "The ultimate collection of vintage and streetwear apparel.",
-    hero_headline: "Unleash Your Retro Style",
-    hero_subtext: "Explore our exclusive Dino and Retro Wave collections, built with premium materials for maximum comfort and style.",
-    primary_color: "#6366f1", // Indigo
-    secondary_color: "#0f172a", // Slate 900
-    accent_color: "#f43f5e", // Rose
-    contact_email: "support@retro-dino.com",
-    contact_phone: "+1 (555) 123-4567",
-    footer_text: "© 2026 Retro & Dino Shop. All rights reserved."
+    site_title: "Printiful",
+    site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+    hero_headline: "INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.",
+    hero_subtext: "Premium customized garments crafted on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+    primary_color: "#53009B", // Purple
+    secondary_color: "#0D0015", // Deep purple-black
+    accent_color: "#FFFF00", // Yellow
+    contact_email: "support@printiful.store",
+    contact_phone: "+1 (555) 774-6843",
+    footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed."
   };
 
   const stmt = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
@@ -437,6 +437,35 @@ initSqlJs().then(sqlLibrary => {
     const filebuffer = fs.readFileSync(dbPath);
     db = new SQL.Database(filebuffer);
     console.log("Database loaded from file.");
+    
+    // Auto-migrate settings if loading legacy "Retro & Dino Shop"
+    try {
+      const titleSetting = get("SELECT value FROM settings WHERE key = 'site_title'");
+      if (titleSetting && titleSetting.value === "Retro & Dino Shop") {
+        console.log("Migrating database settings to Printiful...");
+        const printifulSettings = {
+          site_title: "Printiful",
+          site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+          hero_headline: "INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.",
+          hero_subtext: "Premium customized garments crafted on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+          primary_color: "#53009B", // Purple
+          secondary_color: "#0D0015", // Deep purple-black
+          accent_color: "#FFFF00", // Yellow
+          contact_email: "support@printiful.store",
+          contact_phone: "+1 (555) 774-6843",
+          footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed."
+        };
+        const stmt = db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)");
+        for (const [key, value] of Object.entries(printifulSettings)) {
+          stmt.run([key, value]);
+        }
+        stmt.free();
+        saveDatabase();
+        console.log("Database settings successfully migrated.");
+      }
+    } catch (err) {
+      console.error("Failed to run database settings migration:", err);
+    }
   } else {
     db = new SQL.Database();
     initializeSchema();
