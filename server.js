@@ -43,12 +43,12 @@ app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(publicDir, 'admin.html'));
 });
 
+// Serve the storefront root-level files (styles.css, app.js, /assets/)
+app.use(express.static(rootDir, { index: false, dotfiles: 'ignore' }));
+
 // Serve admin CSS, JS and its assets from /public under the same root
 // so relative paths like admin.css, admin.js, /uploads/ all work
 app.use(express.static(publicDir, { index: false, dotfiles: 'ignore' }));
-
-// Serve the storefront root-level files (styles.css, app.js, /assets/)
-app.use(express.static(rootDir, { index: false, dotfiles: 'ignore' }));
 
 // Explicit upload and assets aliases
 app.use('/uploads', express.static(uploadsDir));
