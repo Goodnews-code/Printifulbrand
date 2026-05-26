@@ -133,7 +133,7 @@ function initializeSchema() {
     primary_color: "#53009B", // Purple
     secondary_color: "#0D0015", // Deep purple-black
     accent_color: "#FFFF00", // Yellow
-    contact_email: "support@printiful.store",
+    contact_email: "shopprintiful@gmail.com",
     contact_phone: "+1 (555) 774-6843",
     footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed."
   };
@@ -637,7 +637,7 @@ initSqlJs().then(sqlLibrary => {
           primary_color: "#53009B", // Purple
           secondary_color: "#0D0015", // Deep purple-black
           accent_color: "#FFFF00", // Yellow
-          contact_email: "support@printiful.store",
+          contact_email: "shopprintiful@gmail.com",
           contact_phone: "+1 (555) 774-6843",
           footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed."
         };
@@ -651,6 +651,18 @@ initSqlJs().then(sqlLibrary => {
       }
     } catch (err) {
       console.error("Failed to run database settings migration:", err);
+    }
+
+    // Auto-migrate settings contact_email to shopprintiful@gmail.com if it's the legacy support@printiful.store
+    try {
+      const emailSetting = get("SELECT value FROM settings WHERE key = 'contact_email'");
+      if (emailSetting && emailSetting.value === "support@printiful.store") {
+        console.log("Updating contact email setting to shopprintiful@gmail.com...");
+        run("UPDATE settings SET value = 'shopprintiful@gmail.com' WHERE key = 'contact_email'");
+        console.log("Contact email setting successfully updated.");
+      }
+    } catch (err) {
+      console.error("Failed to update contact email setting:", err);
     }
 
     // Check if the products table has legacy Dino products or legacy 7 products and migrate them to the new 28 Printiful default products
