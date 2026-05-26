@@ -275,7 +275,7 @@ const defaultProducts = [
 
 // App State
 let cart = [];
-let products = [...defaultProducts];
+let products = defaultProducts.filter(p => p.image && p.image.toLowerCase().includes('assets/image/'));
 
 /* ==========================================================================
    DOM Initialization
@@ -993,8 +993,11 @@ async function loadDynamicProducts() {
     if (res.ok) {
       const dbProducts = await res.json();
       if (dbProducts && dbProducts.length > 0) {
+        // Hide products that do not have custom brand images yet (only show items with /assets/Image/ paths)
+        const activeProducts = dbProducts.filter(p => p.image_url && p.image_url.toLowerCase().includes('assets/image/'));
+        
         // Map database products to the storefront format
-        products = dbProducts.map(p => {
+        products = activeProducts.map(p => {
           // Normalize category
           const category = normalizeCategory(p.category);
           
