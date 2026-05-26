@@ -294,6 +294,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mobile Hamburger Menu
   initMobileMenu();
 
+  // Load dynamic layout settings from DB
+  await loadDynamicSettings();
+
   // Load dynamic products from DB
   await loadDynamicProducts();
   
@@ -1190,4 +1193,48 @@ function normalizeCategory(dbCategory) {
   if (cat.includes('gift') || cat.includes('mug') || cat.includes('bottle') || cat.includes('key') || cat.includes('box') || cat.includes('lanyard') || cat.includes('ball')) return 'gifts';
   if (cat.includes('lifestyle') || cat.includes('pillow') || cat.includes('frame')) return 'lifestyle';
   return 'apparels'; // default fallback
+}
+
+/* ==========================================================================
+   Dynamic Site Settings Customizer Sync
+   ========================================================================== */
+async function loadDynamicSettings() {
+  try {
+    const res = await fetch('/api/settings');
+    if (res.ok) {
+      const settings = await res.json();
+      if (settings) {
+        // 1. Dynamic Site Title
+        if (settings.site_title) {
+          document.title = settings.site_title;
+        }
+        
+        // 2. Dynamic Hero Texts (on index.html landing page)
+        const heroTitle = document.querySelector('.hero-title');
+        const heroDesc = document.querySelector('.hero-description');
+        if (heroTitle && settings.hero_headline) {
+          heroTitle.textContent = settings.hero_headline;
+        }
+        if (heroDesc && settings.hero_subtext) {
+          heroDesc.textContent = settings.hero_subtext;
+        }
+        
+        // 3. Dynamic Footer Copyright
+        const footerBottomP = document.querySelector('.footer-bottom p');
+        if (footerBottomP && settings.footer_text) {
+          footerBottomP.textContent = settings.footer_text;
+        }
+        
+        // 4. Dynamic Color Customization applying custom brand theme variables dynamically
+        if (settings.primary_color) {
+          document.documentElement.style.setProperty('--color-brand-accent', settings.primary_color);
+        }
+        if (settings.accent_color) {
+          document.documentElement.style.setProperty('--color-brand-yellow', settings.accent_color);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to load settings from database API.", err);
+  }
 }
