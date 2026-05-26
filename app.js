@@ -484,21 +484,26 @@ function initCatalog() {
       });
     }
 
-    // Sort items
-    if (sortBy === 'price-low') {
-      filtered.sort((a, b) => a.basePrice - b.basePrice);
-    } else if (sortBy === 'price-high') {
-      filtered.sort((a, b) => b.basePrice - a.basePrice);
-    } else if (sortBy === 'name-az') {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
     if (filtered.length === 0) {
+      productGrid.style.display = 'block';
       productGrid.innerHTML = `<div class="empty-results-message">No archival pieces match your criteria.</div>`;
       return;
     }
 
-    filtered.forEach(product => {
+    // Helper to get beautiful capitalized group titles
+    function getDisplayCategoryName(cat) {
+      const c = cat.toLowerCase();
+      if (c === 'apparels') return 'Apparels';
+      if (c === 'stationery') return 'Stationery';
+      if (c === 'packaging') return 'Brand Packaging';
+      if (c === 'gadgets') return 'Gadgets';
+      if (c === 'gifts') return 'Corporate Gifts';
+      if (c === 'lifestyle') return 'Lifestyle';
+      return cat.charAt(0).toUpperCase() + cat.slice(1);
+    }
+
+    // Render helper for single product card (to avoid code duplication)
+    function createProductCard(product) {
       const card = document.createElement('div');
       card.classList.add('product-card');
 
@@ -527,11 +532,11 @@ function initCatalog() {
       card.innerHTML = `
         <div class="product-image-container">
           <img src="${product.image}" alt="${product.name}">
-          <span class="catalog-tag">${product.category}</span>
+          <span class="catalog-tag">${getDisplayCategoryName(product.category)}</span>
         </div>
         <div class="product-info">
           <div class="product-header-row">
-            <span class="product-category">${product.category}</span>
+            <span class="product-category">${getDisplayCategoryName(product.category)}</span>
             <span class="product-price">$${product.basePrice.toFixed(2)}</span>
           </div>
           <h3 class="product-title">${product.name}</h3>
@@ -551,8 +556,6 @@ function initCatalog() {
           </div>
         </div>
       `;
-
-      productGrid.appendChild(card);
 
       // Bind local swatches updates
       const dots = card.querySelectorAll('.product-swatch-dot');
@@ -585,7 +588,79 @@ function initCatalog() {
 
         addToCart(catalogCartItem);
       });
-    });
+
+      return card;
+    }
+
+    if (currentFilter === 'all') {
+      productGrid.style.display = 'block';
+      
+      // Group products by category
+      const grouped = {};
+      filtered.forEach(p => {
+        grouped[p.category] = grouped[p.category] || [];
+        grouped[p.category].push(p);
+      });
+
+      // Sort categories alphabetically by display name
+      const sortedCategories = Object.keys(grouped).sort((a, b) => {
+        return getDisplayCategoryName(a).localeCompare(getDisplayCategoryName(b));
+      });
+
+      // Render each category group
+      sortedCategories.forEach(cat => {
+        const categoryProducts = grouped[cat];
+        
+        // Sort products alphabetically within this category
+        categoryProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+        const section = document.createElement('div');
+        section.classList.add('category-group-section');
+        section.style.marginBottom = '50px';
+
+        const heading = document.createElement('h2');
+        heading.classList.add('category-group-title');
+        heading.style.fontFamily = "'Outfit', sans-serif";
+        heading.style.fontSize = '1.8rem';
+        heading.style.fontWeight = '700';
+        heading.style.color = 'var(--color-text-primary)';
+        heading.style.marginBottom = '25px';
+        heading.style.borderBottom = '2px solid var(--color-brand-accent)';
+        heading.style.paddingBottom = '8px';
+        heading.style.textTransform = 'uppercase';
+        heading.style.letterSpacing = '0.05em';
+        heading.textContent = getDisplayCategoryName(cat);
+
+        const grid = document.createElement('div');
+        grid.classList.add('product-grid');
+
+        categoryProducts.forEach(product => {
+          const card = createProductCard(product);
+          grid.appendChild(card);
+        });
+
+        section.appendChild(heading);
+        section.appendChild(grid);
+        productGrid.appendChild(section);
+      });
+
+    } else {
+      productGrid.style.display = 'grid';
+
+      // Sort items
+      if (sortBy === 'price-low') {
+        filtered.sort((a, b) => a.basePrice - b.basePrice);
+      } else if (sortBy === 'price-high') {
+        filtered.sort((a, b) => b.basePrice - a.basePrice);
+      } else if (sortBy === 'name-az') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      filtered.forEach(product => {
+        const card = createProductCard(product);
+        productGrid.appendChild(card);
+      });
+    }
   }
 
   renderProducts();
