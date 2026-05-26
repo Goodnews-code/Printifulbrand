@@ -148,34 +148,51 @@ function initializeSchema() {
   const productCount = get("SELECT count(*) as count FROM products");
   if (productCount && productCount.count === 0) {
     const defaultProducts = [
+      // Apparels
       {
-        title: "Stand Still Black Tee",
-        description: "Heavyweight streetwear tee featuring premium black cotton with a minimalist signature chest print.",
+        title: "Premium Heavyweight Tee",
+        description: "Heavyweight streetwear tee featuring premium cotton with a minimalist brand chest print.",
         price: 29.99,
-        image_url: "/assets/Image/Stand Still Black.jpeg",
-        category: "T-Shirts"
-      },
-      {
-        title: "Love Won Premium Tee",
-        description: "Vibrant custom streetwear graphic printed on combed pre-shrunk cotton blank.",
-        price: 29.99,
-        image_url: "/assets/Image/Love won tee.jpeg",
-        category: "T-Shirts"
-      },
-      {
-        title: "Affirmation Statement Tee",
-        description: "Streetwear graphic tee highlighting bold positive statements on front and back panels.",
-        price: 27.99,
-        image_url: "/assets/Image/Affirmation Tees.jpeg",
-        category: "T-Shirts"
-      },
-      {
-        title: "Printiful Branded Blank Tee",
-        description: "Classic heavyweight streetwear basic tee, ideal for matching layers or raw branding.",
-        price: 24.99,
         image_url: "/assets/Image/Branded Teeshirts.jpeg",
-        category: "T-Shirts"
+        category: "Apparels"
       },
+      {
+        title: "Signature Oversized Hoodie",
+        description: "Premium heavy cotton fleece hoodie with double-lined hood and relaxed drop-shoulder fit.",
+        price: 59.99,
+        image_url: "/assets/hoodie_base.svg",
+        category: "Apparels"
+      },
+      {
+        title: "Minimalist Streetwear Cap",
+        description: "Unstructured 6-panel strapback cap with premium embroidered brand icon.",
+        price: 24.99,
+        image_url: "/assets/cap_base.svg",
+        category: "Apparels"
+      },
+      {
+        title: "Classic Canvas Tote Bag",
+        description: "Durable heavyweight cotton canvas tote bag with reinforced handles and interior pocket.",
+        price: 19.99,
+        image_url: "/assets/Image/Love won tee.jpeg",
+        category: "Apparels"
+      },
+      {
+        title: "Streetwear School Backpack",
+        description: "Water-resistant tactical backpack with multi-compartment layouts and utility straps.",
+        price: 49.99,
+        image_url: "/assets/tshirt_base.svg",
+        category: "Apparels"
+      },
+      {
+        title: "Children Brand Tee",
+        description: "Soft pre-shrunk children tee featuring custom brand artwork and non-toxic cured inks.",
+        price: 19.99,
+        image_url: "/assets/Image/Affirmation Tees.jpeg",
+        category: "Apparels"
+      },
+      
+      // Stationery
       {
         title: "Branded Hardcover Journal",
         description: "Sleek embossed leather notebook with grid pages, standard ribbons, and pen loops.",
@@ -184,18 +201,159 @@ function initializeSchema() {
         category: "Stationery"
       },
       {
-        title: "Magic Heat-Activated Mug",
-        description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
-        price: 14.99,
-        image_url: "/assets/Image/Magic mug.jpeg",
-        category: "Accessories"
-      },
-      {
-        title: "Custom Matte Bookmark Set",
+        title: "Matte Custom Bookmark Set",
         description: "Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.",
         price: 5.99,
         image_url: "/assets/Image/Book marks.jpeg",
         category: "Stationery"
+      },
+      {
+        title: "Premium Die-Cut Sticker Pack",
+        description: "Weatherproof vinyl brand sticker pack featuring 8 unique high-fidelity graphic designs.",
+        price: 4.99,
+        image_url: "/assets/logo.svg",
+        category: "Stationery"
+      },
+      {
+        title: "Sleek Aluminium Pen",
+        description: "Retractable matte aluminium ballpoint pen with signature branding and gel ink.",
+        price: 9.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Stationery"
+      },
+      {
+        title: "Soft-Touch Business Cards",
+        description: "Set of 100 soft-touch laminated thick business cards with raised spot UV highlights.",
+        price: 12.99,
+        image_url: "/assets/logo.svg",
+        category: "Stationery"
+      },
+
+      // Brand Packaging
+      {
+        title: "Premium Thank You Card",
+        description: "Double-sided heavy cardstock thank you cards with gold foil accent lettering.",
+        price: 7.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Brand Packaging"
+      },
+      {
+        title: "Custom Polymailer Nylon Bag",
+        description: "Set of 50 heavy-duty weatherproof polymailer bags featuring all-over brand pattern print.",
+        price: 14.99,
+        image_url: "/assets/logo.svg",
+        category: "Brand Packaging"
+      },
+      {
+        title: "Branded Packaging Sticker Reel",
+        description: "Reel of 200 circular high-gloss paper stickers to secure tissue wrappers and boxes.",
+        price: 8.99,
+        image_url: "/assets/logo.svg",
+        category: "Brand Packaging"
+      },
+
+      // Gadgets
+      {
+        title: "Custom Felt Laptop Sleeve",
+        description: "Premium organic wool felt sleeve with vegan leather accents and secure accessory pockets.",
+        price: 24.99,
+        image_url: "/assets/hoodie_base.svg",
+        category: "Gadgets"
+      },
+      {
+        title: "Heavyweight Desk Mouse Pad",
+        description: "Extra-large anti-slip rubber desk mat featuring high-density microfiber print surface.",
+        price: 19.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Gadgets"
+      },
+      {
+        title: "Ergonomic Wireless Mouse",
+        description: "Sleek rechargeable silent click mouse with adjustable DPI and subtle brand watermark.",
+        price: 29.99,
+        image_url: "/assets/logo.svg",
+        category: "Gadgets"
+      },
+      {
+        title: "Premium Studio Headset",
+        description: "Over-ear active noise cancelling bluetooth headphones with memory foam cushions.",
+        price: 79.99,
+        image_url: "/assets/logo.svg",
+        category: "Gadgets"
+      },
+      {
+        title: "Branded Wooden Flash Drive",
+        description: "32GB USB 3.0 flash drive housed in elegant walnut casing with laser-engraved logo.",
+        price: 14.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Gadgets"
+      },
+      {
+        title: "10000mAh Power Bank",
+        description: "Ultra-slim power bank with fast-charging dual outputs and soft-touch brand matte finish.",
+        price: 34.99,
+        image_url: "/assets/logo.svg",
+        category: "Gadgets"
+      },
+
+      // Corporate Gift
+      {
+        title: "Heat-Activated Magic Mug",
+        description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
+        price: 14.99,
+        image_url: "/assets/Image/Magic mug.jpeg",
+        category: "Corporate Gift"
+      },
+      {
+        title: "Double-Wall Water Bottle",
+        description: "Vacuum-insulated stainless steel flask keeping beverages cold for 24h or hot for 12h.",
+        price: 24.99,
+        image_url: "/assets/cap_base.svg",
+        category: "Corporate Gift"
+      },
+      {
+        title: "Stress Release Foam Ball",
+        description: "High-density stress release squeeze ball featuring our signature smile face brand motif.",
+        price: 6.99,
+        image_url: "/assets/logo.svg",
+        category: "Corporate Gift"
+      },
+      {
+        title: "Engraved Metal Key Holder",
+        description: "Polished zinc alloy hardware keychain with heavy duty split ring and engraved logo.",
+        price: 9.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Corporate Gift"
+      },
+      {
+        title: "Branded Kraft Gift Box",
+        description: "Set of 5 premium folding card gift boxes complete with ribbons and thank you stickers.",
+        price: 11.99,
+        image_url: "/assets/logo.svg",
+        category: "Corporate Gift"
+      },
+      {
+        title: "Satin Custom Lanyard",
+        description: "Smooth polyester satin neck strap with quick-release buckle and trigger swivel clip.",
+        price: 4.99,
+        image_url: "/assets/logo.svg",
+        category: "Corporate Gift"
+      },
+
+      // Lifestyle
+      {
+        title: "Embroidered Velvet Pillow",
+        description: "Luxurious velvet throw pillow complete with high density brand emblem embroidery.",
+        price: 29.99,
+        image_url: "/assets/hoodie_base.svg",
+        category: "Lifestyle"
+      },
+      {
+        title: "Premium Matte Wooden Frame",
+        description: "Sleek black wooden art frame with thick matboard, custom curated to display brand prints.",
+        price: 34.99,
+        image_url: "/assets/logo with printiful.svg",
+        category: "Lifestyle"
       }
     ];
 
@@ -495,43 +653,60 @@ initSqlJs().then(sqlLibrary => {
       console.error("Failed to run database settings migration:", err);
     }
 
-    // Check if the products table has legacy Dino products and migrate them to Printiful default products
+    // Check if the products table has legacy Dino products or legacy 7 products and migrate them to the new 28 Printiful default products
     try {
-      const dinoProduct = get("SELECT id FROM products WHERE title = 'Cute Dino Sweatshirt'");
-      if (dinoProduct) {
-        console.log("Migrating database products to Printiful defaults...");
+      const legacyProduct = get("SELECT id FROM products WHERE title = 'Cute Dino Sweatshirt' OR title = 'Stand Still Black Tee'");
+      if (legacyProduct) {
+        console.log("Migrating database products to new 28 Printiful defaults...");
         // Clear old products
         run("DELETE FROM products");
         
         const printifulDefaultProducts = [
+          // Apparels
           {
-            title: "Stand Still Black Tee",
-            description: "Heavyweight streetwear tee featuring premium black cotton with a minimalist signature chest print.",
+            title: "Premium Heavyweight Tee",
+            description: "Heavyweight streetwear tee featuring premium cotton with a minimalist brand chest print.",
             price: 29.99,
-            image_url: "/assets/Image/Stand Still Black.jpeg",
-            category: "T-Shirts"
-          },
-          {
-            title: "Love Won Premium Tee",
-            description: "Vibrant custom streetwear graphic printed on combed pre-shrunk cotton blank.",
-            price: 29.99,
-            image_url: "/assets/Image/Love won tee.jpeg",
-            category: "T-Shirts"
-          },
-          {
-            title: "Affirmation Statement Tee",
-            description: "Streetwear graphic tee highlighting bold positive statements on front and back panels.",
-            price: 27.99,
-            image_url: "/assets/Image/Affirmation Tees.jpeg",
-            category: "T-Shirts"
-          },
-          {
-            title: "Printiful Branded Blank Tee",
-            description: "Classic heavyweight streetwear basic tee, ideal for matching layers or raw branding.",
-            price: 24.99,
             image_url: "/assets/Image/Branded Teeshirts.jpeg",
-            category: "T-Shirts"
+            category: "Apparels"
           },
+          {
+            title: "Signature Oversized Hoodie",
+            description: "Premium heavy cotton fleece hoodie with double-lined hood and relaxed drop-shoulder fit.",
+            price: 59.99,
+            image_url: "/assets/hoodie_base.svg",
+            category: "Apparels"
+          },
+          {
+            title: "Minimalist Streetwear Cap",
+            description: "Unstructured 6-panel strapback cap with premium embroidered brand icon.",
+            price: 24.99,
+            image_url: "/assets/cap_base.svg",
+            category: "Apparels"
+          },
+          {
+            title: "Classic Canvas Tote Bag",
+            description: "Durable heavyweight cotton canvas tote bag with reinforced handles and interior pocket.",
+            price: 19.99,
+            image_url: "/assets/Image/Love won tee.jpeg",
+            category: "Apparels"
+          },
+          {
+            title: "Streetwear School Backpack",
+            description: "Water-resistant tactical backpack with multi-compartment layouts and utility straps.",
+            price: 49.99,
+            image_url: "/assets/tshirt_base.svg",
+            category: "Apparels"
+          },
+          {
+            title: "Children Brand Tee",
+            description: "Soft pre-shrunk children tee featuring custom brand artwork and non-toxic cured inks.",
+            price: 19.99,
+            image_url: "/assets/Image/Affirmation Tees.jpeg",
+            category: "Apparels"
+          },
+          
+          // Stationery
           {
             title: "Branded Hardcover Journal",
             description: "Sleek embossed leather notebook with grid pages, standard ribbons, and pen loops.",
@@ -540,18 +715,159 @@ initSqlJs().then(sqlLibrary => {
             category: "Stationery"
           },
           {
-            title: "Magic Heat-Activated Mug",
-            description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
-            price: 14.99,
-            image_url: "/assets/Image/Magic mug.jpeg",
-            category: "Accessories"
-          },
-          {
-            title: "Custom Matte Bookmark Set",
+            title: "Matte Custom Bookmark Set",
             description: "Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.",
             price: 5.99,
             image_url: "/assets/Image/Book marks.jpeg",
             category: "Stationery"
+          },
+          {
+            title: "Premium Die-Cut Sticker Pack",
+            description: "Weatherproof vinyl brand sticker pack featuring 8 unique high-fidelity graphic designs.",
+            price: 4.99,
+            image_url: "/assets/logo.svg",
+            category: "Stationery"
+          },
+          {
+            title: "Sleek Aluminium Pen",
+            description: "Retractable matte aluminium ballpoint pen with signature branding and gel ink.",
+            price: 9.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Stationery"
+          },
+          {
+            title: "Soft-Touch Business Cards",
+            description: "Set of 100 soft-touch laminated thick business cards with raised spot UV highlights.",
+            price: 12.99,
+            image_url: "/assets/logo.svg",
+            category: "Stationery"
+          },
+
+          // Brand Packaging
+          {
+            title: "Premium Thank You Card",
+            description: "Double-sided heavy cardstock thank you cards with gold foil accent lettering.",
+            price: 7.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Brand Packaging"
+          },
+          {
+            title: "Custom Polymailer Nylon Bag",
+            description: "Set of 50 heavy-duty weatherproof polymailer bags featuring all-over brand pattern print.",
+            price: 14.99,
+            image_url: "/assets/logo.svg",
+            category: "Brand Packaging"
+          },
+          {
+            title: "Branded Packaging Sticker Reel",
+            description: "Reel of 200 circular high-gloss paper stickers to secure tissue wrappers and boxes.",
+            price: 8.99,
+            image_url: "/assets/logo.svg",
+            category: "Brand Packaging"
+          },
+
+          // Gadgets
+          {
+            title: "Custom Felt Laptop Sleeve",
+            description: "Premium organic wool felt sleeve with vegan leather accents and secure accessory pockets.",
+            price: 24.99,
+            image_url: "/assets/hoodie_base.svg",
+            category: "Gadgets"
+          },
+          {
+            title: "Heavyweight Desk Mouse Pad",
+            description: "Extra-large anti-slip rubber desk mat featuring high-density microfiber print surface.",
+            price: 19.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Gadgets"
+          },
+          {
+            title: "Ergonomic Wireless Mouse",
+            description: "Sleek rechargeable silent click mouse with adjustable DPI and subtle brand watermark.",
+            price: 29.99,
+            image_url: "/assets/logo.svg",
+            category: "Gadgets"
+          },
+          {
+            title: "Premium Studio Headset",
+            description: "Over-ear active noise cancelling bluetooth headphones with memory foam cushions.",
+            price: 79.99,
+            image_url: "/assets/logo.svg",
+            category: "Gadgets"
+          },
+          {
+            title: "Branded Wooden Flash Drive",
+            description: "32GB USB 3.0 flash drive housed in elegant walnut casing with laser-engraved logo.",
+            price: 14.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Gadgets"
+          },
+          {
+            title: "10000mAh Power Bank",
+            description: "Ultra-slim power bank with fast-charging dual outputs and soft-touch brand matte finish.",
+            price: 34.99,
+            image_url: "/assets/logo.svg",
+            category: "Gadgets"
+          },
+
+          // Corporate Gift
+          {
+            title: "Heat-Activated Magic Mug",
+            description: "Heat-activated ceramic color changing mug revealing brand graphics under warmth.",
+            price: 14.99,
+            image_url: "/assets/Image/Magic mug.jpeg",
+            category: "Corporate Gift"
+          },
+          {
+            title: "Double-Wall Water Bottle",
+            description: "Vacuum-insulated stainless steel flask keeping beverages cold for 24h or hot for 12h.",
+            price: 24.99,
+            image_url: "/assets/cap_base.svg",
+            category: "Corporate Gift"
+          },
+          {
+            title: "Stress Release Foam Ball",
+            description: "High-density stress release squeeze ball featuring our signature smile face brand motif.",
+            price: 6.99,
+            image_url: "/assets/logo.svg",
+            category: "Corporate Gift"
+          },
+          {
+            title: "Engraved Metal Key Holder",
+            description: "Polished zinc alloy hardware keychain with heavy duty split ring and engraved logo.",
+            price: 9.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Corporate Gift"
+          },
+          {
+            title: "Branded Kraft Gift Box",
+            description: "Set of 5 premium folding card gift boxes complete with ribbons and thank you stickers.",
+            price: 11.99,
+            image_url: "/assets/logo.svg",
+            category: "Corporate Gift"
+          },
+          {
+            title: "Satin Custom Lanyard",
+            description: "Smooth polyester satin neck strap with quick-release buckle and trigger swivel clip.",
+            price: 4.99,
+            image_url: "/assets/logo.svg",
+            category: "Corporate Gift"
+          },
+
+          // Lifestyle
+          {
+            title: "Embroidered Velvet Pillow",
+            description: "Luxurious velvet throw pillow complete with high density brand emblem embroidery.",
+            price: 29.99,
+            image_url: "/assets/hoodie_base.svg",
+            category: "Lifestyle"
+          },
+          {
+            title: "Premium Matte Wooden Frame",
+            description: "Sleek black wooden art frame with thick matboard, custom curated to display brand prints.",
+            price: 34.99,
+            image_url: "/assets/logo with printiful.svg",
+            category: "Lifestyle"
           }
         ];
 

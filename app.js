@@ -8,44 +8,65 @@ document.documentElement.setAttribute('data-theme', initialTheme);
 
 // 7 Pre-Designed product items inside assets/Image/
 const defaultProducts = [
+  // Apparels
   {
     id: 1,
-    name: 'Stand Still Black Tee',
-    category: 'tshirt',
+    name: 'Premium Heavyweight Tee',
+    category: 'apparels',
     basePrice: 29.99,
-    image: 'assets/Image/Stand Still Black.jpeg',
-    description: 'Heavyweight streetwear tee featuring premium black cotton with a minimalist signature chest print.',
-    swatches: ['#000000', '#ffffff', '#53009B']
-  },
-  {
-    id: 2,
-    name: 'Love Won Premium Tee',
-    category: 'tshirt',
-    basePrice: 29.99,
-    image: 'assets/Image/Love won tee.jpeg',
-    description: 'Vibrant custom streetwear graphic printed on combed pre-shrunk cotton blank.',
-    swatches: ['#ffffff', '#000000', '#FFFF00']
-  },
-  {
-    id: 3,
-    name: 'Affirmation Statement Tee',
-    category: 'tshirt',
-    basePrice: 27.99,
-    image: 'assets/Image/Affirmation Tees.jpeg',
-    description: 'Streetwear graphic tee highlighting bold positive statements on front and back panels.',
+    image: 'assets/Image/Branded Teeshirts.jpeg',
+    description: 'Heavyweight streetwear tee featuring premium cotton with a minimalist brand chest print.',
     swatches: ['#ffffff', '#000000', '#53009B']
   },
   {
-    id: 4,
-    name: 'Printiful Branded Blank Tee',
-    category: 'tshirt',
+    id: 2,
+    name: 'Signature Oversized Hoodie',
+    category: 'apparels',
+    basePrice: 59.99,
+    image: 'assets/hoodie_base.svg',
+    description: 'Premium heavy cotton fleece hoodie with double-lined hood and relaxed drop-shoulder fit.',
+    swatches: ['#000000', '#ffffff', '#53009B']
+  },
+  {
+    id: 3,
+    name: 'Minimalist Streetwear Cap',
+    category: 'apparels',
     basePrice: 24.99,
-    image: 'assets/Image/Branded Teeshirts.jpeg',
-    description: 'Classic heavyweight streetwear basic tee, ideal for matching layers or raw branding.',
-    swatches: ['#ffffff', '#000000', '#FFFF00']
+    image: 'assets/cap_base.svg',
+    description: 'Unstructured 6-panel strapback cap with premium embroidered brand icon.',
+    swatches: ['#000000', '#53009B', '#FFFF00']
+  },
+  {
+    id: 4,
+    name: 'Classic Canvas Tote Bag',
+    category: 'apparels',
+    basePrice: 19.99,
+    image: 'assets/Image/Love won tee.jpeg',
+    description: 'Durable heavyweight cotton canvas tote bag with reinforced handles and interior pocket.',
+    swatches: ['#ffffff', '#000000']
   },
   {
     id: 5,
+    name: 'Streetwear School Backpack',
+    category: 'apparels',
+    basePrice: 49.99,
+    image: 'assets/tshirt_base.svg',
+    description: 'Water-resistant tactical backpack with multi-compartment layouts and utility straps.',
+    swatches: ['#000000', '#53009B']
+  },
+  {
+    id: 6,
+    name: 'Children Brand Tee',
+    category: 'apparels',
+    basePrice: 19.99,
+    image: 'assets/Image/Affirmation Tees.jpeg',
+    description: 'Soft pre-shrunk children tee featuring custom brand artwork and non-toxic cured inks.',
+    swatches: ['#ffffff', '#FFFF00']
+  },
+  
+  // Stationery
+  {
+    id: 7,
     name: 'Branded Hardcover Journal',
     category: 'stationery',
     basePrice: 15.99,
@@ -54,22 +75,201 @@ const defaultProducts = [
     swatches: ['#000000', '#53009B']
   },
   {
-    id: 6,
-    name: 'Magic Heat-Activated Mug',
-    category: 'accessories',
+    id: 8,
+    name: 'Matte Custom Bookmark Set',
+    category: 'stationery',
+    basePrice: 5.99,
+    image: 'assets/Image/Book marks.jpeg',
+    description: 'Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.',
+    swatches: ['#FFFF00', '#000000', '#53009B']
+  },
+  {
+    id: 9,
+    name: 'Premium Die-Cut Sticker Pack',
+    category: 'stationery',
+    basePrice: 4.99,
+    image: 'assets/logo.svg',
+    description: 'Weatherproof vinyl brand sticker pack featuring 8 unique high-fidelity graphic designs.',
+    swatches: ['#FFFF00', '#53009B']
+  },
+  {
+    id: 10,
+    name: 'Sleek Aluminium Pen',
+    category: 'stationery',
+    basePrice: 9.99,
+    image: 'assets/logo with printiful.svg',
+    description: 'Retractable matte aluminium ballpoint pen with signature branding and gel ink.',
+    swatches: ['#000000', '#53009B']
+  },
+  {
+    id: 11,
+    name: 'Soft-Touch Business Cards',
+    category: 'stationery',
+    basePrice: 12.99,
+    image: 'assets/logo.svg',
+    description: 'Set of 100 soft-touch laminated thick business cards with raised spot UV highlights.',
+    swatches: ['#ffffff', '#000000']
+  },
+
+  // Brand Packaging
+  {
+    id: 12,
+    name: 'Premium Thank You Card',
+    category: 'packaging',
+    basePrice: 7.99,
+    image: 'assets/logo with printiful.svg',
+    description: 'Double-sided heavy cardstock thank you cards with gold foil accent lettering.',
+    swatches: ['#ffffff', '#53009B']
+  },
+  {
+    id: 13,
+    name: 'Custom Polymailer Nylon Bag',
+    category: 'packaging',
+    basePrice: 14.99,
+    image: 'assets/logo.svg',
+    description: 'Set of 50 heavy-duty weatherproof polymailer bags featuring all-over brand pattern print.',
+    swatches: ['#000000', '#53009B']
+  },
+  {
+    id: 14,
+    name: 'Branded Packaging Sticker Reel',
+    category: 'packaging',
+    basePrice: 8.99,
+    image: 'assets/logo.svg',
+    description: 'Reel of 200 circular high-gloss paper stickers to secure tissue wrappers and boxes.',
+    swatches: ['#FFFF00', '#53009B']
+  },
+
+  // Gadgets
+  {
+    id: 15,
+    name: 'Custom Felt Laptop Sleeve',
+    category: 'gadgets',
+    basePrice: 24.99,
+    image: 'assets/hoodie_base.svg',
+    description: 'Premium organic wool felt sleeve with vegan leather accents and secure accessory pockets.',
+    swatches: ['#000000', '#53009B']
+  },
+  {
+    id: 16,
+    name: 'Heavyweight Desk Mouse Pad',
+    category: 'gadgets',
+    basePrice: 19.99,
+    image: 'assets/logo with printiful.svg',
+    description: 'Extra-large anti-slip rubber desk mat featuring high-density microfiber print surface.',
+    swatches: ['#000000', '#53009B', '#FFFF00']
+  },
+  {
+    id: 17,
+    name: 'Ergonomic Wireless Mouse',
+    category: 'gadgets',
+    basePrice: 29.99,
+    image: 'assets/logo.svg',
+    description: 'Sleek rechargeable silent click mouse with adjustable DPI and subtle brand watermark.',
+    swatches: ['#000000', '#ffffff']
+  },
+  {
+    id: 18,
+    name: 'Premium Studio Headset',
+    category: 'gadgets',
+    basePrice: 79.99,
+    image: 'assets/logo.svg',
+    description: 'Over-ear active noise cancelling bluetooth headphones with memory foam cushions.',
+    swatches: ['#000000']
+  },
+  {
+    id: 19,
+    name: 'Branded Wooden Flash Drive',
+    category: 'gadgets',
+    basePrice: 14.99,
+    image: 'assets/logo with printiful.svg',
+    description: '32GB USB 3.0 flash drive housed in elegant walnut casing with laser-engraved logo.',
+    swatches: ['#000000']
+  },
+  {
+    id: 20,
+    name: '10000mAh Power Bank',
+    category: 'gadgets',
+    basePrice: 34.99,
+    image: 'assets/logo.svg',
+    description: 'Ultra-slim power bank with fast-charging dual outputs and soft-touch brand matte finish.',
+    swatches: ['#000000', '#53009B']
+  },
+
+  // Corporate Gift
+  {
+    id: 21,
+    name: 'Heat-Activated Magic Mug',
+    category: 'gifts',
     basePrice: 14.99,
     image: 'assets/Image/Magic mug.jpeg',
     description: 'Heat-activated ceramic color changing mug revealing brand graphics under warmth.',
     swatches: ['#000000']
   },
   {
-    id: 7,
-    name: 'Custom Matte Bookmark Set',
-    category: 'stationery',
-    basePrice: 5.99,
-    image: 'assets/Image/Book marks.jpeg',
-    description: 'Set of 3 custom matte-finish heavy cardstock bookmarks with premium brand icons.',
-    swatches: ['#FFFF00', '#000000', '#53009B']
+    id: 22,
+    name: 'Double-Wall Water Bottle',
+    category: 'gifts',
+    basePrice: 24.99,
+    image: 'assets/cap_base.svg',
+    description: 'Vacuum-insulated stainless steel flask keeping beverages cold for 24h or hot for 12h.',
+    swatches: ['#000000', '#53009B', '#FFFF00']
+  },
+  {
+    id: 23,
+    name: 'Stress Release Foam Ball',
+    category: 'gifts',
+    basePrice: 6.99,
+    image: 'assets/logo.svg',
+    description: 'High-density stress release squeeze ball featuring our signature smile face brand motif.',
+    swatches: ['#FFFF00', '#000000']
+  },
+  {
+    id: 24,
+    name: 'Engraved Metal Key Holder',
+    category: 'gifts',
+    basePrice: 9.99,
+    image: 'assets/logo with printiful.svg',
+    description: 'Polished zinc alloy hardware keychain with heavy duty split ring and engraved logo.',
+    swatches: ['#000000', '#ffffff']
+  },
+  {
+    id: 25,
+    name: 'Branded Kraft Gift Box',
+    category: 'gifts',
+    basePrice: 11.99,
+    image: 'assets/logo.svg',
+    description: 'Set of 5 premium folding card gift boxes complete with ribbons and thank you stickers.',
+    swatches: ['#ffffff', '#000000']
+  },
+  {
+    id: 26,
+    name: 'Satin Custom Lanyard',
+    category: 'gifts',
+    basePrice: 4.99,
+    image: 'assets/logo.svg',
+    description: 'Smooth polyester satin neck strap with quick-release buckle and trigger swivel clip.',
+    swatches: ['#53009B', '#000000', '#FFFF00']
+  },
+
+  // Lifestyle
+  {
+    id: 27,
+    name: 'Embroidered Velvet Pillow',
+    category: 'lifestyle',
+    basePrice: 29.99,
+    image: 'assets/hoodie_base.svg',
+    description: 'Luxurious velvet throw pillow complete with high density brand emblem embroidery.',
+    swatches: ['#000000', '#53009B']
+  },
+  {
+    id: 28,
+    name: 'Premium Matte Wooden Frame',
+    category: 'lifestyle',
+    basePrice: 34.99,
+    image: 'assets/logo with printiful.svg',
+    description: 'Sleek black wooden art frame with thick matboard, custom curated to display brand prints.',
+    swatches: ['#000000']
   }
 ];
 
@@ -272,6 +472,17 @@ function initCatalog() {
                             p.description.toLowerCase().includes(searchQuery);
       return matchesCategory && matchesSearch;
     });
+
+    // Landing Page Limit: Only show up to 2 items per category
+    const isLandingPage = !storeSearch;
+    if (isLandingPage) {
+      const categoryCounts = {};
+      filtered = filtered.filter(p => {
+        const cat = p.category;
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        return categoryCounts[cat] <= 2;
+      });
+    }
 
     // Sort items
     if (sortBy === 'price-low') {
@@ -821,8 +1032,11 @@ async function loadDynamicProducts() {
 
 function normalizeCategory(dbCategory) {
   const cat = (dbCategory || '').toLowerCase();
-  if (cat.includes('shirt') || cat.includes('tee')) return 'tshirt';
-  if (cat.includes('stationery') || cat.includes('journal') || cat.includes('book')) return 'stationery';
-  if (cat.includes('access') || cat.includes('mug') || cat.includes('cap') || cat.includes('hat')) return 'accessories';
-  return 'accessories'; // default fallback
+  if (cat.includes('apparel') || cat.includes('shirt') || cat.includes('tee') || cat.includes('hoodie') || cat.includes('cap') || cat.includes('bag')) return 'apparels';
+  if (cat.includes('stationery') || cat.includes('journal') || cat.includes('book') || cat.includes('pen') || cat.includes('card')) return 'stationery';
+  if (cat.includes('packaging') || cat.includes('nylon') || cat.includes('thank')) return 'packaging';
+  if (cat.includes('gadget') || cat.includes('mouse') || cat.includes('headset') || cat.includes('drive') || cat.includes('sleeve') || cat.includes('power')) return 'gadgets';
+  if (cat.includes('gift') || cat.includes('mug') || cat.includes('bottle') || cat.includes('key') || cat.includes('box') || cat.includes('lanyard') || cat.includes('ball')) return 'gifts';
+  if (cat.includes('lifestyle') || cat.includes('pillow') || cat.includes('frame')) return 'lifestyle';
+  return 'apparels'; // default fallback
 }
