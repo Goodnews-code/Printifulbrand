@@ -167,14 +167,14 @@ function initializeSchema() {
         title: "Minimalist Streetwear Cap",
         description: "Unstructured 6-panel strapback cap with premium embroidered brand icon.",
         price: 24.99,
-        image_url: "/assets/cap_base.svg",
+        image_url: "/assets/Image/Face-cap.jpeg",
         category: "Apparels"
       },
       {
         title: "Classic Canvas Tote Bag",
         description: "Durable heavyweight cotton canvas tote bag with reinforced handles and interior pocket.",
         price: 19.99,
-        image_url: "/assets/Image/Love won tee.jpeg",
+        image_url: "/assets/Image/Tote bag.jpeg",
         category: "Apparels"
       },
       {
@@ -211,7 +211,7 @@ function initializeSchema() {
         title: "Premium Die-Cut Sticker Pack",
         description: "Weatherproof vinyl brand sticker pack featuring 8 unique high-fidelity graphic designs.",
         price: 4.99,
-        image_url: "/assets/logo.svg",
+        image_url: "/assets/Image/Stickers.jpeg",
         category: "Stationery"
       },
       {
@@ -241,14 +241,14 @@ function initializeSchema() {
         title: "Custom Polymailer Nylon Bag",
         description: "Set of 50 heavy-duty weatherproof polymailer bags featuring all-over brand pattern print.",
         price: 14.99,
-        image_url: "/assets/logo.svg",
+        image_url: "/assets/Image/Customized nylon.jpeg",
         category: "Brand Packaging"
       },
       {
         title: "Branded Packaging Sticker Reel",
         description: "Reel of 200 circular high-gloss paper stickers to secure tissue wrappers and boxes.",
         price: 8.99,
-        image_url: "/assets/logo.svg",
+        image_url: "/assets/Image/Stickers.jpeg",
         category: "Brand Packaging"
       },
 
@@ -264,7 +264,7 @@ function initializeSchema() {
         title: "Heavyweight Desk Mouse Pad",
         description: "Extra-large anti-slip rubber desk mat featuring high-density microfiber print surface.",
         price: 19.99,
-        image_url: "/assets/logo with printiful.svg",
+        image_url: "/assets/Image/Mouse pad.PNG",
         category: "Gadgets"
       },
       {
@@ -672,9 +672,15 @@ initSqlJs().then(sqlLibrary => {
         { title: "Streetwear School Backpack", image_url: "/assets/Image/School bag.jpeg" },
         { title: "Sleek Aluminium Pen", image_url: "/assets/Image/Pen.jpeg" },
         { title: "Ergonomic Wireless Mouse", image_url: "/assets/Image/Mouse.jpeg" },
-        { title: "Premium Studio Headset", image_url: "/assets/Image/Headset.jpeg" }
+        { title: "Premium Studio Headset", image_url: "/assets/Image/Headset.jpeg" },
+        { title: "Minimalist Streetwear Cap", image_url: "/assets/Image/Face-cap.jpeg" },
+        { title: "Classic Canvas Tote Bag", image_url: "/assets/Image/Tote bag.jpeg" },
+        { title: "Premium Die-Cut Sticker Pack", image_url: "/assets/Image/Stickers.jpeg" },
+        { title: "Custom Polymailer Nylon Bag", image_url: "/assets/Image/Customized nylon.jpeg" },
+        { title: "Branded Packaging Sticker Reel", image_url: "/assets/Image/Stickers.jpeg" },
+        { title: "Heavyweight Desk Mouse Pad", image_url: "/assets/Image/Mouse pad.PNG" }
       ];
-      const updateStmt = db.prepare("UPDATE products SET image_url = ? WHERE title = ? AND (image_url LIKE '%logo%' OR image_url LIKE '%base%')");
+      const updateStmt = db.prepare("UPDATE products SET image_url = ? WHERE title = ?");
       for (const u of productUpdates) {
         updateStmt.run([u.image_url, u.title]);
       }
@@ -713,14 +719,14 @@ initSqlJs().then(sqlLibrary => {
             title: "Minimalist Streetwear Cap",
             description: "Unstructured 6-panel strapback cap with premium embroidered brand icon.",
             price: 24.99,
-            image_url: "/assets/cap_base.svg",
+            image_url: "/assets/Image/Face-cap.jpeg",
             category: "Apparels"
           },
           {
             title: "Classic Canvas Tote Bag",
             description: "Durable heavyweight cotton canvas tote bag with reinforced handles and interior pocket.",
             price: 19.99,
-            image_url: "/assets/Image/Love won tee.jpeg",
+            image_url: "/assets/Image/Tote bag.jpeg",
             category: "Apparels"
           },
           {
@@ -757,7 +763,7 @@ initSqlJs().then(sqlLibrary => {
             title: "Premium Die-Cut Sticker Pack",
             description: "Weatherproof vinyl brand sticker pack featuring 8 unique high-fidelity graphic designs.",
             price: 4.99,
-            image_url: "/assets/logo.svg",
+            image_url: "/assets/Image/Stickers.jpeg",
             category: "Stationery"
           },
           {
@@ -787,14 +793,14 @@ initSqlJs().then(sqlLibrary => {
             title: "Custom Polymailer Nylon Bag",
             description: "Set of 50 heavy-duty weatherproof polymailer bags featuring all-over brand pattern print.",
             price: 14.99,
-            image_url: "/assets/logo.svg",
+            image_url: "/assets/Image/Customized nylon.jpeg",
             category: "Brand Packaging"
           },
           {
             title: "Branded Packaging Sticker Reel",
             description: "Reel of 200 circular high-gloss paper stickers to secure tissue wrappers and boxes.",
             price: 8.99,
-            image_url: "/assets/logo.svg",
+            image_url: "/assets/Image/Stickers.jpeg",
             category: "Brand Packaging"
           },
 
@@ -810,7 +816,7 @@ initSqlJs().then(sqlLibrary => {
             title: "Heavyweight Desk Mouse Pad",
             description: "Extra-large anti-slip rubber desk mat featuring high-density microfiber print surface.",
             price: 19.99,
-            image_url: "/assets/logo with printiful.svg",
+            image_url: "/assets/Image/Mouse pad.PNG",
             category: "Gadgets"
           },
           {
