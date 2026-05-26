@@ -245,7 +245,7 @@ function updateStatsCards() {
   statTotalCategories.textContent = categories.size;
   
   const avg = dashboardProducts.length > 0 ? (totalPrice / dashboardProducts.length) : 0;
-  statAvgPrice.textContent = `$${avg.toFixed(2)}`;
+  statAvgPrice.textContent = `₦${avg.toFixed(2)}`;
 }
 
 // Rebuild category options datalist in forms
@@ -293,7 +293,7 @@ function renderProductsTable() {
       </td>
       <td><strong>${product.title}</strong></td>
       <td><span class="table-category">${product.category || 'General'}</span></td>
-      <td><span class="table-price">$${priceText}</span></td>
+      <td><span class="table-price">₦${priceText}</span></td>
       <td><div class="table-description">${product.description || '-'}</div></td>
       <td>
         <div class="table-actions">

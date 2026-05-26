@@ -571,7 +571,7 @@ function initCatalog() {
         <div class="product-info">
           <div class="product-header-row">
             <span class="product-category">${getDisplayCategoryName(product.category)}</span>
-            <span class="product-price">$${product.basePrice.toFixed(2)}</span>
+            <span class="product-price">₦${product.basePrice.toFixed(2)}</span>
           </div>
           <h3 class="product-title">${product.name}</h3>
           <p class="product-desc">${product.description}</p>
@@ -843,7 +843,7 @@ function updateCartUI() {
               Size: ${item.size} | Color: <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${item.color}; border:1px solid #ddd; vertical-align:middle; margin-left: 2px;"></span>
             </span>
           </div>
-          <span class="cart-item-price">$${itemCost.toFixed(2)}</span>
+          <span class="cart-item-price">₦${itemCost.toFixed(2)}</span>
           
           <div class="cart-item-qty-controls">
             <button onclick="changeQty('${item.id}', -1)">-</button>
@@ -862,9 +862,9 @@ function updateCartUI() {
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
 
-    cartSubtotal.innerText = `$${subtotal.toFixed(2)}`;
-    cartTax.innerText = `$${tax.toFixed(2)}`;
-    cartGrandTotal.innerText = `$${total.toFixed(2)}`;
+    cartSubtotal.innerText = `₦${subtotal.toFixed(2)}`;
+    cartTax.innerText = `₦${tax.toFixed(2)}`;
+    cartGrandTotal.innerText = `₦${total.toFixed(2)}`;
   }
 }
 
