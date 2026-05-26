@@ -473,15 +473,24 @@ function initCatalog() {
       return matchesCategory && matchesSearch;
     });
 
-    // Landing Page Limit: Only show up to 2 items per category
     const isLandingPage = !storeSearch;
+
+    // Landing Page Limit & Randomization: 
+    // Under "All" filter, show 8 completely random available products from any category!
+    // Under specific category filters, show at most 2 products per category (as set by standard filters)
     if (isLandingPage) {
-      const categoryCounts = {};
-      filtered = filtered.filter(p => {
-        const cat = p.category;
-        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-        return categoryCounts[cat] <= 2;
-      });
+      if (currentFilter === 'all') {
+        // Randomize the entire filtered list and take a maximum of 8 items for editorial variety
+        filtered = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 8);
+      } else {
+        // Limit to maximum of 2 products for the selected category on landing page
+        const categoryCounts = {};
+        filtered = filtered.filter(p => {
+          const cat = p.category;
+          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+          return categoryCounts[cat] <= 2;
+        });
+      }
     }
 
     if (filtered.length === 0) {
@@ -507,6 +516,27 @@ function initCatalog() {
       const card = document.createElement('div');
       card.classList.add('product-card');
 
+      // If we are on the landing page, show simplified visual card (no price, no category tags, no cart options)
+      if (isLandingPage) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          window.location.href = `store.html?q=${encodeURIComponent(product.name)}`;
+        });
+
+        card.innerHTML = `
+          <div class="product-image-container">
+            <img src="${product.image}" alt="${product.name}">
+          </div>
+          <div class="product-info" style="text-align: center; padding: 25px 20px;">
+            <h3 class="product-title" style="margin-bottom: 10px; font-size: 1.3rem; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--color-text-primary);">${product.name}</h3>
+            <p class="product-desc" style="font-size: 0.9rem; opacity: 0.8; line-height: 1.5; margin-bottom: 0;">${product.description}</p>
+            <span class="view-store-link" style="display: inline-block; margin-top: 15px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--color-brand-accent); letter-spacing: 0.05em; border-bottom: 1px solid var(--color-brand-accent); padding-bottom: 2px; transition: var(--transition-smooth);">View in Archive Store</span>
+          </div>
+        `;
+        return card;
+      }
+
+      // Catalog / Store page card (full e-commerce purchase functionality)
       const swatchesHtml = product.swatches.map((color, idx) => `
         <button class="product-swatch-dot ${idx === 0 ? 'active' : ''}" 
                 style="background-color: ${color};" 
@@ -592,7 +622,8 @@ function initCatalog() {
       return card;
     }
 
-    if (currentFilter === 'all') {
+    // Catalog page "All" filter displays grouped category sections
+    if (!isLandingPage && currentFilter === 'all') {
       productGrid.style.display = 'block';
       
       // Group products by category
@@ -660,6 +691,25 @@ function initCatalog() {
         const card = createProductCard(product);
         productGrid.appendChild(card);
       });
+    }
+  }
+
+  // Parse query parameters from URL (e.g. ?q=product name or ?filter=category)
+  const urlParams = new URLSearchParams(window.location.search);
+  const qParam = urlParams.get('q');
+  const filterParam = urlParams.get('filter');
+
+  if (qParam && storeSearch) {
+    storeSearch.value = qParam;
+    searchQuery = qParam.toLowerCase().trim();
+  }
+  
+  if (filterParam) {
+    const matchingBtn = Array.from(filterButtons).find(btn => btn.dataset.filter === filterParam);
+    if (matchingBtn) {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      matchingBtn.classList.add('active');
+      currentFilter = filterParam;
     }
   }
 
