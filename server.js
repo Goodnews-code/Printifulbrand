@@ -160,7 +160,7 @@ function initializeSchema() {
         title: "Signature Oversized Hoodie",
         description: "Premium heavy cotton fleece hoodie with double-lined hood and relaxed drop-shoulder fit.",
         price: 59.99,
-        image_url: "/assets/hoodie_base.svg",
+        image_url: "/assets/Image/Stand Still Black.jpeg",
         category: "Apparels"
       },
       {
@@ -181,7 +181,7 @@ function initializeSchema() {
         title: "Streetwear School Backpack",
         description: "Water-resistant tactical backpack with multi-compartment layouts and utility straps.",
         price: 49.99,
-        image_url: "/assets/tshirt_base.svg",
+        image_url: "/assets/Image/School bag.jpeg",
         category: "Apparels"
       },
       {
@@ -218,7 +218,7 @@ function initializeSchema() {
         title: "Sleek Aluminium Pen",
         description: "Retractable matte aluminium ballpoint pen with signature branding and gel ink.",
         price: 9.99,
-        image_url: "/assets/logo with printiful.svg",
+        image_url: "/assets/Image/Pen.jpeg",
         category: "Stationery"
       },
       {
@@ -271,14 +271,14 @@ function initializeSchema() {
         title: "Ergonomic Wireless Mouse",
         description: "Sleek rechargeable silent click mouse with adjustable DPI and subtle brand watermark.",
         price: 29.99,
-        image_url: "/assets/logo.svg",
+        image_url: "/assets/Image/Mouse.jpeg",
         category: "Gadgets"
       },
       {
         title: "Premium Studio Headset",
         description: "Over-ear active noise cancelling bluetooth headphones with memory foam cushions.",
         price: 79.99,
-        image_url: "/assets/logo.svg",
+        image_url: "/assets/Image/Headset.jpeg",
         category: "Gadgets"
       },
       {
@@ -665,6 +665,26 @@ initSqlJs().then(sqlLibrary => {
       console.error("Failed to update contact email setting:", err);
     }
 
+    // Auto-migrate settings product image URLs to use custom brand image assets
+    try {
+      const productUpdates = [
+        { title: "Signature Oversized Hoodie", image_url: "/assets/Image/Stand Still Black.jpeg" },
+        { title: "Streetwear School Backpack", image_url: "/assets/Image/School bag.jpeg" },
+        { title: "Sleek Aluminium Pen", image_url: "/assets/Image/Pen.jpeg" },
+        { title: "Ergonomic Wireless Mouse", image_url: "/assets/Image/Mouse.jpeg" },
+        { title: "Premium Studio Headset", image_url: "/assets/Image/Headset.jpeg" }
+      ];
+      const updateStmt = db.prepare("UPDATE products SET image_url = ? WHERE title = ? AND (image_url LIKE '%logo%' OR image_url LIKE '%base%')");
+      for (const u of productUpdates) {
+        updateStmt.run([u.image_url, u.title]);
+      }
+      updateStmt.free();
+      saveDatabase();
+      console.log("Database product image URLs successfully updated.");
+    } catch (err) {
+      console.error("Failed to update database product image URLs:", err);
+    }
+
     // Check if the products table has legacy Dino products or legacy 7 products and migrate them to the new 28 Printiful default products
     try {
       const legacyProduct = get("SELECT id FROM products WHERE title = 'Cute Dino Sweatshirt' OR title = 'Stand Still Black Tee'");
@@ -686,7 +706,7 @@ initSqlJs().then(sqlLibrary => {
             title: "Signature Oversized Hoodie",
             description: "Premium heavy cotton fleece hoodie with double-lined hood and relaxed drop-shoulder fit.",
             price: 59.99,
-            image_url: "/assets/hoodie_base.svg",
+            image_url: "/assets/Image/Stand Still Black.jpeg",
             category: "Apparels"
           },
           {
@@ -707,7 +727,7 @@ initSqlJs().then(sqlLibrary => {
             title: "Streetwear School Backpack",
             description: "Water-resistant tactical backpack with multi-compartment layouts and utility straps.",
             price: 49.99,
-            image_url: "/assets/tshirt_base.svg",
+            image_url: "/assets/Image/School bag.jpeg",
             category: "Apparels"
           },
           {
@@ -744,7 +764,7 @@ initSqlJs().then(sqlLibrary => {
             title: "Sleek Aluminium Pen",
             description: "Retractable matte aluminium ballpoint pen with signature branding and gel ink.",
             price: 9.99,
-            image_url: "/assets/logo with printiful.svg",
+            image_url: "/assets/Image/Pen.jpeg",
             category: "Stationery"
           },
           {
@@ -797,14 +817,14 @@ initSqlJs().then(sqlLibrary => {
             title: "Ergonomic Wireless Mouse",
             description: "Sleek rechargeable silent click mouse with adjustable DPI and subtle brand watermark.",
             price: 29.99,
-            image_url: "/assets/logo.svg",
+            image_url: "/assets/Image/Mouse.jpeg",
             category: "Gadgets"
           },
           {
             title: "Premium Studio Headset",
             description: "Over-ear active noise cancelling bluetooth headphones with memory foam cushions.",
             price: 79.99,
-            image_url: "/assets/logo.svg",
+            image_url: "/assets/Image/Headset.jpeg",
             category: "Gadgets"
           },
           {
