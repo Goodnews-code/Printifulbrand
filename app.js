@@ -515,12 +515,13 @@ function initCatalog() {
     function createProductCard(product) {
       const card = document.createElement('div');
       card.classList.add('product-card');
+      card.id = `product-${product.id}`;
 
       // If we are on the landing page, show simplified visual card (no price, no category tags, no cart options)
       if (isLandingPage) {
         card.style.cursor = 'pointer';
         card.addEventListener('click', () => {
-          window.location.href = `store.html?q=${encodeURIComponent(product.name)}`;
+          window.location.href = `store.html?filter=${product.category}#product-${product.id}`;
         });
 
         card.innerHTML = `
@@ -714,6 +715,28 @@ function initCatalog() {
   }
 
   renderProducts();
+
+  // Highlight and smooth scroll to product card if hash is present
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#product-')) {
+    setTimeout(() => {
+      const targetElement = document.getElementById(hash.substring(1));
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add a premium, glowing outline to guide the user's eyes
+        targetElement.style.outline = '2px solid var(--color-brand-accent)';
+        targetElement.style.boxShadow = '0 0 32px rgba(83, 0, 155, 0.45)';
+        targetElement.style.transition = 'all 0.6s ease';
+        
+        // Gracefully remove highlight outline after 2.5s
+        setTimeout(() => {
+          targetElement.style.outline = 'none';
+          targetElement.style.boxShadow = '';
+        }, 2500);
+      }
+    }, 400); // Small timeout to ensure DOM layout is completely settled
+  }
 }
 
 /* ==========================================================================
