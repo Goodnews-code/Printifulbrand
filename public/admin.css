@@ -1020,6 +1020,41 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1.5rem 1rem;
     width: 95%;
   }
+
+  /* Force dynamic forms to stack neatly on smaller mobile screens */
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .variant-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .variant-image-url {
+    width: 100% !important;
+    order: 3 !important;
+  }
+
+  .btn-upload-variant {
+    order: 4 !important;
+  }
+
+  .variant-row label {
+    order: 5 !important;
+  }
+
+  .btn-remove-variant {
+    order: 6 !important;
+    margin-left: auto !important;
+  }
+
+  .sizes-pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ── Customized Variants & Sizing Configuration Form styling ── */
