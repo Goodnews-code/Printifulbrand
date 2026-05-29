@@ -293,15 +293,20 @@
           <textarea id="crud-description" rows="3" placeholder="Describe materials, fit, design features..."></textarea>
         </div>
 
-        <!-- Product Visibility Status Toggle (ON/OFF) -->
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
-            <input type="checkbox" id="crud-is-active" checked style="width: auto; margin: 0; transform: scale(1.2);">
-            Storefront Visibility Status (ON / OFF)
-          </label>
-          <span style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-            Toggle OFF to hide this product completely from the storefront catalog page.
-          </span>
+        <!-- Product Visibility Status Toggle Switch -->
+        <div class="form-group visibility-toggle-container" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="flex-grow: 1; padding-right: 15px;">
+            <label style="font-weight: 700; color: var(--text-color); margin-bottom: 4px; display: block;">Storefront Visibility Status</label>
+            <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">
+              Toggle OFF to draft or hide this product completely from the public storefront catalog.
+            </span>
+          </div>
+          <div style="flex-shrink: 0;">
+            <label class="switch-control" style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer; margin: 0;">
+              <input type="checkbox" id="crud-is-active" checked style="opacity: 0; width: 0; height: 0; display: none;">
+              <span class="switch-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px;"></span>
+            </label>
+          </div>
         </div>
 
         <!-- Product Sizes & Pricing Configurator -->

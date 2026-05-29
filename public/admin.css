@@ -1157,3 +1157,30 @@ h1, h2, h3, h4, h5, h6 {
 .btn-remove-variant:hover {
   filter: brightness(1.2);
 }
+
+/* ── IOS/Control Panel Switch Toggle Styles ── */
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+input:checked + .switch-slider {
+  background-color: var(--primary-color) !important;
+}
+
+input:focus + .switch-slider {
+  box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .switch-slider:before {
+  transform: translateX(24px);
+}
+
