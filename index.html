@@ -139,10 +139,10 @@
       <div class="hero-content">
         <span class="hero-tagline">00 / CURATED STREETWEAR & HIGH-FIDELITY PRINTING</span>
         <h1 class="hero-title">
-          INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.
+          Be Bold! Be Seen!! Be Known!!!
         </h1>
         <p class="hero-description">
-          Premium customized garments crafted on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.
+          Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.
         </p>
         <div class="hero-actions">
           <a href="#catalog" class="btn btn-hero-primary">
@@ -535,6 +535,40 @@
       </form>
     </div>
   </div>
+
+  <!-- Monnify Checkout Overlay Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="admin-modal" style="max-width: 450px;">
+      <div class="admin-modal-header">
+        <h3>Complete Checkout Details</h3>
+        <button class="admin-modal-close" id="checkoutModalCloseBtn">&times;</button>
+      </div>
+      <form id="checkoutForm">
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
+          Please enter your details to route your secure checkout to the Monnify Payment Gateway.
+        </p>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label for="checkoutName" style="display: block; margin-bottom: 5px; font-weight: 500;">Full Name</label>
+          <input type="text" id="checkoutName" required style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-color);">
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label for="checkoutEmail" style="display: block; margin-bottom: 5px; font-weight: 500;">Email Address</label>
+          <input type="email" id="checkoutEmail" required style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-color);">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="checkoutPhone" style="display: block; margin-bottom: 5px; font-weight: 500;">Phone Number</label>
+          <input type="tel" id="checkoutPhone" required style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-color);">
+        </div>
+        <div class="admin-modal-actions">
+          <button type="button" class="btn btn-hero-secondary" id="checkoutCancelBtn" style="padding: 10px 20px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Confirm & Pay</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Monnify Web SDK -->
+  <script type="text/javascript" src="https://sdk-v2.monnify.com/plugin/monnify.js"></script>
 
   <!-- Main JavaScript File -->
   <script src="app.js"></script>

@@ -314,6 +314,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Admin Authentication Modal Dialog
   initAdminAuth();
 
+  // Initialize Monnify Checkout Modal
+  initCheckoutModal();
+
   // Storage Sync Event Listener (Sync across open tabs/pages)
   window.addEventListener('storage', (e) => {
     if (e.key === 'printiful_cart') {
@@ -529,7 +532,7 @@ function initCatalog() {
 
         card.innerHTML = `
           <div class="product-image-container">
-            <img src="${product.image}" alt="${product.name}">
+            <img src="${product.image}" alt="${product.name}" loading="lazy">
           </div>
           <div class="product-info" style="text-align: center; padding: 25px 20px;">
             <h3 class="product-title" style="margin-bottom: 10px; font-size: 1.3rem; font-family: 'Outfit', sans-serif; font-weight: 600; color: var(--color-text-primary);">${product.name}</h3>
@@ -565,7 +568,7 @@ function initCatalog() {
 
       card.innerHTML = `
         <div class="product-image-container">
-          <img src="${product.image}" alt="${product.name}">
+          <img src="${product.image}" alt="${product.name}" loading="lazy">
           <span class="catalog-tag">${getDisplayCategoryName(product.category)}</span>
         </div>
         <div class="product-info">
@@ -759,16 +762,12 @@ function initCartDrawer() {
     if (cart.length === 0) return;
     
     toggleCart(false);
-    showModal(
-      'ORDER RECEIVED',
-      'Thank you for your order. We have received your request and our production team is reviewing layout details. Follow-up details have been sent to your email.',
-      'success-checkout'
-    );
     
-    // Clear state
-    cart = [];
-    saveCartToStorage();
-    updateCartUI();
+    // Open Checkout Details Modal
+    const checkoutModal = document.getElementById('checkoutModal');
+    if (checkoutModal) {
+      checkoutModal.classList.add('active');
+    }
   });
 }
 
@@ -1237,4 +1236,105 @@ async function loadDynamicSettings() {
   } catch (err) {
     console.warn("Failed to load settings from database API.", err);
   }
+}
+
+/* ==========================================================================
+   Monnify Checkout Modal Logic
+   ========================================================================== */
+function initCheckoutModal() {
+  const checkoutModal = document.getElementById('checkoutModal');
+  const checkoutModalCloseBtn = document.getElementById('checkoutModalCloseBtn');
+  const checkoutCancelBtn = document.getElementById('checkoutCancelBtn');
+  const checkoutForm = document.getElementById('checkoutForm');
+
+  if (!checkoutModal || !checkoutForm) return;
+
+  const hideModal = () => checkoutModal.classList.remove('active');
+
+  if (checkoutModalCloseBtn) checkoutModalCloseBtn.addEventListener('click', hideModal);
+  if (checkoutCancelBtn) checkoutCancelBtn.addEventListener('click', hideModal);
+
+  checkoutForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (cart.length === 0) return;
+
+    const name = document.getElementById('checkoutName').value.trim();
+    const email = document.getElementById('checkoutEmail').value.trim();
+    const phone = document.getElementById('checkoutPhone').value.trim();
+
+    if (!name || !email || !phone) {
+      alert("Please fill all required checkout fields.");
+      return;
+    }
+
+    // Calculate checkout totals in Naira
+    let subtotal = 0;
+    cart.forEach(item => {
+      subtotal += item.price * item.qty;
+    });
+    const tax = subtotal * 0.08;
+    const totalAmount = subtotal + tax;
+
+    // Generate unique order/txn reference
+    const txnRef = 'PRNTFL-' + Date.now();
+
+    try {
+      // Fetch latest Monnify credentials dynamically from Admin settings
+      const settingsRes = await fetch('/api/settings');
+      let apiKey = 'MK_TEST_XXXXXXXXXX';
+      let contractCode = '9999999999';
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        if (settings.monnify_api_key) apiKey = settings.monnify_api_key;
+        if (settings.monnify_contract_code) contractCode = settings.monnify_contract_code;
+      }
+
+      // Initialize Monnify SDK overlay
+      if (typeof window.MonnifySDK === 'undefined') {
+        alert("Monnify Web Payment SDK failed to load. Please check your internet connection.");
+        return;
+      }
+
+      const isTestMode = apiKey.includes('TEST') || apiKey.includes('XXXX');
+
+      window.MonnifySDK.initialize({
+        amount: totalAmount,
+        currency: "NGN",
+        reference: txnRef,
+        customerFullName: name,
+        customerEmail: email,
+        customerMobileNumber: phone,
+        apiKey: apiKey,
+        contractCode: contractCode,
+        paymentDescription: "Payment for Printiful custom order " + txnRef,
+        isTestMode: isTestMode,
+        onComplete: function(response) {
+          console.log("Monnify checkout callback complete:", response);
+          
+          // Close info modal
+          hideModal();
+
+          // Display success state dialog
+          showModal(
+            'PAYMENT SUCCESSFUL',
+            `Thank you for your payment! Transaction Reference: ${response.transactionReference || response.paymentReference || txnRef}. We have successfully received your custom order request.`,
+            'success-checkout'
+          );
+
+          // Clear storefront cart
+          cart = [];
+          saveCartToStorage();
+          updateCartUI();
+        },
+        onClose: function(data) {
+          console.log("Monnify checkout gateway dismissed:", data);
+        }
+      });
+
+    } catch (err) {
+      console.error("Monnify initialization error:", err);
+      alert("Failed to initialize secure payment session. Please try again.");
+    }
+  });
 }

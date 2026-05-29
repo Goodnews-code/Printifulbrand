@@ -71,6 +71,8 @@ const settingAccentColorText = document.getElementById('setting-accent-color-tex
 const settingContactEmail = document.getElementById('setting-contact-email');
 const settingContactPhone = document.getElementById('setting-contact-phone');
 const settingFooterText = document.getElementById('setting-footer-text');
+const settingMonnifyApiKey = document.getElementById('setting-monnify-api-key');
+const settingMonnifyContractCode = document.getElementById('setting-monnify-contract-code');
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
@@ -354,6 +356,8 @@ async function loadSettingsData() {
     settingContactEmail.value = settings.contact_email || '';
     settingContactPhone.value = settings.contact_phone || '';
     settingFooterText.value = settings.footer_text || '';
+    settingMonnifyApiKey.value = settings.monnify_api_key || '';
+    settingMonnifyContractCode.value = settings.monnify_contract_code || '';
   } catch (err) {
     console.error('Error loading settings:', err);
     showToast('Failed to load site layout configuration.', 'error');
@@ -386,7 +390,9 @@ async function handleSettingsSubmit(e) {
     accent_color: settingAccentColorText.value,
     contact_email: settingContactEmail.value,
     contact_phone: settingContactPhone.value,
-    footer_text: settingFooterText.value
+    footer_text: settingFooterText.value,
+    monnify_api_key: settingMonnifyApiKey.value,
+    monnify_contract_code: settingMonnifyContractCode.value
   };
 
   try {

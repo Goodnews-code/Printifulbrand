@@ -996,8 +996,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
+  .data-table {
+    min-width: 600px;
+  }
+  
   .data-table th:nth-child(5),
   .data-table td:nth-child(5) {
     display: none;
+  }
+  
+  .modal-content {
+    padding: 1.5rem 1rem;
+    width: 95%;
   }
 }

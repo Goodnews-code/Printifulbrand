@@ -886,6 +886,11 @@ a {
   letter-spacing: 0.05em;
 }
 
+[data-theme="dark"] .catalog-tag {
+  background-color: var(--color-brand-yellow, #FFFF00) !important;
+  color: #0d0015 !important;
+}
+
 .product-info {
   padding: 18px 16px 16px 16px;  /* Added horizontal padding */
   display: flex;
@@ -2748,5 +2753,128 @@ a {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
+}
+
+/* ── Premium Monnify Checkout Pop Curation ── */
+#checkoutModal {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  transition: all 0.4s ease-in-out;
+}
+
+#checkoutModal .admin-modal {
+  background: #ffffff !important; /* Premium White Background */
+  border: 1px solid rgba(83, 0, 155, 0.12) !important;
+  box-shadow: 0 30px 60px -15px rgba(83, 0, 155, 0.2) !important;
+  color: #53009B !important; /* Brand Purple */
+  border-radius: 16px !important;
+  padding: 2.8rem 3.2rem !important; /* Spacious layout */
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 100 !important;
+}
+
+/* Subtle low-visibility brand watermark layered behind modal elements */
+#checkoutModal .admin-modal::before {
+  content: "PRINTIFUL" !important;
+  position: absolute !important;
+  bottom: -25px !important;
+  right: -25px !important;
+  font-size: 7.5rem !important;
+  font-weight: 900 !important;
+  color: rgba(83, 0, 155, 0.035) !important; /* Muted low visibility watermark */
+  pointer-events: none !important;
+  letter-spacing: -2px !important;
+  z-index: 0 !important;
+  user-select: none !important;
+}
+
+/* Ensure form elements remain stacked above watermark */
+#checkoutModal form {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+#checkoutModal h3 {
+  color: #53009B !important; /* Brand Purple heading */
+  font-weight: 750;
+  letter-spacing: -0.2px;
+  font-size: 1.6rem !important;
+  margin-bottom: 8px !important;
+}
+
+#checkoutModal p {
+  color: rgba(83, 0, 155, 0.7) !important; /* Muted purple description */
+  margin-bottom: 28px !important;
+  font-size: 0.92rem !important;
+  line-height: 1.5;
+}
+
+#checkoutModal label {
+  color: #53009B !important; /* Brand Purple labels */
+  font-weight: 600;
+  font-size: 0.92rem !important;
+  margin-bottom: 6px !important;
+}
+
+#checkoutModal input {
+  padding: 13px 18px !important;
+  font-size: 0.95rem !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(83, 0, 155, 0.2) !important;
+  color: #0d0015 !important; /* Dark slate text for inputs */
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px !important;
+  width: 100% !important;
+  margin-top: 4px !important;
+}
+
+#checkoutModal input:focus {
+  border-color: #53009B !important; /* Accent Brand Purple outline */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(83, 0, 155, 0.12) !important;
+}
+
+#checkoutModal .btn-hero-secondary {
+  border: 1px solid rgba(83, 0, 155, 0.4) !important;
+  color: #53009B !important;
+  background: transparent !important;
+  transition: all 0.2s ease;
+  font-weight: 600 !important;
+}
+
+#checkoutModal .btn-hero-secondary:hover {
+  background: rgba(83, 0, 155, 0.05) !important;
+  border-color: #53009B !important;
+}
+
+#checkoutModal .btn-primary {
+  background-color: #53009B !important; /* Brand Purple Button */
+  color: #FFFF00 !important; /* Brand Yellow Text for high-contrast */
+  font-weight: 700 !important;
+  transition: all 0.2s ease;
+  border: none !important;
+}
+
+#checkoutModal .btn-primary:hover {
+  background-color: #0D0015 !important; /* Deep dark slate-purple on hover */
+  color: #FFFF00 !important;
+  box-shadow: 0 6px 20px rgba(83, 0, 155, 0.25) !important;
+}
+
+#checkoutModal .admin-modal-close {
+  color: rgba(83, 0, 155, 0.6) !important;
+  transition: color 0.2s;
+  background: none !important;
+  border: none !important;
+}
+
+#checkoutModal .admin-modal-close:hover {
+  color: #53009B !important;
+}
+
+#checkoutModal .form-group {
+  margin-bottom: 24px !important;
 }
 

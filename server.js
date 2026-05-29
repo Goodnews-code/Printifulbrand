@@ -6,7 +6,7 @@ const fs = require('fs');
 const initSqlJs = require('sql.js');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5180;
 
 app.use(cors());
 app.use(express.json());
@@ -128,14 +128,16 @@ function initializeSchema() {
   const defaultSettings = {
     site_title: "Printiful",
     site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
-    hero_headline: "INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.",
-    hero_subtext: "Premium customized garments crafted on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+    hero_headline: "Be Bold! Be Seen!! Be Known!!!",
+    hero_subtext: "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
     primary_color: "#53009B", // Purple
     secondary_color: "#0D0015", // Deep purple-black
     accent_color: "#FFFF00", // Yellow
     contact_email: "shopprintiful@gmail.com",
     contact_phone: "+1 (555) 774-6843",
-    footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed."
+    footer_text: "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed.",
+    monnify_api_key: "MK_TEST_XXXXXXXXXX",
+    monnify_contract_code: "9999999999"
   };
 
   const stmt = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
@@ -632,8 +634,8 @@ initSqlJs().then(sqlLibrary => {
         const printifulSettings = {
           site_title: "Printiful",
           site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
-          hero_headline: "INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.",
-          hero_subtext: "Premium customized garments crafted on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+          hero_headline: "Be Bold! Be Seen!! Be Known!!!",
+          hero_subtext: "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
           primary_color: "#53009B", // Purple
           secondary_color: "#0D0015", // Deep purple-black
           accent_color: "#FFFF00", // Yellow
@@ -689,6 +691,30 @@ initSqlJs().then(sqlLibrary => {
       console.log("Database product image URLs successfully updated.");
     } catch (err) {
       console.error("Failed to update database product image URLs:", err);
+    }
+
+    // Ensure Monnify default settings exist
+    try {
+      run("INSERT OR IGNORE INTO settings (key, value) VALUES ('monnify_api_key', 'MK_TEST_XXXXXXXXXX')");
+      run("INSERT OR IGNORE INTO settings (key, value) VALUES ('monnify_contract_code', '9999999999')");
+      saveDatabase();
+      console.log("Monnify settings verified/seeded.");
+    } catch (err) {
+      console.error("Failed to seed Monnify settings:", err);
+    }
+
+    // Auto-update Hero headline/subtext settings if they are still set to the legacy defaults
+    try {
+      const currentHeadline = get("SELECT value FROM settings WHERE key = 'hero_headline'");
+      if (currentHeadline && currentHeadline.value === "INTENTIONAL DESIGN. UNCOMPROMISED QUALITY.") {
+        console.log("Updating database hero settings to Printiful premium defaults...");
+        run("UPDATE settings SET value = 'Be Bold! Be Seen!! Be Known!!!' WHERE key = 'hero_headline'");
+        run("UPDATE settings SET value = 'Printiful help announce you and your brand even when you don''t say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.' WHERE key = 'hero_subtext'");
+        saveDatabase();
+        console.log("Database hero settings successfully updated.");
+      }
+    } catch (err) {
+      console.error("Failed to auto-update database hero settings:", err);
     }
 
     // Check if the products table has legacy Dino products or legacy 7 products and migrate them to the new 28 Printiful default products
