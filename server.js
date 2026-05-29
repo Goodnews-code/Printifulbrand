@@ -6,7 +6,7 @@ const fs = require('fs');
 const initSqlJs = require('sql.js');
 
 const app = express();
-const PORT = process.env.PORT || 5180;
+const PORT = process.env.PORT || 5173;
 
 app.use(cors());
 app.use(express.json());
