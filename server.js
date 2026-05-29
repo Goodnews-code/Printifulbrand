@@ -5,6 +5,22 @@ const path = require('path');
 const fs = require('fs');
 const initSqlJs = require('sql.js');
 
+// Load environment variables from .env file if it exists
+if (fs.existsSync('.env')) {
+  const envConfig = fs.readFileSync('.env', 'utf8');
+  envConfig.split('\n').forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const parts = trimmed.split('=');
+      if (parts.length >= 2) {
+        const key = parts[0].trim();
+        const value = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+        process.env[key] = value;
+      }
+    }
+  });
+}
+
 const app = express();
 const PORT = process.env.PORT || 5173;
 
@@ -479,6 +495,18 @@ app.get('/api/settings', (req, res) => {
     rows.forEach(row => {
       settingsObj[row.key] = row.value;
     });
+
+    // Securely override with .env variables if declared on host
+    if (process.env.MONNIFY_API_KEY) {
+      settingsObj['monnify_api_key'] = process.env.MONNIFY_API_KEY;
+    }
+    if (process.env.MONNIFY_CONTRACT_CODE) {
+      settingsObj['monnify_contract_code'] = process.env.MONNIFY_CONTRACT_CODE;
+    }
+    if (process.env.MONNIFY_MODE) {
+      settingsObj['monnify_mode'] = process.env.MONNIFY_MODE;
+    }
+
     res.json(settingsObj);
   } catch (err) {
     res.status(500).json({ error: err.message });

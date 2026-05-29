@@ -1284,10 +1284,12 @@ function initCheckoutModal() {
       const settingsRes = await fetch('/api/settings');
       let apiKey = 'MK_TEST_XXXXXXXXXX';
       let contractCode = '9999999999';
+      let monnifyMode = 'test';
       if (settingsRes.ok) {
         const settings = await settingsRes.json();
         if (settings.monnify_api_key) apiKey = settings.monnify_api_key;
         if (settings.monnify_contract_code) contractCode = settings.monnify_contract_code;
+        if (settings.monnify_mode) monnifyMode = settings.monnify_mode;
       }
 
       // Initialize Monnify SDK overlay
@@ -1296,7 +1298,7 @@ function initCheckoutModal() {
         return;
       }
 
-      const isTestMode = apiKey.includes('TEST') || apiKey.includes('XXXX');
+      const isTestMode = monnifyMode === 'live' ? false : (apiKey.includes('TEST') || apiKey.includes('XXXX'));
 
       window.MonnifySDK.initialize({
         amount: totalAmount,
