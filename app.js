@@ -552,17 +552,18 @@ function initCatalog() {
         </button>
       `).join('');
 
-      const sizeDropdown = (product.category === 'tshirt') ? `
+      let sizeOptionsHtml = '';
+      if (product.sizes && product.sizes.length > 0) {
+        sizeOptionsHtml = product.sizes.map((sz, idx) => `
+          <option value="${sz.size_name}" ${idx === 0 ? 'selected' : ''}>${sz.size_name}</option>
+        `).join('');
+      } else {
+        sizeOptionsHtml = `<option value="Standard" selected>Standard</option>`;
+      }
+
+      const sizeDropdown = `
         <select class="product-size-select" aria-label="Select size option">
-          <option value="S">S</option>
-          <option value="M" selected>M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-          <option value="XXL">XXL</option>
-        </select>
-      ` : `
-        <select class="product-size-select" aria-label="Select size option">
-          <option value="Standard" selected>Standard</option>
+          ${sizeOptionsHtml}
         </select>
       `;
 
@@ -594,7 +595,7 @@ function initCatalog() {
         </div>
       `;
 
-      // Bind local swatches updates
+      // Bind local swatches updates to swap main display image dynamically
       const dots = card.querySelectorAll('.product-swatch-dot');
       let chosenColor = product.swatches[0];
       
@@ -603,14 +604,65 @@ function initCatalog() {
           dots.forEach(d => d.classList.remove('active'));
           dot.classList.add('active');
           chosenColor = dot.dataset.color;
+
+          // Swap image based on chosen swatch color mapping
+          if (product.colorImages && product.colorImages[chosenColor.toUpperCase()]) {
+            const productImgNode = card.querySelector('.product-image-container img');
+            if (productImgNode) {
+              productImgNode.src = product.colorImages[chosenColor.toUpperCase()];
+            }
+          }
         });
       });
+
+      // Bind Size change to update card price display dynamically
+      const sizeBox = card.querySelector('.product-size-select');
+      const priceTag = card.querySelector('.product-price');
+      let currentPrice = product.basePrice;
+
+      if (sizeBox) {
+        // Set initial price to first size's price if sizes list exists
+        if (product.sizes && product.sizes.length > 0) {
+          const initialSize = product.sizes.find(sz => sz.size_name === sizeBox.value);
+          if (initialSize) {
+            currentPrice = initialSize.price;
+            priceTag.innerText = `₦${currentPrice.toFixed(2)}`;
+          }
+        }
+
+        sizeBox.addEventListener('change', () => {
+          const selectedSize = sizeBox.value;
+          if (product.sizes && product.sizes.length > 0) {
+            const matchedSize = product.sizes.find(sz => sz.size_name === selectedSize);
+            if (matchedSize) {
+              currentPrice = matchedSize.price;
+              priceTag.innerText = `₦${currentPrice.toFixed(2)}`;
+            }
+          } else {
+            currentPrice = product.basePrice;
+            priceTag.innerText = `₦${currentPrice.toFixed(2)}`;
+          }
+        });
+      }
 
       // Bind Add click
       const addBtn = card.querySelector('.btn-add-cart');
       addBtn.addEventListener('click', () => {
-        const sizeBox = card.querySelector('.product-size-select');
         const chosenSize = sizeBox ? sizeBox.value : 'Standard';
+
+        // Retrieve size specific price dynamically for cart insertion
+        let finalPrice = product.basePrice;
+        if (product.sizes && product.sizes.length > 0) {
+          const matchedSize = product.sizes.find(sz => sz.size_name === chosenSize);
+          if (matchedSize) {
+            finalPrice = matchedSize.price;
+          }
+        }
+
+        // Retrieve active color image or base fallback
+        const finalImage = (product.colorImages && product.colorImages[chosenColor.toUpperCase()]) 
+          ? product.colorImages[chosenColor.toUpperCase()] 
+          : product.image;
 
         const catalogCartItem = {
           id: `catalog-${product.id}-${chosenColor.replace('#', '')}-${chosenSize}`,
@@ -618,8 +670,8 @@ function initCatalog() {
           category: product.category,
           color: chosenColor,
           size: chosenSize,
-          image: product.image,
-          price: product.basePrice,
+          image: finalImage,
+          price: finalPrice,
           qty: 1
         };
 
@@ -1143,25 +1195,43 @@ async function loadDynamicProducts() {
     if (res.ok) {
       const dbProducts = await res.json();
       if (dbProducts && dbProducts.length > 0) {
-        // Hide products that do not have custom brand images yet (only show items with /assets/Image/ paths)
-        const activeProducts = dbProducts.filter(p => p.image_url && p.image_url.toLowerCase().includes('assets/image/'));
+        // Filter for active products dynamically
+        const activeProducts = dbProducts.filter(p => p.is_active !== 0);
         
         // Map database products to the storefront format
         products = activeProducts.map(p => {
-          // Normalize category
           const category = normalizeCategory(p.category);
           
-          // Set brand swatches based on category or default
+          // Set swatches and images dynamically from p.images if available
           let swatches = ['#000000', '#ffffff', '#53009B'];
-          const titleLower = p.title.toLowerCase();
-          if (titleLower.includes('love won') || titleLower.includes('blank tee')) {
-            swatches = ['#ffffff', '#000000', '#FFFF00'];
-          } else if (titleLower.includes('journal')) {
-            swatches = ['#000000', '#53009B'];
-          } else if (titleLower.includes('mug')) {
-            swatches = ['#000000'];
-          } else if (titleLower.includes('bookmark')) {
-            swatches = ['#FFFF00', '#000000', '#53009B'];
+          let colorImages = {}; // Map color hex -> image URL
+          
+          if (p.images && p.images.length > 0) {
+            swatches = p.images.map(img => img.color_code.toUpperCase());
+            p.images.forEach(img => {
+              colorImages[img.color_code.toUpperCase()] = img.image_url;
+            });
+          } else {
+            // Fallback for older seeded items
+            colorImages['#000000'] = p.image_url;
+            colorImages['#ffffff'] = p.image_url;
+            colorImages['#53009B'] = p.image_url;
+          }
+
+          // Sizes and unique pricing
+          let sizes = [];
+          if (p.sizes && p.sizes.length > 0) {
+            sizes = p.sizes.map(sz => ({
+              size_name: sz.size_name,
+              price: parseFloat(sz.price)
+            }));
+          }
+
+          // Primary image
+          let primaryImage = p.image_url || 'assets/tshirt_base.svg';
+          if (p.images && p.images.length > 0) {
+            const primary = p.images.find(img => img.is_primary === 1) || p.images[0];
+            primaryImage = primary.image_url;
           }
           
           return {
@@ -1169,9 +1239,11 @@ async function loadDynamicProducts() {
             name: p.title,
             category: category,
             basePrice: parseFloat(p.price) || 29.99,
-            image: p.image_url || 'assets/tshirt_base.svg',
+            image: primaryImage,
             description: p.description || '',
-            swatches: swatches
+            swatches: swatches,
+            colorImages: colorImages, // Attach color-image map
+            sizes: sizes // Attach size-pricing list
           };
         });
         

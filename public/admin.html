@@ -293,40 +293,68 @@
           <textarea id="crud-description" rows="3" placeholder="Describe materials, fit, design features..."></textarea>
         </div>
 
-        <div class="form-group">
-          <label>Product Thumbnail Image</label>
-          
-          <div class="image-upload-wrapper">
-            <!-- Choose Upload vs URL option -->
-            <div class="upload-options">
-              <button type="button" id="btn-opt-file" class="upload-opt-btn active">Upload File</button>
-              <button type="button" id="btn-opt-url" class="upload-opt-btn">External Image URL</button>
+        <!-- Product Visibility Status Toggle (ON/OFF) -->
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+            <input type="checkbox" id="crud-is-active" checked style="width: auto; margin: 0; transform: scale(1.2);">
+            Storefront Visibility Status (ON / OFF)
+          </label>
+          <span style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            Toggle OFF to hide this product completely from the storefront catalog page.
+          </span>
+        </div>
+
+        <!-- Product Sizes & Pricing Configurator -->
+        <div class="form-group" style="margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Sizes & Pricing (S, M, L, XL)</label>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+            Check the sizes you wish to offer, and enter the price for each. If none are checked, the product defaults to standard base price.
+          </p>
+          <div class="sizes-pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            
+            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                <input type="checkbox" class="size-checkbox" value="S" data-target="crud-price-s" style="width: auto; margin: 0;"> S:
+              </label>
+              <input type="number" id="crud-price-s" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
             </div>
 
-            <!-- Upload File Input -->
-            <div id="wrapper-upload-file" class="upload-input-section">
-              <div class="file-drop-area">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <span class="file-message">Click to choose image or drag & drop</span>
-                <input type="file" id="crud-file" accept="image/*">
-              </div>
-              <div id="file-name-preview" class="file-name-preview"></div>
+            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                <input type="checkbox" class="size-checkbox" value="M" data-target="crud-price-m" style="width: auto; margin: 0;"> M:
+              </label>
+              <input type="number" id="crud-price-m" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
             </div>
 
-            <!-- Image URL Input -->
-            <div id="wrapper-upload-url" class="upload-input-section hide">
-              <input type="url" id="crud-image-url" placeholder="https://example.com/images/product.jpg">
+            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                <input type="checkbox" class="size-checkbox" value="L" data-target="crud-price-l" style="width: auto; margin: 0;"> L:
+              </label>
+              <input type="number" id="crud-price-l" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
             </div>
 
-            <!-- Existing Image Preview -->
-            <div id="wrapper-existing-preview" class="existing-image-preview hide">
-              <span>Current Image:</span>
-              <div class="existing-image-frame">
-                <img id="existing-img-preview" src="" alt="preview">
-              </div>
-              <button type="button" id="btn-remove-existing-img" class="btn btn-danger btn-xs">Change Image</button>
+            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                <input type="checkbox" class="size-checkbox" value="XL" data-target="crud-price-xl" style="width: auto; margin: 0;"> XL:
+              </label>
+              <input type="number" id="crud-price-xl" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
             </div>
+
           </div>
+        </div>
+
+        <!-- Product Image & Color Mappings (Required) -->
+        <div class="form-group" style="margin-bottom: 25px;">
+          <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Image & Color Mappings (Required)</label>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+            Add multiple images, each bound to a specific color code. Select one as the primary main storefront image.
+          </p>
+          
+          <div id="variants-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+            <!-- Dynamic Variant Rows Injected Here -->
+          </div>
+
+          <button type="button" id="btn-add-variant" class="btn btn-outline btn-xs" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-plus"></i> Add Color Image Variant</button>
         </div>
 
         <div class="form-actions">

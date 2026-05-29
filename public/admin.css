@@ -1010,3 +1010,150 @@ h1, h2, h3, h4, h5, h6 {
     width: 95%;
   }
 }
+
+/* ── Customized Variants & Sizing Configuration Form styling ── */
+.sizes-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  background: var(--bg-body);
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  margin-top: 8px;
+}
+
+.size-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.size-price-row:hover {
+  border-color: var(--primary-color);
+}
+
+.size-checkbox {
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  width: 16px;
+  height: 16px;
+}
+
+.size-price-input {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  outline: none;
+  font-family: inherit;
+  background: var(--bg-body);
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.size-price-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+  background: var(--bg-card);
+}
+
+#variants-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+  background: var(--bg-body);
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card) !important;
+  padding: 10px 14px !important;
+  border-radius: 6px;
+  border: 1px solid var(--border-color) !important;
+  transition: var(--transition);
+}
+
+.variant-row:hover {
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.variant-color-picker {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  background: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.variant-color-code {
+  width: 90px !important;
+  font-family: monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px 8px;
+  font-size: 0.85rem !important;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-body);
+  color: var(--text-main);
+}
+
+.variant-image-url {
+  flex-grow: 1;
+  padding: 6px 10px;
+  font-size: 0.85rem !important;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-body);
+  color: var(--text-main);
+  outline: none;
+}
+
+.variant-image-url:focus {
+  border-color: var(--primary-color);
+  background: var(--bg-card);
+}
+
+.btn-upload-variant {
+  background: var(--bg-body) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
+.btn-upload-variant:hover {
+  background: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
+}
+
+.variant-primary-radio {
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.btn-remove-variant {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+  border: none !important;
+  transition: var(--transition);
+}
+
+.btn-remove-variant:hover {
+  filter: brightness(1.2);
+}

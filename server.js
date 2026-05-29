@@ -125,6 +125,37 @@ function initializeSchema() {
     )
   `);
 
+  // Ensure is_active column exists in products table for visibility control
+  try {
+    db.run("ALTER TABLE products ADD COLUMN is_active INTEGER DEFAULT 1");
+    console.log("Altered products table to add is_active column.");
+  } catch (err) {
+    // Column already exists, ignore
+  }
+
+  // Table to map color variants to dynamic image URLs
+  db.run(`
+    CREATE TABLE IF NOT EXISTS product_images (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      image_url TEXT NOT NULL,
+      color_code TEXT NOT NULL,
+      is_primary INTEGER DEFAULT 0,
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Table to map distinct pricing to product sizes (S, M, L, XL)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS product_sizes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      size_name TEXT NOT NULL,
+      price REAL NOT NULL,
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+
   db.run(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
@@ -532,6 +563,13 @@ app.post('/api/settings', requireAdmin, (req, res) => {
 app.get('/api/products', (req, res) => {
   try {
     const products = all("SELECT * FROM products ORDER BY id DESC");
+    
+    // Attach associated color images and size price options to each product record
+    products.forEach(p => {
+      p.images = all("SELECT * FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, id ASC", [p.id]) || [];
+      p.sizes = all("SELECT * FROM product_sizes WHERE product_id = ? ORDER BY id ASC", [p.id]) || [];
+    });
+    
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -542,6 +580,8 @@ app.get('/api/products/:id', (req, res) => {
   try {
     const product = get("SELECT * FROM products WHERE id = ?", [req.params.id]);
     if (product) {
+      product.images = all("SELECT * FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, id ASC", [product.id]) || [];
+      product.sizes = all("SELECT * FROM product_sizes WHERE product_id = ? ORDER BY id ASC", [product.id]) || [];
       res.json(product);
     } else {
       res.status(404).json({ error: "Product not found" });
@@ -551,25 +591,57 @@ app.get('/api/products/:id', (req, res) => {
   }
 });
 
-// Create product (supports JSON payload if no image file, or FormData if uploading an image)
-app.post('/api/products', requireAdmin, upload.single('image'), (req, res) => {
+// Create product (accepts clean JSON payloads)
+app.post('/api/products', requireAdmin, (req, res) => {
   try {
-    const { title, description, price, category } = req.body;
-    let image_url = req.body.image_url || '';
-    
-    // If a file was uploaded, set the URL path
-    if (req.file) {
-      image_url = `/uploads/${req.file.filename}`;
-    }
+    const { title, description, price, category, is_active, images, sizes } = req.body;
 
     if (!title || !price) {
       return res.status(400).json({ error: "Title and price are required fields." });
     }
 
+    // Determine default primary image_url (for backwards compatibility)
+    let primaryImageUrl = '';
+    if (images && images.length > 0) {
+      const primary = images.find(img => img.is_primary === 1) || images[0];
+      primaryImageUrl = primary.image_url;
+    }
+
+    // Insert new product
     run(
-      "INSERT INTO products (title, description, price, image_url, category) VALUES (?, ?, ?, ?, ?)",
-      [title, description, parseFloat(price), image_url, category || 'General']
+      "INSERT INTO products (title, description, price, image_url, category, is_active) VALUES (?, ?, ?, ?, ?, ?)",
+      [title, description, parseFloat(price), primaryImageUrl, category || 'General', is_active !== undefined ? parseInt(is_active) : 1]
     );
+
+    // Get the newly inserted product ID
+    const newProduct = get("SELECT last_insert_rowid() as id");
+    const productId = newProduct ? newProduct.id : null;
+
+    if (productId) {
+      // Insert associated images
+      if (images && Array.isArray(images)) {
+        const stmtImg = db.prepare("INSERT INTO product_images (product_id, image_url, color_code, is_primary) VALUES (?, ?, ?, ?)");
+        images.forEach(img => {
+          if (img.image_url && img.color_code) {
+            stmtImg.run([productId, img.image_url, img.color_code, img.is_primary ? 1 : 0]);
+          }
+        });
+        stmtImg.free();
+      }
+
+      // Insert associated sizes & pricing configurations
+      if (sizes && Array.isArray(sizes)) {
+        const stmtSize = db.prepare("INSERT INTO product_sizes (product_id, size_name, price) VALUES (?, ?, ?)");
+        sizes.forEach(sz => {
+          if (sz.size_name && sz.price !== undefined && sz.price !== '') {
+            stmtSize.run([productId, sz.size_name, parseFloat(sz.price)]);
+          }
+        });
+        stmtSize.free();
+      }
+
+      saveDatabase();
+    }
 
     res.json({ success: true, message: "Product created successfully." });
   } catch (err) {
@@ -577,40 +649,74 @@ app.post('/api/products', requireAdmin, upload.single('image'), (req, res) => {
   }
 });
 
-// Update product
-app.put('/api/products/:id', requireAdmin, upload.single('image'), (req, res) => {
+// Update product (accepts clean JSON payloads)
+app.put('/api/products/:id', requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, price, category } = req.body;
-    let image_url = req.body.image_url;
+    const { title, description, price, category, is_active, images, sizes } = req.body;
 
-    // Fetch existing product
     const existing = get("SELECT * FROM products WHERE id = ?", [id]);
     if (!existing) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // If new file is uploaded
-    if (req.file) {
-      image_url = `/uploads/${req.file.filename}`;
-      // Queue old image for deletion if it was a file upload
-      if (existing.image_url && existing.image_url !== image_url) {
-        queueImageForDeletion(existing.image_url);
-      }
-    } else if (image_url === undefined) {
-      // Keep old image if not supplied and not uploading new file
-      image_url = existing.image_url;
-    } else {
-      // Image was explicitly updated to another URL or cleared
-      if (existing.image_url && existing.image_url !== image_url) {
-        queueImageForDeletion(existing.image_url);
-      }
+    // Determine primary image_url
+    let primaryImageUrl = existing.image_url;
+    if (images && images.length > 0) {
+      const primary = images.find(img => img.is_primary === 1) || images[0];
+      primaryImageUrl = primary.image_url;
     }
 
+    // Queue old images that are no longer referenced in the update payload for deletion
+    const currentImages = all("SELECT image_url FROM product_images WHERE product_id = ?", [id]) || [];
+    currentImages.forEach(oldImg => {
+      const isReferenced = images && images.some(newImg => newImg.image_url === oldImg.image_url);
+      if (!isReferenced && oldImg.image_url && oldImg.image_url.includes('/uploads/')) {
+        queueImageForDeletion(oldImg.image_url);
+      }
+    });
+
+    // Update root product record
     run(
-      "UPDATE products SET title = ?, description = ?, price = ?, image_url = ?, category = ? WHERE id = ?",
-      [title || existing.title, description || existing.description, price ? parseFloat(price) : existing.price, image_url, category || existing.category, id]
+      "UPDATE products SET title = ?, description = ?, price = ?, image_url = ?, category = ?, is_active = ? WHERE id = ?",
+      [
+        title || existing.title,
+        description || existing.description,
+        price ? parseFloat(price) : existing.price,
+        primaryImageUrl,
+        category || existing.category,
+        is_active !== undefined ? parseInt(is_active) : existing.is_active,
+        id
+      ]
     );
+
+    // Delete existing mapped images & sizes to perform clean overrides
+    run("DELETE FROM product_images WHERE product_id = ?", [id]);
+    run("DELETE FROM product_sizes WHERE product_id = ?", [id]);
+
+    // Insert new images
+    if (images && Array.isArray(images)) {
+      const stmtImg = db.prepare("INSERT INTO product_images (product_id, image_url, color_code, is_primary) VALUES (?, ?, ?, ?)");
+      images.forEach(img => {
+        if (img.image_url && img.color_code) {
+          stmtImg.run([id, img.image_url, img.color_code, img.is_primary ? 1 : 0]);
+        }
+      });
+      stmtImg.free();
+    }
+
+    // Insert new sizes
+    if (sizes && Array.isArray(sizes)) {
+      const stmtSize = db.prepare("INSERT INTO product_sizes (product_id, size_name, price) VALUES (?, ?, ?)");
+      sizes.forEach(sz => {
+        if (sz.size_name && sz.price !== undefined && sz.price !== '') {
+          stmtSize.run([id, sz.size_name, parseFloat(sz.price)]);
+        }
+      });
+      stmtSize.free();
+    }
+
+    saveDatabase();
 
     res.json({ success: true, message: "Product updated successfully." });
   } catch (err) {
@@ -635,6 +741,18 @@ app.delete('/api/products/:id', requireAdmin, (req, res) => {
 
     run("DELETE FROM products WHERE id = ?", [id]);
     res.json({ success: true, message: "Product deleted successfully." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Standalone route to handle single image uploads asynchronously for color variants
+app.post('/api/upload', requireAdmin, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+    res.json({ image_url: `/uploads/${req.file.filename}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

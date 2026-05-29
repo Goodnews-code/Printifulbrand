@@ -41,19 +41,15 @@ const crudTitle = document.getElementById('crud-title');
 const crudPrice = document.getElementById('crud-price');
 const crudCategory = document.getElementById('crud-category');
 const crudDescription = document.getElementById('crud-description');
-const crudFile = document.getElementById('crud-file');
-const crudImageUrl = document.getElementById('crud-image-url');
 const btnCancelCrud = document.getElementById('btn-cancel-crud');
 
-// Image upload controls
-const btnOptFile = document.getElementById('btn-opt-file');
-const btnOptUrl = document.getElementById('btn-opt-url');
-const wrapperUploadFile = document.getElementById('wrapper-upload-file');
-const wrapperUploadUrl = document.getElementById('wrapper-upload-url');
-const wrapperExistingPreview = document.getElementById('wrapper-existing-preview');
-const existingImgPreview = document.getElementById('existing-img-preview');
-const btnRemoveExistingImg = document.getElementById('btn-remove-existing-img');
-const fileNamePreview = document.getElementById('file-name-preview');
+// Dynamic Color-Image Variants & Status
+const btnAddVariant = document.getElementById('btn-add-variant');
+const variantsContainer = document.getElementById('variants-container');
+const crudIsActive = document.getElementById('crud-is-active');
+
+// Size Checkboxes & Input price fields
+const sizeCheckboxes = document.querySelectorAll('.size-checkbox');
 
 // Settings Form
 const themeSettingsForm = document.getElementById('theme-settings-form');
@@ -116,25 +112,23 @@ function setupEventListeners() {
   btnCancelCrud.addEventListener('click', closeProductModal);
   productCrudForm.addEventListener('submit', handleProductSubmit);
 
-  // Image upload selector buttons
-  btnOptFile.addEventListener('click', () => switchUploadMode('file'));
-  btnOptUrl.addEventListener('click', () => switchUploadMode('url'));
-  
-  // Show selected file name
-  crudFile.addEventListener('change', () => {
-    if (crudFile.files.length > 0) {
-      fileNamePreview.textContent = `Selected: ${crudFile.files[0].name}`;
-    } else {
-      fileNamePreview.textContent = '';
-    }
+  // Dynamic size checkboxes toggle price visibility
+  sizeCheckboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const targetInput = document.getElementById(cb.getAttribute('data-target'));
+      if (cb.checked) {
+        targetInput.style.display = 'block';
+        targetInput.setAttribute('required', 'true');
+      } else {
+        targetInput.style.display = 'none';
+        targetInput.removeAttribute('required');
+        targetInput.value = '';
+      }
+    });
   });
 
-  // Change existing product image
-  btnRemoveExistingImg.addEventListener('click', () => {
-    wrapperExistingPreview.classList.add('hide');
-    // Enable upload selection inputs
-    switchUploadMode('file');
-  });
+  // Variant row addition
+  btnAddVariant.addEventListener('click', () => addVariantRow());
 
   // Settings color pickers dynamic linking
   linkColors(settingPrimaryColor, settingPrimaryColorText);
@@ -420,22 +414,32 @@ async function handleSettingsSubmit(e) {
 
 // 5. Product CRUD Form Logic
 function openProductModal(productId) {
-  // Clear file uploads & presets
+  // Clear variants container
+  variantsContainer.innerHTML = '';
+
+  // Reset size price controls
+  sizeCheckboxes.forEach(cb => {
+    cb.checked = false;
+    const targetInput = document.getElementById(cb.getAttribute('data-target'));
+    if (targetInput) {
+      targetInput.style.display = 'none';
+      targetInput.removeAttribute('required');
+      targetInput.value = '';
+    }
+  });
+
+  // Clear presets
   productCrudForm.reset();
   crudProductId.value = '';
-  currentProductImage = '';
-  fileNamePreview.textContent = '';
   
   if (productId === null) {
     // Add product state
     productFormTitle.innerText = "Add New Product";
     crudProductId.value = '';
+    crudIsActive.checked = true;
     
-    // Hide current image previews
-    wrapperExistingPreview.classList.add('hide');
-    
-    // Switch to file upload view by default
-    switchUploadMode('file');
+    // Add a single blank variant row by default
+    addVariantRow();
   } else {
     // Edit product state
     productFormTitle.innerText = "Modify Product";
@@ -447,19 +451,34 @@ function openProductModal(productId) {
     crudPrice.value = parseFloat(product.price);
     crudCategory.value = product.category || '';
     crudDescription.value = product.description || '';
-    
-    if (product.image_url) {
-      currentProductImage = product.image_url;
-      // Show existing image preview
-      existingImgPreview.src = product.image_url;
-      wrapperExistingPreview.classList.remove('hide');
-      
-      // Hide other input fields until user presses 'Change Image'
-      wrapperUploadFile.classList.add('hide');
-      wrapperUploadUrl.classList.add('hide');
+    crudIsActive.checked = (product.is_active === 1);
+
+    // Populate Size Pricing
+    if (product.sizes && Array.isArray(product.sizes)) {
+      product.sizes.forEach(sz => {
+        const checkbox = Array.from(sizeCheckboxes).find(cb => cb.value === sz.size_name);
+        if (checkbox) {
+          checkbox.checked = true;
+          const targetInput = document.getElementById(checkbox.getAttribute('data-target'));
+          if (targetInput) {
+            targetInput.style.display = 'block';
+            targetInput.setAttribute('required', 'true');
+            targetInput.value = sz.price;
+          }
+        }
+      });
+    }
+
+    // Populate Image-Color Mappings
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach(img => addVariantRow(img));
     } else {
-      wrapperExistingPreview.classList.add('hide');
-      switchUploadMode('file');
+      // Fallback: create a primary variant using existing product image
+      if (product.image_url) {
+        addVariantRow({ image_url: product.image_url, color_code: '#53009B', is_primary: 1 });
+      } else {
+        addVariantRow();
+      }
     }
   }
 
@@ -470,20 +489,108 @@ function closeProductModal() {
   productFormModal.classList.remove('open');
 }
 
-function switchUploadMode(mode) {
-  uploadMode = mode;
-  btnOptFile.classList.remove('active');
-  btnOptUrl.classList.remove('active');
-  wrapperUploadFile.classList.add('hide');
-  wrapperUploadUrl.classList.add('hide');
+/* ── Dynamic Product Image & Color Variants Row Builder ── */
+function addVariantRow(data = null) {
+  const rowId = 'variant-row-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  const row = document.createElement('div');
+  row.classList.add('variant-row');
+  row.id = rowId;
+  row.style.display = 'flex';
+  row.style.alignItems = 'center';
+  row.style.gap = '10px';
+  row.style.background = 'rgba(255,255,255,0.01)';
+  row.style.padding = '8px 12px';
+  row.style.borderRadius = '6px';
+  row.style.border = '1px solid var(--border-color)';
 
-  if (mode === 'file') {
-    btnOptFile.classList.add('active');
-    wrapperUploadFile.classList.remove('hide');
-  } else {
-    btnOptUrl.classList.add('active');
-    wrapperUploadUrl.classList.remove('hide');
-  }
+  const initialColor = data ? data.color_code : '#53009B';
+  const initialUrl = data ? data.image_url : '';
+  const isPrimary = data ? (data.is_primary === 1) : (variantsContainer.children.length === 0);
+
+  row.innerHTML = `
+    <input type="color" class="variant-color-picker" style="width:34px; padding:0; border:none; height:34px; border-radius:4px; cursor:pointer; flex-shrink:0;" value="${initialColor}">
+    <input type="text" class="variant-color-code" placeholder="#HEX" pattern="^#([A-Fa-f0-9]{6})$" required style="width:85px; padding:6px 8px; font-size:0.8rem; border-radius:4px; flex-shrink:0;" value="${initialColor}">
+
+    <input type="text" class="variant-image-url" placeholder="Upload file or enter image URL" required style="flex-grow:1; padding:6px 10px; font-size:0.8rem; border-radius:4px;" value="${initialUrl}">
+    <input type="file" class="variant-file" accept="image/*" style="display:none;">
+    <button type="button" class="btn btn-outline btn-xs btn-upload-variant" style="padding:6px 10px; font-size:0.75rem; white-space:nowrap; flex-shrink:0;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+
+    <label style="display:flex; align-items:center; gap:4px; font-size:0.75rem; white-space:nowrap; cursor:pointer; font-weight:600; flex-shrink:0; margin:0;">
+      <input type="radio" name="variant-primary" class="variant-primary-radio" ${isPrimary ? 'checked' : ''} style="width:auto; margin:0;"> Main
+    </label>
+
+    <button type="button" class="btn btn-danger btn-xs btn-remove-variant" style="padding:6px 10px; font-size:0.75rem; flex-shrink:0; background:var(--color-accent) !important; color:#fff !important; border:none !important;"><i class="fa-solid fa-trash-can"></i></button>
+  `;
+
+  // Dynamic HEX to Picker bindings
+  const picker = row.querySelector('.variant-color-picker');
+  const textBox = row.querySelector('.variant-color-code');
+  picker.addEventListener('input', () => {
+    textBox.value = picker.value.toUpperCase();
+  });
+  textBox.addEventListener('input', () => {
+    if (textBox.value.match(/^#[A-Fa-f0-9]{6}$/)) {
+      picker.value = textBox.value;
+    }
+  });
+
+  // Dynamic file upload
+  const fileInput = row.querySelector('.variant-file');
+  const uploadBtn = row.querySelector('.btn-upload-variant');
+  const urlInput = row.querySelector('.variant-image-url');
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async () => {
+    if (fileInput.files.length === 0) return;
+    
+    uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading...`;
+    uploadBtn.disabled = true;
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        urlInput.value = result.image_url;
+        uploadBtn.innerHTML = `<i class="fa-solid fa-check" style="color:var(--color-success)"></i> Done`;
+      } else {
+        alert("Image upload failed.");
+        uploadBtn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Fail`;
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading file.");
+      uploadBtn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error`;
+    } finally {
+      uploadBtn.disabled = false;
+      setTimeout(() => {
+        uploadBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Upload`;
+      }, 3000);
+    }
+  });
+
+  // Row deletion
+  const removeBtn = row.querySelector('.btn-remove-variant');
+  removeBtn.addEventListener('click', () => {
+    if (variantsContainer.children.length <= 1) {
+      alert("At least one image-color mapping variant is required.");
+      return;
+    }
+    row.remove();
+  });
+
+  variantsContainer.appendChild(row);
 }
 
 // Form Submit (Add/Edit)
@@ -492,32 +599,71 @@ async function handleProductSubmit(e) {
 
   const id = crudProductId.value;
   const isEdit = id !== '';
-  
-  const formData = new FormData();
-  formData.append('title', crudTitle.value);
-  formData.append('price', crudPrice.value);
-  formData.append('category', crudCategory.value);
-  formData.append('description', crudDescription.value);
 
-  // Handle Image data based on state
-  const isImgChanged = wrapperExistingPreview.classList.contains('hide');
+  // Gather variants (images & colors)
+  const imageRows = variantsContainer.querySelectorAll('.variant-row');
+  const images = [];
+  let primaryChosen = false;
 
-  if (!isImgChanged && isEdit) {
-    // Kept current image, pass existing url
-    formData.append('image_url', currentProductImage);
-  } else {
-    // User is submitting new image
-    if (uploadMode === 'file') {
-      if (crudFile.files.length > 0) {
-        formData.append('image', crudFile.files[0]);
-      } else {
-        // No file uploaded
-        formData.append('image_url', '');
-      }
-    } else {
-      formData.append('image_url', crudImageUrl.value.trim());
+  for (const row of imageRows) {
+    const colorCode = row.querySelector('.variant-color-code').value.trim();
+    const imageUrl = row.querySelector('.variant-image-url').value.trim();
+    const isPrimary = row.querySelector('.variant-primary-radio').checked;
+
+    if (!colorCode || !imageUrl) {
+      showToast('All image variants must have a required color and image file/URL.', 'error');
+      return;
     }
+
+    images.push({
+      color_code: colorCode,
+      image_url: imageUrl,
+      is_primary: isPrimary ? 1 : 0
+    });
+
+    if (isPrimary) primaryChosen = true;
   }
+
+  if (images.length === 0) {
+    showToast('At least one color image variant is required.', 'error');
+    return;
+  }
+
+  // If no variant is explicitly marked as primary, default the first one as primary
+  if (!primaryChosen) {
+    images[0].is_primary = 1;
+  }
+
+  // Gather Sizes & Prices
+  const sizes = [];
+  let sizeValidationFailed = false;
+  sizeCheckboxes.forEach(cb => {
+    if (cb.checked) {
+      const priceInput = document.getElementById(cb.getAttribute('data-target'));
+      const priceVal = priceInput ? priceInput.value.trim() : '';
+      if (!priceVal) {
+        showToast(`Price for selected size "${cb.value}" is required.`, 'error');
+        sizeValidationFailed = true;
+        return;
+      }
+      sizes.push({
+        size_name: cb.value,
+        price: parseFloat(priceVal)
+      });
+    }
+  });
+
+  if (sizeValidationFailed) return;
+
+  const payload = {
+    title: crudTitle.value.trim(),
+    description: crudDescription.value.trim(),
+    price: parseFloat(crudPrice.value),
+    category: crudCategory.value.trim() || 'General',
+    is_active: crudIsActive.checked ? 1 : 0,
+    images: images,
+    sizes: sizes
+  };
 
   const url = isEdit ? `/api/products/${id}` : '/api/products';
   const method = isEdit ? 'PUT' : 'POST';
@@ -526,9 +672,10 @@ async function handleProductSubmit(e) {
     const res = await fetch(url, {
       method: method,
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionToken}`
       },
-      body: formData
+      body: JSON.stringify(payload)
     });
 
     if (res.ok) {
