@@ -275,7 +275,19 @@ function renderProductsTable() {
     return;
   }
 
-  dashboardProducts.forEach(product => {
+  // Sort products alphabetically by Category, then alphabetically by Title
+  const sortedProducts = [...dashboardProducts].sort((a, b) => {
+    const catA = (a.category || 'General').toLowerCase();
+    const catB = (b.category || 'General').toLowerCase();
+    if (catA !== catB) {
+      return catA.localeCompare(catB);
+    }
+    const titleA = (a.title || '').toLowerCase();
+    const titleB = (b.title || '').toLowerCase();
+    return titleA.localeCompare(titleB);
+  });
+
+  sortedProducts.forEach(product => {
     const tr = document.createElement('tr');
     
     const imageUrl = product.image_url || '/assets/tshirt_base.svg';
