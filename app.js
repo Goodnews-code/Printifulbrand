@@ -1359,9 +1359,10 @@ function initCheckoutModal() {
       let monnifyMode = 'test';
       if (settingsRes.ok) {
         const settings = await settingsRes.json();
-        if (settings.monnify_api_key) apiKey = settings.monnify_api_key;
-        if (settings.monnify_contract_code) contractCode = settings.monnify_contract_code;
-        if (settings.monnify_mode) monnifyMode = settings.monnify_mode;
+        // Securely prioritize configured settings keys
+        apiKey = settings.monnify_api_key || apiKey;
+        contractCode = settings.monnify_contract_code || contractCode;
+        monnifyMode = settings.monnify_mode || monnifyMode;
       }
 
       // Initialize Monnify SDK overlay
@@ -1371,6 +1372,13 @@ function initCheckoutModal() {
       }
 
       const isTestMode = monnifyMode === 'live' ? false : (apiKey.includes('TEST') || apiKey.includes('XXXX'));
+
+      console.log("Initializing Monnify checkout with:", {
+        apiKey: apiKey,
+        contractCode: contractCode,
+        isTestMode: isTestMode,
+        amount: totalAmount
+      });
 
       window.MonnifySDK.initialize({
         amount: totalAmount,
