@@ -538,11 +538,17 @@
 
   <!-- Monnify Checkout Overlay Modal -->
   <div class="modal-overlay" id="checkoutModal">
-    <div class="admin-modal" style="max-width: 450px;">
+    <div class="admin-modal" style="max-width: 600px; width: 95%;">
       <div class="admin-modal-header">
         <h3>Complete Checkout Details</h3>
         <button class="admin-modal-close" id="checkoutModalCloseBtn">&times;</button>
       </div>
+      
+      <!-- Premium Checkout Order Summary Display -->
+      <div id="checkout-order-summary" style="margin-bottom: 25px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 15px; max-height: 200px; overflow-y: auto;">
+        <!-- Dynamically injected cart items summary -->
+      </div>
+
       <form id="checkoutForm">
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
           Please enter your details to route your secure checkout to the Monnify Payment Gateway.

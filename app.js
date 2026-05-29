@@ -815,6 +815,53 @@ function initCartDrawer() {
     
     toggleCart(false);
     
+    // Dynamically compile a gorgeous order summary table/display
+    const summaryContainer = document.getElementById('checkout-order-summary');
+    if (summaryContainer) {
+      let subtotal = 0;
+      let itemsHtml = `
+        <h4 style="margin: 0 0 12px 0; font-family: 'Outfit', sans-serif; font-size: 1rem; color: var(--color-brand-yellow); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">Order Summary</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+      `;
+
+      cart.forEach(item => {
+        const cost = item.price * item.qty;
+        subtotal += cost;
+        itemsHtml += `
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--color-text-primary);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 700; color: var(--color-brand-accent);">${item.qty}x</span>
+              <span>${item.name} <span style="font-size: 0.75rem; color: var(--text-muted);">(${item.size})</span></span>
+            </div>
+            <span style="font-family: monospace; font-weight: 600;">₦${cost.toFixed(2)}</span>
+          </div>
+        `;
+      });
+
+      const tax = subtotal * 0.08;
+      const grandTotal = subtotal + tax;
+
+      itemsHtml += `
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-muted);">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Subtotal:</span>
+            <span style="font-family: monospace;">₦${subtotal.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>VAT (8%):</span>
+            <span style="font-family: monospace;">₦${tax.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary); border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; margin-top: 4px;">
+            <span>Grand Total:</span>
+            <span style="font-family: monospace; color: var(--color-brand-yellow);">₦${grandTotal.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+
+      summaryContainer.innerHTML = itemsHtml;
+    }
+    
     // Open Checkout Details Modal
     const checkoutModal = document.getElementById('checkoutModal');
     if (checkoutModal) {
