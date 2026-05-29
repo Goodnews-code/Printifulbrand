@@ -745,13 +745,13 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--bg-card);
   padding: 2.5rem;
   border-radius: var(--radius-lg);
-  max-width: 600px;
-  width: 90%;
+  max-width: 800px;
+  width: 95%;
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
   transition: var(--transition);
   z-index: 2;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
 }
 
@@ -782,16 +782,27 @@ h1, h2, h3, h4, h5, h6 {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.crud-form .form-group {
+  margin-bottom: 1.5rem !important;
+}
+
+.crud-form input[type="text"],
+.crud-form input[type="number"],
+.crud-form textarea {
+  min-height: 44px;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   border-top: 1px solid var(--border-color);
-  padding-top: 1.5rem;
+  padding-top: 1.75rem;
 }
 
 /* Image Upload Widget Custom Styles */
