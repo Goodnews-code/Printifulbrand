@@ -264,102 +264,113 @@
       <form id="product-crud-form" class="crud-form">
         <input type="hidden" id="crud-product-id">
         
-        <div class="form-group">
-          <label for="crud-title">Product Title</label>
-          <input type="text" id="crud-title" placeholder="e.g. Vintage Dino Hoodie" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="crud-price">Price (₦ Naira)</label>
-            <input type="number" id="crud-price" step="0.01" min="0.01" placeholder="29.99" required>
-          </div>
-          <div class="form-group">
-            <label for="crud-category">Category</label>
-            <input type="text" id="crud-category" placeholder="e.g. Apparels" required list="categories-list">
-            <datalist id="categories-list">
-              <option value="Apparels">
-              <option value="Stationery">
-              <option value="Brand Packaging">
-              <option value="Gadgets">
-              <option value="Corporate Gift">
-              <option value="Lifestyle">
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="crud-description">Description</label>
-          <textarea id="crud-description" rows="3" placeholder="Describe materials, fit, design features..."></textarea>
-        </div>
-
-        <!-- Product Visibility Status Toggle Switch -->
-        <div class="form-group visibility-toggle-container" style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-          <div style="flex-grow: 1; padding-right: 15px;">
-            <label style="font-weight: 700; color: var(--text-color); margin-bottom: 4px; display: block;">Storefront Visibility Status</label>
-            <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">
-              Toggle OFF to draft or hide this product completely from the public storefront catalog.
-            </span>
-          </div>
-          <div style="flex-shrink: 0;">
-            <label class="switch-control" style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer; margin: 0;">
-              <input type="checkbox" id="crud-is-active" checked style="opacity: 0; width: 0; height: 0; display: none;">
-              <span class="switch-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px;"></span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Product Sizes & Pricing Configurator -->
-        <div class="form-group" style="margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-          <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Sizes & Pricing (S, M, L, XL)</label>
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-            Check the sizes you wish to offer, and enter the price for each. If none are checked, the product defaults to standard base price.
-          </p>
-          <div class="sizes-pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            
-            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
-                <input type="checkbox" class="size-checkbox" value="S" data-target="crud-price-s" style="width: auto; margin: 0;"> S:
-              </label>
-              <input type="number" id="crud-price-s" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
-            </div>
-
-            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
-                <input type="checkbox" class="size-checkbox" value="M" data-target="crud-price-m" style="width: auto; margin: 0;"> M:
-              </label>
-              <input type="number" id="crud-price-m" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
-            </div>
-
-            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
-                <input type="checkbox" class="size-checkbox" value="L" data-target="crud-price-l" style="width: auto; margin: 0;"> L:
-              </label>
-              <input type="number" id="crud-price-l" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
-            </div>
-
-            <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
-                <input type="checkbox" class="size-checkbox" value="XL" data-target="crud-price-xl" style="width: auto; margin: 0;"> XL:
-              </label>
-              <input type="number" id="crud-price-xl" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Product Image & Color Mappings (Required) -->
-        <div class="form-group" style="margin-bottom: 25px;">
-          <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Image & Color Mappings (Required)</label>
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-            Add multiple images, each bound to a specific color code. Select one as the primary main storefront image.
-          </p>
+        <!-- Premium Two-Column Layout -->
+        <div class="product-modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; align-items: start;">
           
-          <div id="variants-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
-            <!-- Dynamic Variant Rows Injected Here -->
-          </div>
+          <!-- Left Column: Core Fields & Settings -->
+          <div class="modal-left-column" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="form-group">
+              <label for="crud-title">Product Title</label>
+              <input type="text" id="crud-title" placeholder="e.g. Vintage Dino Hoodie" required>
+            </div>
 
-          <button type="button" id="btn-add-variant" class="btn btn-outline btn-xs" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-plus"></i> Add Color Image Variant</button>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="crud-price">Price (₦ Naira)</label>
+                <input type="number" id="crud-price" step="0.01" min="0.01" placeholder="29.99" required>
+              </div>
+              <div class="form-group">
+                <label for="crud-category">Category</label>
+                <input type="text" id="crud-category" placeholder="e.g. Apparels" required list="categories-list">
+                <datalist id="categories-list">
+                  <option value="Apparels">
+                  <option value="Stationery">
+                  <option value="Brand Packaging">
+                  <option value="Gadgets">
+                  <option value="Corporate Gift">
+                  <option value="Lifestyle">
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="crud-description">Description</label>
+              <textarea id="crud-description" rows="5" placeholder="Describe materials, fit, design features..." style="min-height: 120px;"></textarea>
+            </div>
+
+            <!-- Product Visibility Status Toggle Switch -->
+            <div class="form-group visibility-toggle-container" style="margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="flex-grow: 1; padding-right: 15px;">
+                <label style="font-weight: 700; color: var(--text-color); margin-bottom: 4px; display: block;">Storefront Visibility Status</label>
+                <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">
+                  Toggle OFF to draft or hide this product completely from the public storefront.
+                </span>
+              </div>
+              <div style="flex-shrink: 0;">
+                <label class="switch-control" style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer; margin: 0;">
+                  <input type="checkbox" id="crud-is-active" checked style="opacity: 0; width: 0; height: 0; display: none;">
+                  <span class="switch-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px;"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Column: Image-Color Variants & Sizes Configurator -->
+          <div class="modal-right-column" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Product Image & Color Mappings (Required) -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Image & Color Mappings (Required)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                Add multiple images, each bound to a specific color code. Select one as the primary main storefront image.
+              </p>
+              
+              <div id="variants-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                <!-- Dynamic Variant Rows Injected Here -->
+              </div>
+
+              <button type="button" id="btn-add-variant" class="btn btn-outline btn-xs" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-plus"></i> Add Color Image Variant</button>
+            </div>
+
+            <!-- Product Sizes & Pricing Configurator -->
+            <div class="form-group" style="margin-bottom: 0; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Sizes & Pricing (S, M, L, XL)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                Check the sizes you wish to offer, and enter the price for each. If none are checked, the product defaults to standard base price.
+              </p>
+              <div class="sizes-pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="S" data-target="crud-price-s" style="width: auto; margin: 0;"> S:
+                  </label>
+                  <input type="number" id="crud-price-s" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="M" data-target="crud-price-m" style="width: auto; margin: 0;"> M:
+                  </label>
+                  <input type="number" id="crud-price-m" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="L" data-target="crud-price-l" style="width: auto; margin: 0;"> L:
+                  </label>
+                  <input type="number" id="crud-price-l" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="XL" data-target="crud-price-xl" style="width: auto; margin: 0;"> XL:
+                  </label>
+                  <input type="number" id="crud-price-xl" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+              </div>
+            </div>
+          </div>
+          
         </div>
 
         <div class="form-actions">
