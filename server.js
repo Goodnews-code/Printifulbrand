@@ -174,7 +174,7 @@ function initializeSchema() {
   // Insert default settings
   const defaultSettings = {
     site_title: "Printiful",
-    site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+    site_description: "Printiful crafts premium customized merch on heavyweight luxury blanks. High-fidelity Direct-to-Merch prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
     hero_headline: "Be Bold! Be Seen!! Be Known!!!",
     hero_subtext: "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
     primary_color: "#53009B", // Purple
@@ -779,7 +779,7 @@ initSqlJs().then(sqlLibrary => {
         console.log("Migrating database settings to Printiful...");
         const printifulSettings = {
           site_title: "Printiful",
-          site_description: "Printiful crafts premium customized garments on heavyweight luxury blanks. High-fidelity Direct-to-Garment prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
+          site_description: "Printiful crafts premium customized merch on heavyweight luxury blanks. High-fidelity Direct-to-Merch prints, detailed industrial embroidery, and curated streetwear archives designed to endure.",
           hero_headline: "Be Bold! Be Seen!! Be Known!!!",
           hero_subtext: "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
           primary_color: "#53009B", // Purple

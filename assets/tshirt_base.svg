@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
   <!-- T-shirt base silhouette -->
-  <path class="garment-colorable" d="M150,90 C170,90 190,105 250,105 C310,105 330,90 350,90 C390,95 440,120 460,150 L410,200 L370,180 L370,440 C370,460 350,470 330,470 L170,470 C150,470 130,460 130,440 L130,180 L90,200 L40,150 C60,120 110,95 150,90 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  <path class="merch-colorable" d="M150,90 C170,90 190,105 250,105 C310,105 330,90 350,90 C390,95 440,120 460,150 L410,200 L370,180 L370,440 C370,460 350,470 330,470 L170,470 C150,470 130,460 130,440 L130,180 L90,200 L40,150 C60,120 110,95 150,90 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
   <!-- Neck rib -->
   <path d="M170,93 C190,110 210,115 250,115 C290,115 310,110 330,93 C320,88 300,98 250,98 C200,98 180,88 170,93 Z" fill="#e6e6e6" stroke="#1E182A" stroke-width="4" />
   <!-- Shadow details -->
