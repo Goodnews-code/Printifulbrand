@@ -838,20 +838,11 @@ function initCartDrawer() {
         `;
       });
 
-      const tax = subtotal * 0.08;
-      const grandTotal = subtotal + tax;
+      const grandTotal = subtotal;
 
       itemsHtml += `
         </div>
         <div style="border-top: 1px solid rgba(83,0,155,0.12); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
-          <div style="display: flex; justify-content: space-between;">
-            <span>Subtotal:</span>
-            <span style="font-family: monospace;">₦${subtotal.toFixed(2)}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span>VAT (8%):</span>
-            <span style="font-family: monospace;">₦${tax.toFixed(2)}</span>
-          </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(83,0,155,0.15); padding-top: 8px; margin-top: 4px;">
             <span class="grand-total-label">Grand Total:</span>
             <span class="grand-total-val" style="font-family: monospace;">₦${grandTotal.toFixed(2)}</span>
@@ -957,11 +948,10 @@ function updateCartUI() {
       cartItems.appendChild(itemDiv);
     });
 
-    const tax = subtotal * 0.08;
-    const total = subtotal + tax;
+    const total = subtotal;
 
-    cartSubtotal.innerText = `₦${subtotal.toFixed(2)}`;
-    cartTax.innerText = `₦${tax.toFixed(2)}`;
+    if (cartSubtotal) cartSubtotal.innerText = `₦${subtotal.toFixed(2)}`;
+    if (cartTax) cartTax.style.display = 'none';
     cartGrandTotal.innerText = `₦${total.toFixed(2)}`;
   }
 }
@@ -1392,8 +1382,7 @@ function initCheckoutModal() {
     cart.forEach(item => {
       subtotal += item.price * item.qty;
     });
-    const tax = subtotal * 0.08;
-    const totalAmount = subtotal + tax;
+    const totalAmount = subtotal;
 
     // Generate unique order/txn reference
     const txnRef = 'PRNTFL-' + Date.now();
