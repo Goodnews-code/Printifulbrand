@@ -1356,12 +1356,58 @@ function initCheckoutModal() {
   const checkoutCancelBtn = document.getElementById('checkoutCancelBtn');
   const checkoutForm = document.getElementById('checkoutForm');
 
+  const inputsSection = document.getElementById('checkout-inputs-section');
+  const confirmationSection = document.getElementById('checkout-confirmation-section');
+  const nextBtn = document.getElementById('checkoutNextBtn');
+  const backBtn = document.getElementById('checkoutBackBtn');
+
   if (!checkoutModal || !checkoutForm) return;
 
-  const hideModal = () => checkoutModal.classList.remove('active');
+  const hideModal = () => {
+    checkoutModal.classList.remove('active');
+    // Reset view steps to standard fields on exit
+    if (inputsSection) inputsSection.style.display = 'block';
+    if (confirmationSection) confirmationSection.style.display = 'none';
+  };
 
   if (checkoutModalCloseBtn) checkoutModalCloseBtn.addEventListener('click', hideModal);
   if (checkoutCancelBtn) checkoutCancelBtn.addEventListener('click', hideModal);
+
+  // Wire Next button to validate standard fields and load confirmation summaries
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const name = document.getElementById('checkoutName').value.trim();
+      const email = document.getElementById('checkoutEmail').value.trim();
+      const phone = document.getElementById('checkoutPhone').value.trim();
+
+      // Trigger standard browser form validation if empty
+      if (!name || !email || !phone) {
+        checkoutForm.reportValidity();
+        return;
+      }
+
+      // Populate text confirmation labels
+      const confirmName = document.getElementById('confirm-name-val');
+      const confirmEmail = document.getElementById('confirm-email-val');
+      const confirmPhone = document.getElementById('confirm-phone-val');
+
+      if (confirmName) confirmName.textContent = name;
+      if (confirmEmail) confirmEmail.textContent = email;
+      if (confirmPhone) confirmPhone.textContent = phone;
+
+      // Swap view panels smoothly
+      if (inputsSection) inputsSection.style.display = 'none';
+      if (confirmationSection) confirmationSection.style.display = 'block';
+    });
+  }
+
+  // Wire Back button to return to input fields panel
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      if (inputsSection) inputsSection.style.display = 'block';
+      if (confirmationSection) confirmationSection.style.display = 'none';
+    });
+  }
 
   checkoutForm.addEventListener('submit', async (e) => {
     e.preventDefault();

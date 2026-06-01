@@ -764,92 +764,141 @@
         </div>
 
         <form id="checkoutForm">
-          <p
-            style="
-              color: var(--text-muted);
-              margin-bottom: 20px;
-              font-size: 0.9rem;
-            "
-          >
-            Please enter your details to route your secure checkout to the
-            Monnify Payment Gateway.
-          </p>
-          <div class="form-group" style="margin-bottom: 15px">
-            <label
-              for="checkoutName"
-              style="display: block; margin-bottom: 5px; font-weight: 500"
-              >Full Name</label
-            >
-            <input
-              type="text"
-              id="checkoutName"
-              required
+          <!-- Input Fields Section -->
+          <div id="checkout-inputs-section">
+            <p
               style="
-                width: 100%;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: var(--text-color);
+                color: var(--text-muted);
+                margin-bottom: 20px;
+                font-size: 0.9rem;
               "
-            />
-          </div>
-          <div class="form-group" style="margin-bottom: 15px">
-            <label
-              for="checkoutEmail"
-              style="display: block; margin-bottom: 5px; font-weight: 500"
-              >Email Address</label
             >
-            <input
-              type="email"
-              id="checkoutEmail"
-              required
+              Please enter your details to route your secure checkout to the
+              Monnify Payment Gateway.
+            </p>
+            <div class="form-group" style="margin-bottom: 15px">
+              <label
+                for="checkoutName"
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Full Name</label
+              >
+              <input
+                type="text"
+                id="checkoutName"
+                required
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 6px;
+                  color: var(--text-color);
+                "
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 15px">
+              <label
+                for="checkoutEmail"
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Email Address</label
+              >
+              <input
+                type="email"
+                id="checkoutEmail"
+                required
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 6px;
+                  color: var(--text-color);
+                "
+              />
+            </div>
+            <div class="form-group" style="margin-bottom: 20px">
+              <label
+                for="checkoutPhone"
+                style="display: block; margin-bottom: 5px; font-weight: 500"
+                >Phone Number</label
+              >
+              <input
+                type="tel"
+                id="checkoutPhone"
+                required
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  background: rgba(255, 255, 255, 0.05);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 6px;
+                  color: var(--text-color);
+                "
+              />
+            </div>
+            <div class="admin-modal-actions">
+              <button
+                type="button"
+                class="btn btn-hero-secondary"
+                id="checkoutCancelBtn"
+                style="padding: 10px 20px"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="checkoutNextBtn"
+                style="padding: 10px 20px"
+              >
+                Next &nbsp;<i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Fields Confirmation Section (Initially Hidden) -->
+          <div id="checkout-confirmation-section" style="display: none;">
+            <p
               style="
-                width: 100%;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: var(--text-color);
+                color: var(--text-muted);
+                margin-bottom: 20px;
+                font-size: 0.9rem;
               "
-            />
-          </div>
-          <div class="form-group" style="margin-bottom: 20px">
-            <label
-              for="checkoutPhone"
-              style="display: block; margin-bottom: 5px; font-weight: 500"
-              >Phone Number</label
             >
-            <input
-              type="tel"
-              id="checkoutPhone"
-              required
-              style="
-                width: 100%;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 6px;
-                color: var(--text-color);
-              "
-            />
-          </div>
-          <div class="admin-modal-actions">
-            <button
-              type="button"
-              class="btn btn-hero-secondary"
-              id="checkoutCancelBtn"
-              style="padding: 10px 20px"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              style="padding: 10px 20px"
-            >
-              Confirm & Pay
-            </button>
+              Please verify your contact details before proceeding to pay.
+            </p>
+            <div style="background: rgba(83,0,155,0.03); border: 1px solid rgba(83,0,155,0.12); padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="font-weight: 600; color: #53009B;">Full Name:</span>
+                <span id="confirm-name-val" style="color: #0d0015; font-weight: 500;">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="font-weight: 600; color: #53009B;">Email Address:</span>
+                <span id="confirm-email-val" style="color: #0d0015; font-weight: 500;">-</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="font-weight: 600; color: #53009B;">Phone Number:</span>
+                <span id="confirm-phone-val" style="color: #0d0015; font-weight: 500;">-</span>
+              </div>
+            </div>
+            <div class="admin-modal-actions">
+              <button
+                type="button"
+                class="btn btn-hero-secondary"
+                id="checkoutBackBtn"
+                style="padding: 10px 20px"
+              >
+                <i class="fa-solid fa-chevron-left"></i> &nbsp;Back
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="checkoutConfirmPayBtn"
+                style="padding: 10px 20px"
+              >
+                Confirm & Pay
+              </button>
+            </div>
           </div>
         </form>
       </div>
