@@ -2878,3 +2878,26 @@ a {
   margin-bottom: 24px !important;
 }
 
+/* ── Checkout Dynamic Order Summary High-Contrast Color Styling ── */
+#checkout-order-summary {
+  background: rgba(83, 0, 155, 0.03) !important;
+  border: 1px solid rgba(83, 0, 155, 0.12) !important;
+}
+
+#checkout-order-summary h4 {
+  color: #53009B !important;
+  border-bottom: 1px solid rgba(83, 0, 155, 0.12) !important;
+}
+
+#checkout-order-summary span, 
+#checkout-order-summary div {
+  color: #0d0015 !important; /* Dark text for high-contrast visibility against the white background */
+}
+
+#checkout-order-summary .grand-total-label,
+#checkout-order-summary .grand-total-val {
+  color: #53009B !important; /* Deep Purple branding highlight for grand totals */
+  font-weight: 700 !important;
+}
+
+

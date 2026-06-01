@@ -828,10 +828,10 @@ function initCartDrawer() {
         const cost = item.price * item.qty;
         subtotal += cost;
         itemsHtml += `
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--color-text-primary);">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 700; color: var(--color-brand-accent);">${item.qty}x</span>
-              <span>${item.name} <span style="font-size: 0.75rem; color: var(--text-muted);">(${item.size})</span></span>
+              <span style="font-weight: 700; color: #53009B;">${item.qty}x</span>
+              <span>${item.name} <span style="font-size: 0.75rem; color: #64748b;">(${item.size})</span></span>
             </div>
             <span style="font-family: monospace; font-weight: 600;">₦${cost.toFixed(2)}</span>
           </div>
@@ -843,7 +843,7 @@ function initCartDrawer() {
 
       itemsHtml += `
         </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-muted);">
+        <div style="border-top: 1px solid rgba(83,0,155,0.12); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem;">
           <div style="display: flex; justify-content: space-between;">
             <span>Subtotal:</span>
             <span style="font-family: monospace;">₦${subtotal.toFixed(2)}</span>
@@ -852,9 +852,9 @@ function initCartDrawer() {
             <span>VAT (8%):</span>
             <span style="font-family: monospace;">₦${tax.toFixed(2)}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; color: var(--color-text-primary); border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; margin-top: 4px;">
-            <span>Grand Total:</span>
-            <span style="font-family: monospace; color: var(--color-brand-yellow);">₦${grandTotal.toFixed(2)}</span>
+          <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(83,0,155,0.15); padding-top: 8px; margin-top: 4px;">
+            <span class="grand-total-label">Grand Total:</span>
+            <span class="grand-total-val" style="font-family: monospace;">₦${grandTotal.toFixed(2)}</span>
           </div>
         </div>
       `;
