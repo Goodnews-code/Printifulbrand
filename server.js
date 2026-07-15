@@ -800,7 +800,9 @@ app.post('/api/cleanup', requireAdmin, (req, res) => {
 });
 
 // Initialize sql.js and start server
-initSqlJs().then(sqlLibrary => {
+initSqlJs({
+  locateFile: file => path.join(__dirname, 'node_modules', 'sql.js', 'dist', file)
+}).then(sqlLibrary => {
   SQL = sqlLibrary;
   if (fs.existsSync(dbPath)) {
     const filebuffer = fs.readFileSync(dbPath);

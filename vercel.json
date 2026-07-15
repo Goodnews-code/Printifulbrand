@@ -12,7 +12,8 @@
           "styles.css",
           "app.js",
           "assets/**",
-          "public/**"
+          "public/**",
+          "node_modules/sql.js/dist/**"
         ]
       }
     }
