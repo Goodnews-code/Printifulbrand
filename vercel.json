@@ -6,27 +6,21 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "ecommerce.db"
+          "ecommerce.db",
+          "index.html",
+          "store.html",
+          "styles.css",
+          "app.js",
+          "assets/**",
+          "public/**"
         ]
       }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/admin",
-      "dest": "/public/admin.html"
-    },
-    {
-      "src": "/admin.html",
-      "dest": "/public/admin.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "server.js"
     }
   ]
 }
