@@ -293,6 +293,31 @@ function renderProductsTable() {
     const imageUrl = product.image_url || '/assets/tshirt_base.svg';
     const priceText = parseFloat(product.price).toFixed(2);
     
+    const isLive = product.is_active === 1 || product.is_active === undefined;
+    const statusBadge = isLive
+      ? `<span style="
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(16,185,129,0.12); color: #10b981;
+            border: 1px solid rgba(16,185,129,0.35);
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+            white-space: nowrap;
+          ">
+          <span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;box-shadow:0 0 6px #10b981;"></span>
+          LIVE
+        </span>`
+      : `<span style="
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(100,116,139,0.12); color: #94a3b8;
+            border: 1px solid rgba(100,116,139,0.3);
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+            white-space: nowrap;
+          ">
+          <span style="width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block;"></span>
+          HIDDEN
+        </span>`;
+
     tr.innerHTML = `
       <td>
         <div class="table-thumbnail">
@@ -302,6 +327,7 @@ function renderProductsTable() {
       <td><strong>${product.title}</strong></td>
       <td><span class="table-category">${product.category || 'General'}</span></td>
       <td><span class="table-price">₦${priceText}</span></td>
+      <td style="text-align: center;">${statusBadge}</td>
       <td><div class="table-description">${product.description || '-'}</div></td>
       <td>
         <div class="table-actions">
@@ -322,11 +348,11 @@ function filterProductsTable() {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     // Skip empty row message
-    if (row.cells.length < 6) continue;
+    if (row.cells.length < 7) continue;
 
     const title = row.cells[1].innerText.toLowerCase();
     const category = row.cells[2].innerText.toLowerCase();
-    const desc = row.cells[4].innerText.toLowerCase();
+    const desc = row.cells[5].innerText.toLowerCase(); // shifted by new Status column
 
     if (title.includes(query) || category.includes(query) || desc.includes(query)) {
       row.style.display = '';
