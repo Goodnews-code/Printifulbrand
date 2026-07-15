@@ -546,7 +546,8 @@ const upload = multer({
 // Auth Route
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
-  if (password === 'Printiful123') {
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Printiful123';
+  if (password === adminPassword) {
     res.json({ success: true, token: 'mock-session-token-printiful-123' });
   } else {
     res.status(401).json({ success: false, message: 'Invalid password. Access Denied.' });

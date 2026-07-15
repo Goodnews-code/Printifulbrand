@@ -1475,21 +1475,42 @@ function initCheckoutModal() {
         isTestMode: isTestMode,
         onComplete: function(response) {
           console.log("Monnify checkout callback complete:", response);
-          
+
           // Close info modal
           hideModal();
 
-          // Display success state dialog
-          showModal(
-            'PAYMENT SUCCESSFUL',
-            `Thank you for your payment! Transaction Reference: ${response.transactionReference || response.paymentReference || txnRef}. We have successfully received your custom order request.`,
-            'success-checkout'
-          );
+          // Only show success if Monnify explicitly confirms the payment
+          const status = (response.status || '').toUpperCase();
 
-          // Clear storefront cart
-          cart = [];
-          saveCartToStorage();
-          updateCartUI();
+          if (status === 'SUCCESS' || status === 'PAID') {
+            // ✅ Payment confirmed — show success
+            showModal(
+              'PAYMENT SUCCESSFUL',
+              `Thank you for your payment! Transaction Reference: ${response.transactionReference || response.paymentReference || txnRef}. We have received your custom order and will begin processing it shortly.`,
+              'success-checkout'
+            );
+
+            // Clear storefront cart only on confirmed payment
+            cart = [];
+            saveCartToStorage();
+            updateCartUI();
+
+          } else if (status === 'PENDING') {
+            // ⏳ Payment is still processing
+            showModal(
+              'PAYMENT PENDING',
+              `Your payment is still being processed. Transaction Reference: ${response.transactionReference || txnRef}. We will confirm your order once the payment clears.`,
+              'success-inquiry'
+            );
+
+          } else {
+            // ❌ Payment failed or was cancelled — do not clear cart
+            showModal(
+              'PAYMENT UNSUCCESSFUL',
+              `Your payment could not be completed (Status: ${response.status || 'Unknown'}). Please try again or use a different payment method. Your cart has been kept intact.`,
+              'error-checkout'
+            );
+          }
         },
         onClose: function(data) {
           console.log("Monnify checkout gateway dismissed:", data);
