@@ -1,5 +1,4 @@
 {
-  "name": "ecommerce-landing-page",
   "version": 2,
   "builds": [
     {
@@ -7,7 +6,6 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "node_modules/sql.js/dist/sql-wasm.wasm",
           "ecommerce.db"
         ]
       }
@@ -15,8 +13,20 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "server.js"
+    },
+    {
+      "src": "/admin",
+      "dest": "/public/admin.html"
+    },
+    {
+      "src": "/admin.html",
+      "dest": "/public/admin.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
