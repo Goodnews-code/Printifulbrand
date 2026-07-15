@@ -212,7 +212,7 @@ function initializeDashboard() {
 
 async function loadProductsData() {
   try {
-    const res = await fetch('/api/products');
+    const res = await fetch('/api/products?all=true');
     if (!res.ok) throw new Error('Failed to load products');
     dashboardProducts = await res.json();
     

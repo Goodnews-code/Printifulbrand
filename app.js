@@ -1233,7 +1233,7 @@ async function loadDynamicProducts() {
       const dbProducts = await res.json();
       if (dbProducts && dbProducts.length > 0) {
         // Filter for active products dynamically
-        const activeProducts = dbProducts.filter(p => p.is_active !== 0);
+        const activeProducts = dbProducts.filter(p => p.is_active === 1);
         
         // Map database products to the storefront format
         products = activeProducts.map(p => {

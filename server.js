@@ -598,7 +598,14 @@ app.post('/api/settings', requireAdmin, (req, res) => {
 // Product Routes
 app.get('/api/products', (req, res) => {
   try {
-    const products = all("SELECT * FROM products ORDER BY id DESC");
+    // Storefront only gets active (live) products.
+    // Admin panel passes ?all=true to get every product including hidden ones.
+    const showAll = req.query.all === 'true';
+    const query = showAll
+      ? "SELECT * FROM products ORDER BY id DESC"
+      : "SELECT * FROM products WHERE is_active = 1 ORDER BY id DESC";
+
+    const products = all(query);
     
     // Attach associated color images and size price options to each product record
     products.forEach(p => {
