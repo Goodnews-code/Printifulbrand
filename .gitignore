@@ -28,3 +28,5 @@ npm-debug.log*
 
 # Gemini / AI agent working files
 .gemini/
+
+.vercel

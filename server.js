@@ -24,16 +24,51 @@ if (fs.existsSync('.env')) {
 const app = express();
 const PORT = process.env.PORT || 5173;
 
+const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
+const dbPath = isVercel ? path.join('/tmp', 'ecommerce.db') : path.join(__dirname, 'ecommerce.db');
+
+// Setup file paths
+const rootDir = __dirname;          // Storefront lives here
+const publicDir = path.join(__dirname, 'public');
+const assetsDir = path.join(rootDir, 'assets');
+const uploadsDir = isVercel ? path.join('/tmp', 'uploads') : path.join(publicDir, 'uploads');
+
+// Copy database to writable /tmp on Vercel if it doesn't exist yet
+if (isVercel && !fs.existsSync(dbPath)) {
+  const bundleDbPath = path.join(__dirname, 'ecommerce.db');
+  if (fs.existsSync(bundleDbPath)) {
+    try {
+      fs.copyFileSync(bundleDbPath, dbPath);
+      console.log("Copied database from bundle to /tmp/ecommerce.db");
+    } catch (err) {
+      console.error("Failed to copy database to /tmp/ecommerce.db:", err);
+    }
+  }
+}
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Setup file paths
-const dbPath = path.join(__dirname, 'ecommerce.db');
-const rootDir = __dirname;          // Storefront lives here
-const publicDir = path.join(__dirname, 'public');
-const assetsDir = path.join(rootDir, 'assets');
-const uploadsDir = path.join(publicDir, 'uploads');
+// Middleware to ensure DB is initialized before handling requests
+app.use((req, res, next) => {
+  if (!db) {
+    const checkDbInterval = setInterval(() => {
+      if (db) {
+        clearInterval(checkDbInterval);
+        next();
+      }
+    }, 50);
+    setTimeout(() => {
+      if (!db) {
+        clearInterval(checkDbInterval);
+        res.status(503).send("Database initializing, please try again.");
+      }
+    }, 10000);
+  } else {
+    next();
+  }
+});
 
 // Ensure directory structure exists
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
@@ -1101,13 +1136,17 @@ initSqlJs().then(sqlLibrary => {
   // Run cleanup once on server startup
   cleanupDeletedImages();
 
-  // Run image deletion check every 12 hours
-  setInterval(cleanupDeletedImages, 12 * 60 * 60 * 1000);
+  // Run image deletion check every 12 hours (only in persistent environments)
+  if (!isVercel) {
+    setInterval(cleanupDeletedImages, 12 * 60 * 60 * 1000);
 
-  app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`Server is running at http://localhost:${PORT}`);
+    });
+  }
 }).catch(err => {
   console.error("Failed to initialize SQLite Wasm database:", err);
   process.exit(1);
 });
+
+module.exports = app;
