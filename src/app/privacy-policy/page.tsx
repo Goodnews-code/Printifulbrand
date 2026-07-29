@@ -1,4 +1,3 @@
-import { SiteShell } from "@/components/layout/SiteShell";
 import { PolicyPage } from "@/components/policy/PolicyPage";
 import { privacyPolicy } from "@/content/policies";
 
@@ -8,9 +7,5 @@ export const metadata = {
 };
 
 export default function PrivacyPolicyPage() {
-  return (
-    <SiteShell>
-      <PolicyPage {...privacyPolicy} />
-    </SiteShell>
-  );
+  return <PolicyPage {...privacyPolicy} />;
 }

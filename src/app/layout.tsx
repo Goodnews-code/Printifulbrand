@@ -6,6 +6,7 @@ import {
   Roboto,
 } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { ConditionalShell } from "@/components/layout/ConditionalShell";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -85,7 +86,9 @@ export default function RootLayout({
       className={`${cormorant.variable} ${outfit.variable} ${inter.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-surface text-foreground font-sans">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <ConditionalShell>{children}</ConditionalShell>
+        </AppProviders>
       </body>
     </html>
   );

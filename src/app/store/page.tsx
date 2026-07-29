@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import type { Product } from "@/types";
-import { SiteShell } from "@/components/layout/SiteShell";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 
 export default function StorePage() {
@@ -18,7 +17,7 @@ export default function StorePage() {
   }, []);
 
   return (
-    <SiteShell>
+    <>
       <section className="relative overflow-hidden bg-brand-black px-4 py-16 text-white sm:px-6 lg:px-8">
         <div
           className="pointer-events-none absolute inset-0 opacity-50"
@@ -56,6 +55,6 @@ export default function StorePage() {
           />
         )}
       </section>
-    </SiteShell>
+    </>
   );
 }

@@ -7,14 +7,22 @@ type SmartImageProps = Omit<ImageProps, "src" | "alt"> & {
   src: string;
   alt: string;
   className?: string;
-  /** Fill parent with object-cover (default for product cards) */
   fillCover?: boolean;
 };
 
-/**
- * Optimized image: WebP/AVIF via Next.js, lazy by default, sensible sizes.
- * Local `/…` paths and Supabase public URLs both work.
- */
+/** Encode local path segments so spaces in filenames work with next/image */
+function normalizeSrc(src: string) {
+  if (!src) return "/assets/tshirt_base.svg";
+  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
+    return src;
+  }
+  const withSlash = src.startsWith("/") ? src : `/${src}`;
+  return withSlash
+    .split("/")
+    .map((part, index) => (index === 0 ? part : encodeURIComponent(part)))
+    .join("/");
+}
+
 export function SmartImage({
   src,
   alt,
@@ -24,7 +32,8 @@ export function SmartImage({
   priority,
   ...rest
 }: SmartImageProps) {
-  const isSvg = src.toLowerCase().endsWith(".svg");
+  const resolved = normalizeSrc(src);
+  const isSvg = resolved.toLowerCase().includes(".svg");
   const common = {
     alt,
     className: cn(fillCover ? "object-cover" : "", className),
@@ -39,8 +48,8 @@ export function SmartImage({
   };
 
   if (fillCover) {
-    return <Image src={src} fill {...common} {...rest} />;
+    return <Image src={resolved} fill {...common} {...rest} />;
   }
 
-  return <Image src={src} {...common} {...rest} />;
+  return <Image src={resolved} {...common} {...rest} />;
 }

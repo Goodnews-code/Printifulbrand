@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Product } from "@/types";
-import { SiteShell } from "@/components/layout/SiteShell";
 import { Hero } from "@/components/home/Hero";
 import { BrandValues } from "@/components/home/BrandValues";
 import { Timeline } from "@/components/home/Timeline";
@@ -63,13 +62,13 @@ function ShowcaseCatalog() {
 
 export default function HomePage() {
   return (
-    <SiteShell>
+    <>
       <Hero />
       <BrandValues />
       <ShowcaseCatalog />
       <Timeline />
       <InquiryForm />
       <CareGuide />
-    </SiteShell>
+    </>
   );
 }
