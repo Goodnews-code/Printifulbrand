@@ -10,6 +10,7 @@ import {
   Sun,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export function Navbar() {
   const { itemCount, openCart } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const reduce = useReducedMotion();
 
   const isHome = pathname === "/";
 
@@ -44,12 +46,15 @@ export function Navbar() {
   ];
 
   return (
-    <header
+    <motion.header
       className={cn(
-        "sticky top-0 z-50 border-b border-border transition-shadow",
+        "sticky top-0 z-50 border-b border-border backdrop-blur-md transition-shadow",
         scrolled ? "shadow-sm" : "",
       )}
       style={{ backgroundColor: "var(--navbar)" }}
+      initial={reduce ? false : { y: -16, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="shrink-0" aria-label="Printiful home">
@@ -66,7 +71,7 @@ export function Navbar() {
             <Link
               key={link.label}
               href={link.href}
-              className="font-ui text-sm font-medium text-foreground/80"
+              className="font-ui text-sm font-medium text-foreground/80 transition-transform hover:-translate-y-0.5"
             >
               {link.label}
             </Link>
@@ -97,11 +102,19 @@ export function Navbar() {
             aria-label="Open cart"
           >
             <ShoppingBag size={18} />
-            {itemCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1 font-ui text-[10px] font-bold text-brand-black">
-                {itemCount}
-              </span>
-            )}
+            <AnimatePresence>
+              {itemCount > 0 && (
+                <motion.span
+                  key={itemCount}
+                  initial={reduce ? false : { scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1 font-ui text-[10px] font-bold text-brand-black"
+                >
+                  {itemCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
 
           <button
@@ -116,29 +129,44 @@ export function Navbar() {
         </div>
       </div>
 
-      {mobileOpen && (
-        <div className="border-t border-border bg-surface px-4 py-4 md:hidden">
-          <nav className="flex flex-col gap-3">
-            {links.map((link) => (
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mobile-nav"
+            initial={reduce ? false : { height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={reduce ? undefined : { height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden border-t border-border bg-surface md:hidden"
+          >
+            <nav className="flex flex-col gap-3 px-4 py-4">
+              {links.map((link, i) => (
+                <motion.div
+                  key={link.label}
+                  initial={reduce ? false : { opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.04 * i }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="font-ui text-base font-medium text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
               <Link
-                key={link.label}
-                href={link.href}
+                href={isHome ? "#inquiry" : "/#inquiry"}
                 onClick={() => setMobileOpen(false)}
-                className="font-ui text-base font-medium text-foreground"
+                className="mt-2 inline-flex justify-center bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white"
               >
-                {link.label}
+                Request Quote
               </Link>
-            ))}
-            <Link
-              href={isHome ? "#inquiry" : "/#inquiry"}
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 inline-flex justify-center bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white"
-            >
-              Request Quote
-            </Link>
-          </nav>
-        </div>
-      )}
-    </header>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }

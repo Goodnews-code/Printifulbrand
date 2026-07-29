@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import type { Product } from "@/types";
 import { CATEGORY_FILTERS, normalizeCategory, cn } from "@/lib/utils";
 import { ProductCard } from "@/components/catalog/ProductCard";
@@ -16,6 +17,8 @@ interface ProductGridProps {
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export function ProductGrid({
   products,
   mode,
@@ -23,6 +26,7 @@ export function ProductGrid({
   showSort = false,
   emptyMessage = "No products found.",
 }: ProductGridProps) {
+  const reduce = useReducedMotion();
   const [filter, setFilter] = useState<(typeof CATEGORY_FILTERS)[number]["id"]>(
     "all",
   );
@@ -55,14 +59,19 @@ export function ProductGrid({
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-center justify-center gap-2">
+      <motion.div
+        className="mb-8 flex flex-wrap items-center justify-center gap-2"
+        initial={reduce ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE }}
+      >
         {CATEGORY_FILTERS.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setFilter(item.id)}
             className={cn(
-              "px-3.5 py-2 font-ui text-xs font-semibold uppercase tracking-wide",
+              "px-3.5 py-2 font-ui text-xs font-semibold uppercase tracking-wide transition-transform active:scale-95",
               filter === item.id
                 ? "no-hover bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
                 : "border border-border text-muted",
@@ -71,7 +80,7 @@ export function ProductGrid({
             {item.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {(showSearch || showSort) && (
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -108,11 +117,37 @@ export function ProductGrid({
       {filtered.length === 0 ? (
         <p className="py-16 text-center font-ui text-muted">{emptyMessage}</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <motion.div
+          key={`${filter}-${query}-${sort}`}
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: {},
+            show: {
+              transition: { staggerChildren: reduce ? 0 : 0.06 },
+            },
+          }}
+        >
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} mode={mode} />
+            <motion.div
+              key={product.id}
+              variants={{
+                hidden: reduce
+                  ? { opacity: 1 }
+                  : { opacity: 0, y: 24, scale: 0.98 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  transition: { duration: 0.4, ease: EASE },
+                },
+              }}
+            >
+              <ProductCard product={product} mode={mode} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

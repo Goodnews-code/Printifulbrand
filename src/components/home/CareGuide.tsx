@@ -1,4 +1,7 @@
+"use client";
+
 import { Droplets, Hash, RotateCcw, ThermometerSnowflake } from "lucide-react";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
 const CARE = [
   {
@@ -27,7 +30,7 @@ export function CareGuide() {
   return (
     <section className="py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="inline-block bg-brand-purple px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-white">
             Merch Maintenance
           </span>
@@ -38,18 +41,21 @@ export function CareGuide() {
             This isn&apos;t just custom apparel — it is your vision brought to
             life. Maintain sharpness and fabric quality with these guidelines.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <Stagger
+          className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+          stagger={0.1}
+        >
           {CARE.map((item) => {
             const Icon = item.icon;
             return (
-              <div
+              <StaggerItem
                 key={item.title}
-                className="border border-border bg-surface p-5 text-center"
+                className="group border border-border bg-surface p-5 text-center transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-brand-purple dark:hover:border-brand-yellow"
               >
                 <Icon
-                  className="mx-auto text-brand-purple dark:text-brand-yellow"
+                  className="mx-auto text-brand-purple transition-transform duration-300 group-hover:scale-110 dark:text-brand-yellow"
                   size={28}
                   strokeWidth={1.5}
                 />
@@ -59,10 +65,10 @@ export function CareGuide() {
                 <p className="mt-2 text-sm leading-relaxed text-muted">
                   {item.body}
                 </p>
-              </div>
+              </StaggerItem>
             );
           })}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

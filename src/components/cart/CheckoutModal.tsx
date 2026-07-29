@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import { formatNaira, cn } from "@/lib/utils";
@@ -56,6 +57,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const reduce = useReducedMotion();
+
   useEffect(() => {
     if (!open) {
       setStep(1);
@@ -70,8 +73,6 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       void loadPaystackScript();
     }
   }, [open, settings.paystack_public_key]);
-
-  if (!open) return null;
 
   const goNext = (e: FormEvent) => {
     e.preventDefault();
@@ -146,13 +147,25 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-brand-black/60 p-4">
-      <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-border bg-surface shadow-2xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="checkout-title"
-      >
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-brand-black/60 p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-border bg-surface shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-title"
+            initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduce ? undefined : { opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h3 id="checkout-title" className="font-heading text-xl italic">
             {step === 1 ? "Checkout Details" : "Confirm Order"}
@@ -266,8 +279,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
             </div>
           </form>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
