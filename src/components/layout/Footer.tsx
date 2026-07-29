@@ -94,7 +94,9 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/store">Catalog Store</Link>
+                <Link href="/store" prefetch>
+                  Catalog Store
+                </Link>
               </li>
               <li>
                 <Link href="/#timeline">Step Journey</Link>
@@ -116,7 +118,9 @@ export function Footer() {
                 <Link href="/#inquiry">Contact Designer</Link>
               </li>
               <li>
-                <Link href="/store">Product Sizing</Link>
+                <Link href="/store" prefetch>
+                  Product Sizing
+                </Link>
               </li>
               <li>
                 <Link href="/#timeline">Eco Commitments</Link>
@@ -132,16 +136,24 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/terms">Terms & Conditions</Link>
+                <Link href="/terms" prefetch>
+                  Terms & Conditions
+                </Link>
               </li>
               <li>
-                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href="/privacy-policy" prefetch>
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <Link href="/shipping-policy">Shipping Policy</Link>
+                <Link href="/shipping-policy" prefetch>
+                  Shipping Policy
+                </Link>
               </li>
               <li>
-                <Link href="/returns-refunds">Return & Refund Policy</Link>
+                <Link href="/returns-refunds" prefetch>
+                  Return & Refund Policy
+                </Link>
               </li>
             </ul>
           </div>

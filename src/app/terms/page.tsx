@@ -1,4 +1,3 @@
-import { SiteShell } from "@/components/layout/SiteShell";
 import { PolicyPage } from "@/components/policy/PolicyPage";
 import { termsPolicy } from "@/content/policies";
 
@@ -8,9 +7,5 @@ export const metadata = {
 };
 
 export default function TermsPage() {
-  return (
-    <SiteShell>
-      <PolicyPage {...termsPolicy} />
-    </SiteShell>
-  );
+  return <PolicyPage {...termsPolicy} />;
 }
