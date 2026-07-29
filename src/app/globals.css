@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-brand-purple: #53009b;
+  --color-brand-purple-deep: #3a006e;
+  --color-brand-yellow: #ffff00;
+  --color-brand-black: #111111;
+  --color-brand-ink: #1a0033;
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --font-display: var(--font-roboto);
+  --font-heading: var(--font-cormorant);
+  --font-ui: var(--font-outfit);
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --surface: #ffffff;
+  --surface-alt: #f7f5ff;
+  --foreground: #1a0033;
+  --muted: #7a6895;
+  --border: #ede8fa;
+  --card: #ffffff;
+  --navbar: rgba(255, 255, 255, 0.95);
+}
+
+.dark {
+  --surface: #0d0015;
+  --surface-alt: #150025;
+  --foreground: #f0e8ff;
+  --muted: #8b7aaa;
+  --border: #281a3d;
+  --card: #1a0a2e;
+  --navbar: rgba(13, 0, 21, 0.95);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: #53009b;
+  color: #ffffff;
+}
+
+.dark ::selection {
+  background: #ffff00;
+  color: #111111;
+}
