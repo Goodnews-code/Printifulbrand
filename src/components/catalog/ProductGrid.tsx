@@ -62,10 +62,10 @@ export function ProductGrid({
             type="button"
             onClick={() => setFilter(item.id)}
             className={cn(
-              "px-3.5 py-2 font-ui text-xs font-semibold uppercase tracking-wide transition-colors",
+              "px-3.5 py-2 font-ui text-xs font-semibold uppercase tracking-wide",
               filter === item.id
-                ? "bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
-                : "border border-border text-muted hover:text-foreground",
+                ? "no-hover bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
+                : "border border-border text-muted",
             )}
           >
             {item.label}

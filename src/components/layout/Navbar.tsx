@@ -66,7 +66,7 @@ export function Navbar() {
             <Link
               key={link.label}
               href={link.href}
-              className="font-ui text-sm font-medium text-foreground/80 transition-colors hover:text-brand-purple dark:hover:text-brand-yellow"
+              className="font-ui text-sm font-medium text-foreground/80"
             >
               {link.label}
             </Link>
@@ -77,7 +77,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-surface-alt"
+            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
@@ -85,7 +85,7 @@ export function Navbar() {
 
           <Link
             href={isHome ? "#inquiry" : "/#inquiry"}
-            className="hidden rounded-none bg-brand-purple px-4 py-2.5 font-ui text-sm font-semibold text-white transition-colors hover:bg-brand-yellow hover:text-brand-black sm:inline-flex"
+            className="hidden bg-brand-purple px-4 py-2.5 font-ui text-sm font-semibold text-white sm:inline-flex"
           >
             Request Quote
           </Link>
@@ -93,7 +93,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={openCart}
-            className="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-surface-alt"
+            className="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground"
             aria-label="Open cart"
           >
             <ShoppingBag size={18} />
@@ -106,7 +106,7 @@ export function Navbar() {
 
           <button
             type="button"
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border md:hidden"
+            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}

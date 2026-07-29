@@ -8,10 +8,15 @@ export const runtime = "nodejs";
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
-  const { id } = await params;
-  const product = getProduct(Number(id));
-  if (!product) return Response.json({ error: "Not found" }, { status: 404 });
-  return Response.json(product);
+  try {
+    const { id } = await params;
+    const product = await getProduct(Number(id));
+    if (!product) return Response.json({ error: "Not found" }, { status: 404 });
+    return Response.json(product);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load product";
+    return Response.json({ error: message }, { status: 500 });
+  }
 }
 
 const productSchema = z.object({
@@ -42,21 +47,31 @@ const productSchema = z.object({
 
 export async function PUT(req: NextRequest, { params }: Params) {
   if (!isAuthorized(req)) return unauthorized();
-  const { id } = await params;
-  const body = await req.json();
-  const parsed = productSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const parsed = productSchema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+    const product = await updateProduct(Number(id), parsed.data);
+    if (!product) return Response.json({ error: "Not found" }, { status: 404 });
+    return Response.json(product);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Update failed";
+    return Response.json({ error: message }, { status: 500 });
   }
-  const product = updateProduct(Number(id), parsed.data);
-  if (!product) return Response.json({ error: "Not found" }, { status: 404 });
-  return Response.json(product);
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   if (!isAuthorized(req)) return unauthorized();
-  const { id } = await params;
-  const product = deleteProduct(Number(id));
-  if (!product) return Response.json({ error: "Not found" }, { status: 404 });
-  return Response.json({ success: true });
+  try {
+    const { id } = await params;
+    const product = await deleteProduct(Number(id));
+    if (!product) return Response.json({ error: "Not found" }, { status: 404 });
+    return Response.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Delete failed";
+    return Response.json({ error: message }, { status: 500 });
+  }
 }

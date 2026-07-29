@@ -6,8 +6,13 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   images: {
-    remotePatterns: [],
-    unoptimized: false,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 };
 
