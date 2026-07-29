@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import { FileUp, X } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { Reveal } from "@/components/motion/Reveal";
 
 export function InquiryForm() {
   const { settings } = useSettings();
@@ -33,7 +34,7 @@ export function InquiryForm() {
   return (
     <section id="inquiry" className="scroll-mt-20 bg-surface-alt py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="inline-block border border-brand-purple px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-brand-purple dark:border-brand-yellow dark:text-brand-yellow">
             Bulk Workspace
           </span>
@@ -43,8 +44,9 @@ export function InquiryForm() {
           <p className="mt-4 text-muted">
             Custom prints, unique designs and orders exceeding 30 units
           </p>
-        </div>
+        </Reveal>
 
+        <Reveal delay={0.1}>
         <form
           onSubmit={onSubmit}
           className="mx-auto mt-12 max-w-3xl border border-border bg-surface p-6 sm:p-8"
@@ -154,6 +156,7 @@ export function InquiryForm() {
             Send Quote Request
           </button>
         </form>
+        </Reveal>
       </div>
     </section>
   );

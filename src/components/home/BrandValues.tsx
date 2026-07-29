@@ -1,3 +1,7 @@
+"use client";
+
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
+
 const VALUES = [
   {
     num: "01 //",
@@ -20,7 +24,7 @@ export function BrandValues() {
   return (
     <section className="bg-surface-alt py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="font-heading text-4xl italic sm:text-5xl">
             Beautiful designs, always.
           </h2>
@@ -29,13 +33,13 @@ export function BrandValues() {
             deserve pure, refined expression — clean aesthetics, precision, and
             confidence.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <Stagger className="mt-14 grid gap-6 md:grid-cols-3" stagger={0.12}>
           {VALUES.map((value) => (
-            <div
+            <StaggerItem
               key={value.num}
-              className="border border-border bg-surface p-6 transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
+              className="group border border-border bg-surface p-6 transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-brand-purple hover:shadow-[0_12px_40px_-20px_rgba(83,0,155,0.35)] dark:hover:border-brand-yellow dark:hover:shadow-[0_12px_40px_-20px_rgba(255,255,0,0.2)]"
             >
               <p className="font-ui text-xs font-bold tracking-widest text-brand-purple dark:text-brand-yellow">
                 {value.num}
@@ -46,9 +50,9 @@ export function BrandValues() {
               <p className="mt-3 text-sm leading-relaxed text-muted">
                 {value.body}
               </p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

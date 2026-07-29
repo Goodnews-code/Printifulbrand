@@ -165,3 +165,53 @@ a.bg-brand-black:not(.no-hover):hover {
   background-color: #ffff00 !important;
   color: #111111 !important;
 }
+
+/* ==========================================================================
+   Motion utilities
+   ========================================================================== */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-float-slow,
+  .animate-pulse-soft,
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  a,
+  button,
+  [role="button"],
+  summary {
+    transition: none !important;
+  }
+}

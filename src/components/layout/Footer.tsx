@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
+import { Reveal } from "@/components/motion/Reveal";
 
 const LOGO = "/assets/logo%20with%20printiful.svg";
 
@@ -37,7 +38,7 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-border bg-surface-alt">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.2fr_2fr] lg:px-8">
-        <div className="space-y-4">
+        <Reveal className="space-y-4">
           <Link href="/" aria-label="Printiful home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -56,7 +57,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
+              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-transform hover:-translate-y-0.5 hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
             >
               <InstagramIcon className="size-[18px]" />
             </a>
@@ -65,7 +66,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok"
-              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
+              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-transform hover:-translate-y-0.5 hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
             >
               <TikTokIcon className="size-[18px]" />
             </a>
@@ -74,7 +75,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X / Twitter"
-              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
+              className="inline-flex size-10 items-center justify-center border border-border text-foreground transition-transform hover:-translate-y-0.5 hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
             >
               <XIcon className="size-[18px]" />
             </a>
@@ -85,9 +86,9 @@ export function Footer() {
           >
             {settings.contact_email || "shopprintiful@gmail.com"}
           </a>
-        </div>
+        </Reveal>
 
-        <div className="grid gap-8 sm:grid-cols-3">
+        <Reveal delay={0.08} className="grid gap-8 sm:grid-cols-3">
           <div>
             <h4 className="mb-4 font-heading text-lg font-semibold italic">
               Studio Rooms
@@ -157,7 +158,7 @@ export function Footer() {
               </li>
             </ul>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted sm:px-6">

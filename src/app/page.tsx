@@ -9,6 +9,7 @@ import { Timeline } from "@/components/home/Timeline";
 import { InquiryForm } from "@/components/home/InquiryForm";
 import { CareGuide } from "@/components/home/CareGuide";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
+import { Reveal } from "@/components/motion/Reveal";
 
 function ShowcaseCatalog() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,7 +26,7 @@ function ShowcaseCatalog() {
   return (
     <section id="catalog" className="scroll-mt-20 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
+        <Reveal className="mx-auto mb-10 max-w-2xl text-center">
           <span className="inline-block bg-brand-purple px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-white">
             Pre-Designed Collection
           </span>
@@ -35,15 +36,29 @@ function ShowcaseCatalog() {
           <p className="mt-4 text-muted">
             Curated pieces designed by our studio.
           </p>
-        </div>
+        </Reveal>
 
         {loading ? (
-          <p className="py-16 text-center font-ui text-muted">Loading…</p>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse border border-border bg-surface-alt"
+              >
+                <div className="aspect-[4/5] bg-border/60" />
+                <div className="space-y-2 p-4">
+                  <div className="h-3 w-16 bg-border" />
+                  <div className="h-5 w-3/4 bg-border" />
+                  <div className="h-4 w-20 bg-border" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <ProductGrid products={products} mode="showcase" />
         )}
 
-        <div className="mt-12 text-center">
+        <Reveal className="mt-12 text-center" delay={0.1}>
           <p className="text-sm text-muted">
             Want to check sizing, sort pricing, or search the full product
             archive?
@@ -54,7 +69,7 @@ function ShowcaseCatalog() {
           >
             Enter Catalog Store
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

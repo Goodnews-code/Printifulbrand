@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import type { Product } from "@/types";
 import { useCart } from "@/context/CartContext";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, mode }: ProductCardProps) {
+  const reduce = useReducedMotion();
   const { addItem } = useCart();
   const images = product.images?.length
     ? product.images
@@ -27,6 +29,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
 
   const [colorIdx, setColorIdx] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(0);
+  const [added, setAdded] = useState(false);
 
   const activeImage = images[Math.min(colorIdx, images.length - 1)];
   const activeSize = sizes[Math.min(sizeIdx, sizes.length - 1)];
@@ -37,43 +40,67 @@ export function ProductCard({ product, mode }: ProductCardProps) {
     return slug === "all" ? product.category || "Merch" : slug;
   }, [product.category]);
 
+  const handleAdd = () => {
+    addItem({
+      productId: product.id,
+      name: product.title,
+      category: product.category || "Merch",
+      color: activeImage.color_code || "Default",
+      size: activeSize.size_name,
+      image: activeImage.image_url,
+      price,
+    });
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 900);
+  };
+
   if (mode === "showcase") {
     return (
-      <Link
-        href="/store"
-        className="group block overflow-hidden border border-border bg-card transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
+      <motion.div
+        whileHover={reduce ? undefined : { y: -6 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-          <SmartImage
-            src={activeImage.image_url}
-            alt={product.title}
-            fillCover
-            className="transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-          />
-        </div>
-        <div className="space-y-1 p-4">
-          <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            {categoryLabel}
-          </p>
-          <h3 className="font-heading text-xl font-semibold leading-tight">
-            {product.title}
-          </h3>
-          <p className="font-ui text-sm font-semibold text-brand-purple dark:text-brand-yellow">
-            {formatNaira(product.price)}
-          </p>
-        </div>
-      </Link>
+        <Link
+          href="/store"
+          className="group block overflow-hidden border border-border bg-card transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
+        >
+          <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
+            <SmartImage
+              src={activeImage.image_url}
+              alt={product.title}
+              fillCover
+              className="transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            />
+          </div>
+          <div className="space-y-1 p-4">
+            <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+              {categoryLabel}
+            </p>
+            <h3 className="font-heading text-xl font-semibold leading-tight">
+              {product.title}
+            </h3>
+            <p className="font-ui text-sm font-semibold text-brand-purple dark:text-brand-yellow">
+              {formatNaira(product.price)}
+            </p>
+          </div>
+        </Link>
+      </motion.div>
     );
   }
 
   return (
-    <article className="flex flex-col overflow-hidden border border-border bg-card">
+    <motion.article
+      className="flex flex-col overflow-hidden border border-border bg-card"
+      whileHover={reduce ? undefined : { y: -6 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
         <SmartImage
           src={activeImage.image_url}
           alt={product.title}
           fillCover
+          className="transition-transform duration-500 hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
         />
       </div>
@@ -98,7 +125,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
                 type="button"
                 onClick={() => setColorIdx(i)}
                 className={cn(
-                  "size-6 rounded-full border-2",
+                  "size-6 rounded-full border-2 transition-transform active:scale-90",
                   colorIdx === i
                     ? "border-brand-purple dark:border-brand-yellow"
                     : "border-transparent ring-1 ring-border",
@@ -118,7 +145,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
                 type="button"
                 onClick={() => setSizeIdx(i)}
                 className={cn(
-                  "min-w-10 border px-2.5 py-1 font-ui text-xs font-medium transition-colors",
+                  "min-w-10 border px-2.5 py-1 font-ui text-xs font-medium transition-colors active:scale-95",
                   sizeIdx === i
                     ? "border-brand-purple bg-brand-purple text-white dark:border-brand-yellow dark:bg-brand-yellow dark:text-brand-black"
                     : "border-border text-foreground hover:border-brand-purple dark:hover:border-brand-yellow",
@@ -130,25 +157,21 @@ export function ProductCard({ product, mode }: ProductCardProps) {
           </div>
         )}
 
-        <button
+        <motion.button
           type="button"
-          onClick={() =>
-            addItem({
-              productId: product.id,
-              name: product.title,
-              category: product.category || "Merch",
-              color: activeImage.color_code || "Default",
-              size: activeSize.size_name,
-              image: activeImage.image_url,
-              price,
-            })
-          }
-          className="mt-auto inline-flex w-full items-center justify-center gap-2 bg-brand-black py-3 font-ui text-sm font-semibold text-white transition-colors hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white"
+          onClick={handleAdd}
+          whileTap={reduce ? undefined : { scale: 0.97 }}
+          className={cn(
+            "mt-auto inline-flex w-full items-center justify-center gap-2 py-3 font-ui text-sm font-semibold text-white transition-colors",
+            added
+              ? "no-hover bg-brand-purple dark:bg-brand-yellow dark:text-brand-black"
+              : "bg-brand-black hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white",
+          )}
         >
           <ShoppingBag size={16} />
-          Add to Cart
-        </button>
+          {added ? "Added!" : "Add to Cart"}
+        </motion.button>
       </div>
-    </article>
+    </motion.article>
   );
 }
