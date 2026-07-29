@@ -105,17 +105,18 @@ button:not([class*="bg-"]):not(:disabled):not(.no-hover):active,
   opacity: 0.9;
 }
 
-/* Already purple → deepen (light) / flip to yellow (dark) */
-a.text-brand-purple:hover,
-button.text-brand-purple:hover,
-.text-brand-purple:is(a, button, [role="button"]):hover {
+/* Already purple → deepen (light) / flip to yellow (dark)
+   Skip when the control fills a brand background on hover (needs contrast text). */
+a.text-brand-purple:hover:not([class*="hover:bg-"]):not(.no-hover),
+button.text-brand-purple:hover:not([class*="hover:bg-"]):not(.no-hover),
+.text-brand-purple:is(a, button, [role="button"]):hover:not([class*="hover:bg-"]):not(.no-hover) {
   color: var(--hover-on-purple) !important;
 }
 
 /* Already yellow → purple (light) / white (dark) */
-a.text-brand-yellow:hover,
-button.text-brand-yellow:hover,
-.text-brand-yellow:is(a, button, [role="button"]):hover {
+a.text-brand-yellow:hover:not([class*="hover:bg-"]):not(.no-hover),
+button.text-brand-yellow:hover:not([class*="hover:bg-"]):not(.no-hover),
+.text-brand-yellow:is(a, button, [role="button"]):hover:not([class*="hover:bg-"]):not(.no-hover) {
   color: var(--hover-on-yellow) !important;
 }
 

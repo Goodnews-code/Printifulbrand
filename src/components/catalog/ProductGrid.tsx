@@ -13,6 +13,8 @@ interface ProductGridProps {
   showSearch?: boolean;
   showSort?: boolean;
   emptyMessage?: string;
+  /** Hide items beyond this count below the `md` breakpoint */
+  mobileLimit?: number;
 }
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
@@ -25,6 +27,7 @@ export function ProductGrid({
   showSearch = false,
   showSort = false,
   emptyMessage = "No products found.",
+  mobileLimit,
 }: ProductGridProps) {
   const reduce = useReducedMotion();
   const [filter, setFilter] = useState<(typeof CATEGORY_FILTERS)[number]["id"]>(
@@ -129,9 +132,14 @@ export function ProductGrid({
             },
           }}
         >
-          {filtered.map((product) => (
+          {filtered.map((product, index) => (
             <motion.div
               key={product.id}
+              className={cn(
+                mobileLimit != null &&
+                  index >= mobileLimit &&
+                  "max-md:hidden",
+              )}
               variants={{
                 hidden: reduce
                   ? { opacity: 1 }

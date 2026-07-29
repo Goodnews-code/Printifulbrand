@@ -8,9 +8,9 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
 const HERO_IMAGES = [
   {
-    src: "/assets/Image/Branded Journals.jpeg",
-    alt: "Branded Journals",
-    label: "[ PRINTIFUL ARCHIVE // Branded Journals ]",
+    src: "/assets/Image/Branded Teeshirts.jpeg",
+    alt: "Branded Tees",
+    label: "[ PRINTIFUL ARCHIVE // BRANDED TEES ]",
     className: "h-[280px] sm:h-[360px] lg:h-[480px]",
   },
   {
