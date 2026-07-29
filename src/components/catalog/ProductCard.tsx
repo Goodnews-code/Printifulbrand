@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import type { Product } from "@/types";
 import { useCart } from "@/context/CartContext";
-import { formatNaira, normalizeCategory } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 interface ProductCardProps {
   product: Product;
@@ -44,11 +44,12 @@ export function ProductCard({ product, mode }: ProductCardProps) {
         className="group block overflow-hidden border border-border bg-card transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <SmartImage
             src={activeImage.image_url}
             alt={product.title}
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fillCover
+            className="transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
           />
         </div>
         <div className="space-y-1 p-4">
@@ -69,11 +70,11 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   return (
     <article className="flex flex-col overflow-hidden border border-border bg-card">
       <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <SmartImage
           src={activeImage.image_url}
           alt={product.title}
-          className="size-full object-cover"
+          fillCover
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
         />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">

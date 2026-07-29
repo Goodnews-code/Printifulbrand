@@ -7,7 +7,8 @@
     "build": "node ./node_modules/next/dist/bin/next build",
     "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "eslint",
-    "legacy:start": "node ./legacy/server.js"
+    "legacy:start": "node ./legacy/server.js",
+    "compress:images": "node ./scripts/compress-images.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
