@@ -1,15 +1,18 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
+  ImagePlus,
   LayoutDashboard,
   LogOut,
   Package,
   Settings as SettingsIcon,
   Trash2,
+  Upload,
 } from "lucide-react";
 import type { Product, SiteSettings } from "@/types";
 import { formatNaira, cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 const TOKEN_KEY = "printiful_token";
 
@@ -285,12 +288,15 @@ function ProductsTab({
   onChange: () => void;
   setMessage: (m: string) => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
     price: "",
-    category: "apparels",
+    category: "Apparels",
     image_url: "",
+    is_active: true,
   });
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -299,10 +305,34 @@ function ProductsTab({
       title: "",
       description: "",
       price: "",
-      category: "apparels",
+      category: "Apparels",
       image_url: "",
+      is_active: true,
     });
     setEditingId(null);
+  };
+
+  const uploadImage = async (file: File) => {
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("image", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data.error || "Image upload failed.");
+        return;
+      }
+      setForm((f) => ({ ...f, image_url: data.image_url as string }));
+      setMessage("Image uploaded.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const save = async (e: FormEvent) => {
@@ -313,7 +343,16 @@ function ProductsTab({
       price: Number(form.price) || 0,
       category: form.category,
       image_url: form.image_url || undefined,
-      is_active: true,
+      is_active: form.is_active,
+      images: form.image_url
+        ? [
+            {
+              image_url: form.image_url,
+              color_code: "#53009B",
+              is_primary: true,
+            },
+          ]
+        : undefined,
     };
 
     const url =
@@ -347,8 +386,59 @@ function ProductsTab({
     onChange();
   };
 
+  const toggleActive = async (product: Product) => {
+    const currentlyActive =
+      product.is_active === 1 || product.is_active === true;
+    const res = await fetch(`/api/products/${product.id}`, {
+      method: "PUT",
+      headers: authHeaders(token),
+      body: JSON.stringify({
+        title: product.title,
+        description: product.description || "",
+        price: product.price,
+        category: product.category || "Apparels",
+        image_url: product.image_url || undefined,
+        is_active: !currentlyActive,
+        images: product.images?.length
+          ? product.images
+          : product.image_url
+            ? [
+                {
+                  image_url: product.image_url,
+                  color_code: "#53009B",
+                  is_primary: true,
+                },
+              ]
+            : undefined,
+        sizes: product.sizes,
+      }),
+    });
+    if (!res.ok) {
+      setMessage("Failed to update visibility.");
+      return;
+    }
+    setMessage(
+      !currentlyActive
+        ? `"${product.title}" is now LIVE.`
+        : `"${product.title}" is now HIDDEN.`,
+    );
+    onChange();
+  };
+
+  const startEdit = (p: Product) => {
+    setEditingId(p.id);
+    setForm({
+      title: p.title,
+      description: p.description || "",
+      price: String(p.price),
+      category: p.category || "Apparels",
+      image_url: p.image_url || "",
+      is_active: p.is_active === 1 || p.is_active === true,
+    });
+  };
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+    <div className="grid gap-8 lg:grid-cols-[1fr_1.25fr]">
       <form
         onSubmit={save}
         className="space-y-3 border border-border bg-surface p-5"
@@ -387,21 +477,98 @@ function ProductsTab({
           onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
           className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
         >
-          <option value="apparels">Apparels</option>
-          <option value="stationery">Stationery</option>
-          <option value="packaging">Brand Packaging</option>
-          <option value="gadgets">Gadgets</option>
-          <option value="gifts">Corporate Gifts</option>
-          <option value="lifestyle">Lifestyle</option>
+          <option value="Apparels">Apparels</option>
+          <option value="Stationery">Stationery</option>
+          <option value="Brand Packaging">Brand Packaging</option>
+          <option value="Gadgets">Gadgets</option>
+          <option value="Corporate Gift">Corporate Gift</option>
+          <option value="Lifestyle">Lifestyle</option>
         </select>
-        <input
-          placeholder="Image URL"
-          value={form.image_url}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, image_url: e.target.value }))
-          }
-          className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
-        />
+
+        {/* Image: upload or URL */}
+        <div className="space-y-2 border border-border bg-surface-alt p-3">
+          <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
+            Product image
+          </p>
+          {form.image_url ? (
+            <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
+              <SmartImage
+                src={form.image_url}
+                alt="Preview"
+                fillCover
+                sizes="180px"
+              />
+            </div>
+          ) : (
+            <div className="flex h-28 items-center justify-center border border-dashed border-border text-muted">
+              <ImagePlus size={28} strokeWidth={1.25} />
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void uploadImage(file);
+            }}
+          />
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex w-full items-center justify-center gap-2 border border-border bg-surface px-3 py-2 font-ui text-sm font-medium disabled:opacity-60"
+          >
+            <Upload size={16} />
+            {uploading ? "Uploading…" : "Import image from device"}
+          </button>
+          <input
+            placeholder="Or paste image URL"
+            value={form.image_url}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, image_url: e.target.value }))
+            }
+            className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          />
+        </div>
+
+        {/* Live / Hidden toggle */}
+        <label className="flex cursor-pointer items-center justify-between border border-border bg-surface-alt px-4 py-3">
+          <span className="font-ui text-sm font-medium">
+            Storefront visibility
+          </span>
+          <span className="flex items-center gap-3">
+            <span
+              className={cn(
+                "font-ui text-xs font-bold uppercase tracking-wide",
+                form.is_active ? "text-emerald-600" : "text-muted",
+              )}
+            >
+              {form.is_active ? "Live" : "Hidden"}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.is_active}
+              onClick={() =>
+                setForm((f) => ({ ...f, is_active: !f.is_active }))
+              }
+              className={cn(
+                "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+                form.is_active ? "bg-emerald-500" : "bg-border",
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                  form.is_active && "translate-x-5",
+                )}
+              />
+            </button>
+          </span>
+        </label>
+
         <div className="flex gap-2 pt-2">
           <button
             type="submit"
@@ -425,48 +592,86 @@ function ProductsTab({
         {products.length === 0 ? (
           <p className="text-sm text-muted">No products yet.</p>
         ) : (
-          products.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between gap-3 border border-border bg-surface p-4"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-ui text-sm font-semibold">
-                  {p.title}
-                </p>
-                <p className="text-xs text-muted">
-                  {p.category || "—"} · {formatNaira(p.price)}
-                  {(p.is_active === 0 || p.is_active === false) && " · inactive"}
-                </p>
+          products.map((p) => {
+            const live = p.is_active === 1 || p.is_active === true;
+            const thumb =
+              p.image_url ||
+              p.images?.[0]?.image_url ||
+              "/assets/tshirt_base.svg";
+            return (
+              <div
+                key={p.id}
+                className="flex items-center gap-3 border border-border bg-surface p-3"
+              >
+                <div className="relative size-16 shrink-0 overflow-hidden border border-border bg-surface-alt">
+                  <SmartImage
+                    src={thumb}
+                    alt={p.title}
+                    fillCover
+                    sizes="64px"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-ui text-sm font-semibold">
+                    {p.title}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {p.category || "—"} · {formatNaira(p.price)}
+                  </p>
+                  <span
+                    className={cn(
+                      "mt-1 inline-flex items-center gap-1.5 font-ui text-[10px] font-bold uppercase tracking-wide",
+                      live ? "text-emerald-600" : "text-muted",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        live ? "bg-emerald-500" : "bg-muted",
+                      )}
+                    />
+                    {live ? "Live" : "Hidden"}
+                  </span>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={live}
+                    aria-label={live ? "Hide product" : "Show product"}
+                    title={live ? "Turn off (hide)" : "Turn on (live)"}
+                    onClick={() => void toggleActive(p)}
+                    className={cn(
+                      "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+                      live ? "bg-emerald-500" : "bg-border",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                        live && "translate-x-5",
+                      )}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    className="border border-border px-3 py-1.5 font-ui text-xs"
+                    onClick={() => startEdit(p)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(p.id)}
+                    className="inline-flex items-center border border-border px-2 py-1.5 text-red-600"
+                    aria-label={`Delete ${p.title}`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <button
-                  type="button"
-                  className="border border-border px-3 py-1.5 font-ui text-xs"
-                  onClick={() => {
-                    setEditingId(p.id);
-                    setForm({
-                      title: p.title,
-                      description: p.description || "",
-                      price: String(p.price),
-                      category: p.category || "apparels",
-                      image_url: p.image_url || "",
-                    });
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => remove(p.id)}
-                  className="inline-flex items-center border border-border px-2 py-1.5 text-red-600"
-                  aria-label={`Delete ${p.title}`}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

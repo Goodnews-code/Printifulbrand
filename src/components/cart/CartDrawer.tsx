@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Frown, Minus, Plus, Trash2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { formatNaira } from "@/lib/utils";
+import { formatNaira, cn } from "@/lib/utils";
 import { CheckoutModal } from "@/components/cart/CheckoutModal";
-import { cn } from "@/lib/utils";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 export function CartDrawer() {
   const {
@@ -69,12 +69,12 @@ export function CartDrawer() {
                   key={item.id}
                   className="flex gap-3 border-b border-border pb-4"
                 >
-                  <div className="size-20 shrink-0 overflow-hidden bg-surface-alt">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                  <div className="relative size-20 shrink-0 overflow-hidden bg-surface-alt">
+                    <SmartImage
                       src={item.image || "/assets/tshirt_base.svg"}
                       alt={item.name}
-                      className="size-full object-cover"
+                      fillCover
+                      sizes="80px"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
