@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Printiful</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+
+  <!-- Login Gate Page -->
+  <div id="login-gate" class="login-gate">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo"><i class="fa-solid fa-bolt"></i></div>
+        <h2>Storefront Admin Gate</h2>
+        <p>Enter the store password to access administrative controls.</p>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="admin-password">Dashboard Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="admin-password" placeholder="••••••••••••" required>
+            <button type="button" id="toggle-password-btn" class="toggle-password-btn"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <div id="login-error" class="error-message hide">Invalid password. Please try again.</div>
+        <button type="submit" class="btn btn-primary btn-block">Authorize Access &nbsp;<i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Layout -->
+  <div id="admin-layout" class="admin-layout hide">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo">
+          <span class="logo-icon"><i class="fa-solid fa-bolt"></i></span>
+          <span class="logo-text">Control Panel</span>
+        </a>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="tab-overview">
+          <i class="fa-solid fa-chart-pie"></i> Overview
+        </button>
+        <button class="nav-item" data-tab="tab-products">
+          <i class="fa-solid fa-box-archive"></i> Manage Products
+        </button>
+        <button class="nav-item" data-tab="tab-settings">
+          <i class="fa-solid fa-palette"></i> Customize Theme
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Administrator</span>
+        </div>
+        <button id="logout-btn" class="logout-btn"><i class="fa-solid fa-power-off"></i> Log Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <div class="page-title">
+          <h1 id="current-section-title">Dashboard Overview</h1>
+        </div>
+        <div class="top-bar-actions">
+          <a href="/" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-globe"></i> View Shop</a>
+          <button id="db-cleanup-btn" class="btn btn-accent btn-sm" title="Clean images deleted 3+ days ago"><i class="fa-solid fa-broom"></i> Run Image Cleanup</button>
+        </div>
+      </header>
+
+      <!-- Panel: Overview -->
+      <section id="tab-overview" class="tab-panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="fa-solid fa-box"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-total-products">0</h3>
+              <p>Total Products</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="fa-solid fa-tags"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-total-categories">0</h3>
+              <p>Product Categories</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-info"><i class="fa-solid fa-naira-sign"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-avg-price">₦0.00</h3>
+              <p>Average Product Price</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-body">
+          <div class="recent-actions-card">
+            <h3>Quick Links & Guides</h3>
+            <div class="guide-grid">
+              <div class="guide-item">
+                <div class="guide-num">1</div>
+                <h4>Modify Storefront Visuals</h4>
+                <p>Change your store headers, subtext, colors and contact info under the <strong>Customize Theme</strong> panel.</p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-num">2</div>
+                <h4>Manage Products Catalog</h4>
+                <p>Add new products, adjust pricing, and upload product thumbnails under the <strong>Manage Products</strong> tab.</p>
+              </div>
+              <div class="guide-item">
+                <div class="guide-num">3</div>
+                <h4>3-Day Image Retention</h4>
+                <p>When you delete products or upload new images, old images are kept on disk for safety. They are automatically cleared after 3 days. Use the <strong>Run Image Cleanup</strong> button above to force clear old files.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel: Products CRUD -->
+      <section id="tab-products" class="tab-panel hide">
+        <div class="panel-actions">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="product-search" placeholder="Search catalog...">
+          </div>
+          <button id="add-product-btn" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Product</button>
+        </div>
+
+        <div class="table-container shadow-sm">
+          <table class="data-table" id="products-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Thumbnail</th>
+                <th>Product Title</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th style="width: 90px; text-align: center;">Status</th>
+                <th>Description</th>
+                <th style="width: 100px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <!-- Products rows will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel: Settings / Theme Customizer -->
+      <section id="tab-settings" class="tab-panel hide">
+        <form id="theme-settings-form" class="settings-form">
+          <div class="form-grid">
+            <div class="settings-section">
+              <h3>Store Branding</h3>
+              <div class="form-group">
+                <label for="setting-site-title">Store Name / Logo Title</label>
+                <input type="text" id="setting-site-title" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-site-description">Store Short Description (SEO/Footer)</label>
+                <textarea id="setting-site-description" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Hero Banner Header</h3>
+              <div class="form-group">
+                <label for="setting-hero-headline">Hero Headline</label>
+                <input type="text" id="setting-hero-headline" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-hero-subtext">Hero Sub-Text</label>
+                <textarea id="setting-hero-subtext" rows="3" required></textarea>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Theme Colors</h3>
+              <div class="color-pickers-row">
+                <div class="color-picker-group">
+                  <label for="setting-primary-color">Primary Accent</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-primary-color" required>
+                    <input type="text" id="setting-primary-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+                <div class="color-picker-group">
+                  <label for="setting-secondary-color">Dark Slate (Backgrounds)</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-secondary-color" required>
+                    <input type="text" id="setting-secondary-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+                <div class="color-picker-group">
+                  <label for="setting-accent-color">Alert / Accent Color</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="setting-accent-color" required>
+                    <input type="text" id="setting-accent-color-text" pattern="^#([A-Fa-f0-9]{6})$" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Contact & Footer Details</h3>
+              <div class="form-group">
+                <label for="setting-contact-email">Customer Support Email</label>
+                <input type="email" id="setting-contact-email" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-contact-phone">Customer Support Phone</label>
+                <input type="text" id="setting-contact-phone" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-footer-text">Footer Copyright Text</label>
+                <input type="text" id="setting-footer-text" required>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h3>Monnify Payment Settings</h3>
+              <div class="form-group">
+                <label for="setting-monnify-api-key">Monnify API Key</label>
+                <input type="text" id="setting-monnify-api-key" required>
+              </div>
+              <div class="form-group">
+                <label for="setting-monnify-contract-code">Monnify Contract Code</label>
+                <input type="text" id="setting-monnify-contract-code" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-form-actions">
+            <button type="button" id="reset-settings-btn" class="btn btn-outline">Discard Changes</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Layout Settings</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Add/Edit Product -->
+  <div id="product-form-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-content-md">
+      <button class="modal-close-btn" id="product-modal-close" aria-label="Close form"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="product-form-title">Add New Product</h2>
+      
+      <form id="product-crud-form" class="crud-form">
+        <input type="hidden" id="crud-product-id">
+        
+        <!-- Premium Two-Column Layout -->
+        <div class="product-modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px; align-items: start;">
+          
+          <!-- Left Column: Core Fields & Settings -->
+          <div class="modal-left-column" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="form-group">
+              <label for="crud-title">Product Title</label>
+              <input type="text" id="crud-title" placeholder="e.g. Vintage Dino Hoodie" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="crud-price">Price (₦ Naira)</label>
+                <input type="number" id="crud-price" step="0.01" min="0.01" placeholder="29.99" required>
+              </div>
+              <div class="form-group">
+                <label for="crud-category">Category</label>
+                <input type="text" id="crud-category" placeholder="e.g. Apparels" required list="categories-list">
+                <datalist id="categories-list">
+                  <option value="Apparels">
+                  <option value="Stationery">
+                  <option value="Brand Packaging">
+                  <option value="Gadgets">
+                  <option value="Corporate Gift">
+                  <option value="Lifestyle">
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="crud-description">Description</label>
+              <textarea id="crud-description" rows="5" placeholder="Describe materials, fit, design features..." style="min-height: 120px;"></textarea>
+            </div>
+
+            <!-- Product Visibility Status Toggle Switch -->
+            <div class="form-group visibility-toggle-container" style="margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="flex-grow: 1; padding-right: 15px;">
+                <label style="font-weight: 700; color: var(--text-color); margin-bottom: 4px; display: block;">Storefront Visibility Status</label>
+                <span style="display: block; font-size: 0.8rem; color: var(--text-muted);">
+                  Toggle OFF to draft or hide this product completely from the public storefront.
+                </span>
+              </div>
+              <div style="flex-shrink: 0;">
+                <label class="switch-control" style="position: relative; display: inline-block; width: 50px; height: 26px; cursor: pointer; margin: 0;">
+                  <input type="checkbox" id="crud-is-active" checked style="opacity: 0; width: 0; height: 0; display: none;">
+                  <span class="switch-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px;"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Column: Image-Color Variants & Sizes Configurator -->
+          <div class="modal-right-column" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Product Image & Color Mappings (Required) -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Image & Color Mappings (Required)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                Add multiple images, each bound to a specific color code. Select one as the primary main storefront image.
+              </p>
+              
+              <div id="variants-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;">
+                <!-- Dynamic Variant Rows Injected Here -->
+              </div>
+
+              <button type="button" id="btn-add-variant" class="btn btn-outline btn-xs" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-plus"></i> Add Color Image Variant</button>
+            </div>
+
+            <!-- Product Sizes & Pricing Configurator -->
+            <div class="form-group" style="margin-bottom: 0; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <label style="font-weight: 700; margin-bottom: 10px; display: block; color: var(--text-color);">Product Sizes & Pricing (S, M, L, XL)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                Check the sizes you wish to offer, and enter the price for each. If none are checked, the product defaults to standard base price.
+              </p>
+              <div class="sizes-pricing-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="S" data-target="crud-price-s" style="width: auto; margin: 0;"> S:
+                  </label>
+                  <input type="number" id="crud-price-s" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="M" data-target="crud-price-m" style="width: auto; margin: 0;"> M:
+                  </label>
+                  <input type="number" id="crud-price-m" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="L" data-target="crud-price-l" style="width: auto; margin: 0;"> L:
+                  </label>
+                  <input type="number" id="crud-price-l" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+                <div class="size-price-row" style="display: flex; align-items: center; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 50px; cursor: pointer;">
+                    <input type="checkbox" class="size-checkbox" value="XL" data-target="crud-price-xl" style="width: auto; margin: 0;"> XL:
+                  </label>
+                  <input type="number" id="crud-price-xl" placeholder="Price (₦)" step="0.01" min="0.01" style="flex-grow: 1; display: none; padding: 6px 10px; font-size: 0.85rem;" class="size-price-input">
+                </div>
+
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-cancel-crud" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="btn-submit-crud" class="btn btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Admin logic script -->
+  <script src="/admin.js"></script>
+</body>
+</html>

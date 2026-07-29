@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- Hoodie base silhouette (sleeves, body, hood) -->
+  <!-- Left Sleeve -->
+  <path class="merch-colorable" d="M120,140 L40,240 C35,248 38,258 46,262 L90,285 C98,289 108,285 112,277 L150,190 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  <!-- Right Sleeve -->
+  <path class="merch-colorable" d="M380,140 L460,240 C465,248 462,258 454,262 L410,285 C402,289 392,285 388,277 L350,190 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- Main Body -->
+  <path class="merch-colorable" d="M130,170 L370,170 L375,440 C375,450 365,460 350,460 L150,460 C135,460 125,450 125,440 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- Pocket -->
+  <path d="M170,350 L330,350 L350,420 C350,425 345,430 340,430 L160,430 C155,430 150,425 150,420 Z" fill="#ffffff" stroke="#1E182A" stroke-width="4" class="merch-colorable" />
+  <!-- Pocket opening shadows -->
+  <path d="M170,350 L190,380 L150,420 Z" fill="#000000" opacity="0.1" />
+  <path d="M330,350 L310,380 L350,420 Z" fill="#000000" opacity="0.1" />
+  
+  <!-- Hood background -->
+  <path class="merch-colorable" d="M140,170 C140,80 360,80 360,170 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  <!-- Hood inner opening -->
+  <path d="M190,170 C190,110 310,110 310,170 C270,185 230,185 190,170 Z" fill="#1E182A" />
+  <path d="M200,165 C200,120 300,120 300,165 C260,175 240,175 200,165 Z" fill="#e6e6e6" />
+  
+  <!-- Drawstrings -->
+  <path d="M220,175 L220,240 C220,245 215,248 215,252" fill="none" stroke="#1E182A" stroke-width="4" stroke-linecap="round" />
+  <circle cx="215" cy="254" r="4" fill="#FF1E75" />
+  
+  <path d="M280,175 L280,250 C280,255 285,258 285,262" fill="none" stroke="#1E182A" stroke-width="4" stroke-linecap="round" />
+  <circle cx="285" cy="264" r="4" fill="#FF1E75" />
+
+  <!-- Shadow details -->
+  <path d="M125,170 L160,250 L160,440 L125,440 Z" fill="#000000" opacity="0.08" />
+  <path d="M375,170 L340,250 L340,440 L375,440 Z" fill="#000000" opacity="0.08" />
+  <path d="M130,170 C160,190 340,190 370,170 C340,175 160,175 130,170 Z" fill="#000000" opacity="0.1" />
+</svg>

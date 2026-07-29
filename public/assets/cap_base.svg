@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- Cap Crown (Back/Sides) -->
+  <path class="merch-colorable" d="M120,280 C120,160 380,160 380,280 C380,290 370,300 350,300 L150,300 C130,300 120,290 120,280 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- Front Panel Highlight (where print goes) -->
+  <path class="merch-colorable" d="M160,280 C160,170 340,170 340,280 C340,295 320,300 250,300 C180,300 160,295 160,280 Z" fill="#ffffff" stroke="#1E182A" stroke-width="4" stroke-linejoin="round" />
+  
+  <!-- Visor / Bill -->
+  <path class="merch-colorable" d="M140,295 C100,310 90,350 140,365 C200,380 300,380 360,365 C410,350 400,310 360,295 C300,315 200,315 140,295 Z" fill="#ffffff" stroke="#1E182A" stroke-width="6" stroke-linejoin="round" />
+  
+  <!-- Visor stitch lines -->
+  <path d="M148,305 C180,323 320,323 352,305" fill="none" stroke="#1E182A" stroke-width="2" stroke-dasharray="4,4" opacity="0.5" />
+  <path d="M140,320 C180,340 320,340 360,320" fill="none" stroke="#1E182A" stroke-width="2" stroke-dasharray="4,4" opacity="0.5" />
+  
+  <!-- Button on top -->
+  <ellipse cx="250" cy="170" rx="16" ry="8" fill="#ffffff" stroke="#1E182A" stroke-width="4" class="merch-colorable" />
+  
+  <!-- Panel seams -->
+  <path d="M250,174 L250,280" fill="none" stroke="#1E182A" stroke-width="3" opacity="0.4" />
+  <path d="M250,174 C200,190 170,230 160,280" fill="none" stroke="#1E182A" stroke-width="3" opacity="0.3" />
+  <path d="M250,174 C300,190 330,230 340,280" fill="none" stroke="#1E182A" stroke-width="3" opacity="0.3" />
+  
+  <!-- Shadow details -->
+  <path d="M120,280 C120,200 180,180 220,200 C170,210 140,240 130,280 Z" fill="#000000" opacity="0.08" />
+  <path d="M380,280 C380,200 320,180 280,200 C330,210 360,240 370,280 Z" fill="#000000" opacity="0.08" />
+  <path d="M140,295 C160,305 340,305 360,295 C340,310 160,310 140,295 Z" fill="#000000" opacity="0.15" />
+</svg>

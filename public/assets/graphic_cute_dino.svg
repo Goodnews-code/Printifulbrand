@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Cute Dino body -->
+  <path d="M50,140 C50,90 90,50 130,50 C160,50 175,70 175,90 C175,105 160,115 150,115 C140,115 135,130 135,145 C135,160 120,170 95,170 C65,170 50,160 50,140 Z" fill="#05D9A4" stroke="#1E182A" stroke-width="6" />
+  <!-- Tail -->
+  <path d="M55,145 C35,145 20,120 15,125 C10,130 20,160 45,165 C55,165 57,155 55,145 Z" fill="#05D9A4" stroke="#1E182A" stroke-width="5" />
+  <!-- Belly -->
+  <path d="M85,170 C70,170 65,155 65,140 C65,120 75,110 85,110 C90,110 95,120 95,140 C95,155 95,170 85,170 Z" fill="#FFD214" stroke="#1E182A" stroke-width="4" />
+  <!-- Dino plates (back spines) -->
+  <path d="M125,50 L130,35 L140,48" fill="#FF1E75" stroke="#1E182A" stroke-width="4" />
+  <path d="M105,53 L108,38 L118,52" fill="#FF1E75" stroke="#1E182A" stroke-width="4" />
+  <path d="M85,63 L85,48 L97,63" fill="#FF1E75" stroke="#1E182A" stroke-width="4" />
+  <path d="M68,78 L63,65 L76,78" fill="#FF1E75" stroke="#1E182A" stroke-width="4" />
+  <!-- Eye -->
+  <circle cx="140" cy="80" r="12" fill="#ffffff" stroke="#1E182A" stroke-width="4" />
+  <circle cx="144" cy="78" r="5" fill="#1E182A" />
+  <circle cx="140" cy="74" r="2" fill="#ffffff" />
+  <!-- Rosy cheek -->
+  <ellipse cx="155" cy="95" rx="8" ry="5" fill="#FF1E75" opacity="0.6" />
+  <!-- Cute mouth -->
+  <path d="M135,98 C140,105 148,103 150,98" fill="none" stroke="#1E182A" stroke-width="4" stroke-linecap="round" />
+  <!-- Little feet -->
+  <rect x="70" y="165" width="16" height="15" rx="6" fill="#05D9A4" stroke="#1E182A" stroke-width="4" />
+  <rect x="100" y="165" width="16" height="15" rx="6" fill="#05D9A4" stroke="#1E182A" stroke-width="4" />
+</svg>
