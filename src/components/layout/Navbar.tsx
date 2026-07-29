@@ -17,15 +17,35 @@ import { cn } from "@/lib/utils";
 
 const LOGO = "/assets/logo%20with%20printiful.svg";
 
+type NavId = "home" | "store" | "timeline" | "inquiry";
+
+const navLinkClass = (active: boolean) =>
+  cn(
+    "font-ui text-sm font-medium transition-colors",
+    active
+      ? "no-hover bg-brand-purple px-3 py-1.5 text-white dark:bg-brand-yellow dark:text-brand-black"
+      : "px-3 py-1.5 text-foreground/80 hover:-translate-y-0.5",
+  );
+
+const navLinkClassMobile = (active: boolean) =>
+  cn(
+    "inline-flex font-ui text-base font-medium transition-colors",
+    active
+      ? "no-hover bg-brand-purple px-3 py-2 text-white dark:bg-brand-yellow dark:text-brand-black"
+      : "px-3 py-2 text-foreground",
+  );
+
 export function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { itemCount, openCart } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hash, setHash] = useState("");
   const reduce = useReducedMotion();
 
   const isHome = pathname === "/";
+  const isStore = pathname === "/store" || pathname.startsWith("/store/");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -38,11 +58,35 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  const links = [
-    { href: isHome ? "#hero" : "/#hero", label: "Home" },
-    { href: "/store", label: "Catalog Store" },
-    { href: isHome ? "#timeline" : "/#timeline", label: "How We Print" },
-    { href: isHome ? "#inquiry" : "/#inquiry", label: "Bulk Inquiry" },
+  useEffect(() => {
+    const syncHash = () => setHash(window.location.hash.replace(/^#/, ""));
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, [pathname]);
+
+  /** Prefer section hash on home; otherwise mark the current route. */
+  const activeId: NavId = (() => {
+    if (isStore) return "store";
+    if (!isHome) return "home";
+    if (hash === "timeline") return "timeline";
+    if (hash === "inquiry") return "inquiry";
+    return "home";
+  })();
+
+  const links: { id: NavId; href: string; label: string }[] = [
+    { id: "home", href: isHome ? "#hero" : "/#hero", label: "Home" },
+    { id: "store", href: "/store", label: "Catalog Store" },
+    {
+      id: "timeline",
+      href: isHome ? "#timeline" : "/#timeline",
+      label: "How We Print",
+    },
+    {
+      id: "inquiry",
+      href: isHome ? "#inquiry" : "/#inquiry",
+      label: "Bulk Inquiry",
+    },
   ];
 
   return (
@@ -66,16 +110,20 @@ export function Navbar() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="font-ui text-sm font-medium text-foreground/80 transition-transform hover:-translate-y-0.5"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary">
+          {links.map((link) => {
+            const active = activeId === link.id;
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={navLinkClass(active)}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -139,23 +187,27 @@ export function Navbar() {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden border-t border-border bg-surface md:hidden"
           >
-            <nav className="flex flex-col gap-3 px-4 py-4">
-              {links.map((link, i) => (
-                <motion.div
-                  key={link.label}
-                  initial={reduce ? false : { opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.04 * i }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="font-ui text-base font-medium text-foreground"
+            <nav className="flex flex-col gap-2 px-4 py-4" aria-label="Mobile">
+              {links.map((link, i) => {
+                const active = activeId === link.id;
+                return (
+                  <motion.div
+                    key={link.id}
+                    initial={reduce ? false : { opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.04 * i }}
                   >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={navLinkClassMobile(active)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
               <Link
                 href={isHome ? "#inquiry" : "/#inquiry"}
                 onClick={() => setMobileOpen(false)}
