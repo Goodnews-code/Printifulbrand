@@ -28,6 +28,12 @@
   --border: #ede8fa;
   --card: #ffffff;
   --navbar: rgba(255, 255, 255, 0.95);
+  /* Complements dark/muted text on light UI */
+  --hover-accent: #53009b;
+  --hover-accent-strong: #3a006e;
+  --hover-on-purple: #3a006e;
+  --hover-on-yellow: #53009b;
+  --hover-on-white: #ffff00;
 }
 
 .dark {
@@ -38,6 +44,12 @@
   --border: #281a3d;
   --card: #1a0a2e;
   --navbar: rgba(13, 0, 21, 0.95);
+  /* Complements light text on dark UI */
+  --hover-accent: #ffff00;
+  --hover-accent-strong: #ffff66;
+  --hover-on-purple: #ffff00;
+  --hover-on-yellow: #ffffff;
+  --hover-on-white: #ffff00;
 }
 
 html {
@@ -60,4 +72,96 @@ body {
 .dark ::selection {
   background: #ffff00;
   color: #111111;
+}
+
+/* ==========================================================================
+   Site-wide complementary hover / active
+   Purple ↔ yellow based on current text context
+   ========================================================================== */
+a,
+button,
+[role="button"],
+summary {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 120ms ease,
+    filter 160ms ease;
+}
+
+/* Text-style links & outline controls → brand complement */
+a:not([class*="bg-"]):not(.no-hover):hover,
+button:not([class*="bg-"]):not(:disabled):not(.no-hover):hover,
+[role="button"]:not([class*="bg-"]):not(.no-hover):hover {
+  color: var(--hover-accent);
+}
+
+a:not([class*="bg-"]):not(.no-hover):active,
+button:not([class*="bg-"]):not(:disabled):not(.no-hover):active,
+[role="button"]:not([class*="bg-"]):not(.no-hover):active {
+  color: var(--hover-accent-strong);
+  opacity: 0.9;
+}
+
+/* Already purple → deepen (light) / flip to yellow (dark) */
+a.text-brand-purple:hover,
+button.text-brand-purple:hover,
+.text-brand-purple:is(a, button, [role="button"]):hover {
+  color: var(--hover-on-purple) !important;
+}
+
+/* Already yellow → purple (light) / white (dark) */
+a.text-brand-yellow:hover,
+button.text-brand-yellow:hover,
+.text-brand-yellow:is(a, button, [role="button"]):hover {
+  color: var(--hover-on-yellow) !important;
+}
+
+/* White text (e.g. on dark hero) → yellow */
+a.text-white:hover,
+button.text-white:not([class*="bg-"]):hover,
+.text-white:is(a, button):not([class*="bg-"]):hover {
+  color: var(--hover-on-white) !important;
+}
+
+/* Muted text links → brand accent */
+a.text-muted:hover,
+.text-muted:is(a, button, [role="button"]):hover,
+ul.text-muted a:hover {
+  color: var(--hover-accent) !important;
+}
+
+/* Icon / outline chips: border follows the same complement */
+button:not([class*="bg-"]):not(:disabled):not(.no-hover):hover,
+a:not([class*="bg-"]):not(.no-hover):hover {
+  border-color: color-mix(in srgb, var(--hover-accent) 55%, var(--border));
+}
+
+/* Filled brand buttons keep purple ↔ yellow swap */
+button.bg-brand-purple:not(.no-hover):hover,
+a.bg-brand-purple:not(.no-hover):hover {
+  background-color: #ffff00 !important;
+  color: #111111 !important;
+  border-color: #ffff00 !important;
+}
+
+button.bg-brand-yellow:not(.no-hover):hover,
+a.bg-brand-yellow:not(.no-hover):hover {
+  background-color: #53009b !important;
+  color: #ffffff !important;
+  border-color: #53009b !important;
+}
+
+button.bg-brand-black:not(.no-hover):hover,
+a.bg-brand-black:not(.no-hover):hover {
+  background-color: #53009b !important;
+  color: #ffffff !important;
+}
+
+.dark button.bg-brand-black:not(.no-hover):hover,
+.dark a.bg-brand-black:not(.no-hover):hover {
+  background-color: #ffff00 !important;
+  color: #111111 !important;
 }

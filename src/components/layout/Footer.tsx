@@ -94,24 +94,16 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/store" className="hover:text-foreground">
-                  Catalog Store
-                </Link>
+                <Link href="/store">Catalog Store</Link>
               </li>
               <li>
-                <Link href="/#timeline" className="hover:text-foreground">
-                  Step Journey
-                </Link>
+                <Link href="/#timeline">Step Journey</Link>
               </li>
               <li>
-                <Link href="/#inquiry" className="hover:text-foreground">
-                  Bulk Orders
-                </Link>
+                <Link href="/#inquiry">Bulk Orders</Link>
               </li>
               <li>
-                <Link href="/admin" className="hover:text-foreground">
-                  Admin Access
-                </Link>
+                <Link href="/admin">Admin Access</Link>
               </li>
             </ul>
           </div>
@@ -121,24 +113,16 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/#inquiry" className="hover:text-foreground">
-                  Contact Designer
-                </Link>
+                <Link href="/#inquiry">Contact Designer</Link>
               </li>
               <li>
-                <Link href="/store" className="hover:text-foreground">
-                  Product Sizing
-                </Link>
+                <Link href="/store">Product Sizing</Link>
               </li>
               <li>
-                <Link href="/#timeline" className="hover:text-foreground">
-                  Eco Commitments
-                </Link>
+                <Link href="/#timeline">Eco Commitments</Link>
               </li>
               <li>
-                <Link href="/#inquiry" className="hover:text-foreground">
-                  Wholesale
-                </Link>
+                <Link href="/#inquiry">Wholesale</Link>
               </li>
             </ul>
           </div>
@@ -148,24 +132,16 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/terms" className="hover:text-foreground">
-                  Terms & Conditions
-                </Link>
+                <Link href="/terms">Terms & Conditions</Link>
               </li>
               <li>
-                <Link href="/privacy-policy" className="hover:text-foreground">
-                  Privacy Policy
-                </Link>
+                <Link href="/privacy-policy">Privacy Policy</Link>
               </li>
               <li>
-                <Link href="/shipping-policy" className="hover:text-foreground">
-                  Shipping Policy
-                </Link>
+                <Link href="/shipping-policy">Shipping Policy</Link>
               </li>
               <li>
-                <Link href="/returns-refunds" className="hover:text-foreground">
-                  Return & Refund Policy
-                </Link>
+                <Link href="/returns-refunds">Return & Refund Policy</Link>
               </li>
             </ul>
           </div>

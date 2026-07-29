@@ -4,14 +4,14 @@ export const shippingPolicy = {
   sections: [
     {
       heading: "Shipping Fees",
-      paragraphs: [
-        "Shipping fees are calculated based on:",
-        "The applicable shipping fee will be communicated before your order is confirmed.",
-      ],
+      paragraphs: ["Shipping fees are calculated based on:"],
       bullets: [
         "Delivery location",
         "Distance to the delivery address",
         "Weight and size of the package",
+      ],
+      afterParagraphs: [
+        "The applicable shipping fee will be communicated before your order is confirmed.",
       ],
     },
     {
@@ -56,13 +56,15 @@ export const returnsPolicy = {
       heading: "Eligibility for Returns",
       paragraphs: [
         "Returns are only accepted where the issue is a result of an error on our part. This includes:",
-        "Customers must report any issue within 24–48 hours of receiving their order.",
-        "To enable us to assess your request, clear photographs or videos showing the issue may be required.",
       ],
       bullets: [
         "Wrong item delivered",
         "Defective or damaged product",
         "Incorrect customisation due to our error",
+      ],
+      afterParagraphs: [
+        "Customers must report any issue within 24–48 hours of receiving their order.",
+        "To enable us to assess your request, clear photographs or videos showing the issue may be required.",
       ],
     },
     {
@@ -214,12 +216,14 @@ export const privacyPolicy = {
       paragraphs: [
         "We respect your privacy. Your personal information will not be sold, rented, or shared with third parties for marketing purposes.",
         "We may only share your information with trusted third-party service providers where necessary to:",
-        "These third parties are expected to protect your information and use it only for the services they provide.",
       ],
       bullets: [
         "Process payments",
         "Deliver your orders",
         "Comply with legal obligations",
+      ],
+      afterParagraphs: [
+        "These third parties are expected to protect your information and use it only for the services they provide.",
       ],
     },
     {

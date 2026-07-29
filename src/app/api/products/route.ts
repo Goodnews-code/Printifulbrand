@@ -6,9 +6,14 @@ import { createProduct, listProducts } from "@/lib/products";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const includeAll = req.nextUrl.searchParams.get("all") === "true";
-  if (includeAll && !isAuthorized(req)) return unauthorized();
-  return Response.json(listProducts(includeAll));
+  try {
+    const includeAll = req.nextUrl.searchParams.get("all") === "true";
+    if (includeAll && !isAuthorized(req)) return unauthorized();
+    return Response.json(await listProducts(includeAll));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load products";
+    return Response.json({ error: message }, { status: 500 });
+  }
 }
 
 const productSchema = z.object({
@@ -39,11 +44,16 @@ const productSchema = z.object({
 
 export async function POST(req: NextRequest) {
   if (!isAuthorized(req)) return unauthorized();
-  const body = await req.json();
-  const parsed = productSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+  try {
+    const body = await req.json();
+    const parsed = productSchema.safeParse(body);
+    if (!parsed.success) {
+      return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+    const product = await createProduct(parsed.data);
+    return Response.json(product, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Create failed";
+    return Response.json({ error: message }, { status: 500 });
   }
-  const product = createProduct(parsed.data);
-  return Response.json(product, { status: 201 });
 }

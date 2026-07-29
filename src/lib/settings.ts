@@ -1,5 +1,5 @@
-import { getDb } from "@/lib/db";
 import type { SiteSettings } from "@/types";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 const DEFAULTS: SiteSettings = {
   site_title: "Printiful | Premium Custom wear & High-Fidelity Printing",
@@ -19,19 +19,16 @@ const DEFAULTS: SiteSettings = {
   paystack_secret_key: "",
 };
 
-export function getSettings(): SiteSettings {
-  const db = getDb();
-  const rows = db.prepare("SELECT key, value FROM settings").all() as Array<{
-    key: string;
-    value: string;
-  }>;
+export async function getSettings(): Promise<SiteSettings> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.from("settings").select("key, value");
+  if (error) throw new Error(error.message);
 
   const settings: SiteSettings = { ...DEFAULTS };
-  for (const row of rows) {
-    settings[row.key] = row.value;
+  for (const row of data ?? []) {
+    settings[row.key as string] = row.value as string;
   }
 
-  // Prefer env secrets over DB (never expose secret key to public client later)
   if (process.env.PAYSTACK_PUBLIC_KEY) {
     settings.paystack_public_key = process.env.PAYSTACK_PUBLIC_KEY;
   }
@@ -42,16 +39,16 @@ export function getSettings(): SiteSettings {
   return settings;
 }
 
-export function updateSettings(payload: Record<string, string>) {
-  const db = getDb();
-  const stmt = db.prepare(
-    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-  );
-  const tx = db.transaction(() => {
-    for (const [key, value] of Object.entries(payload)) {
-      if (typeof value === "string") stmt.run(key, value);
-    }
-  });
-  tx();
+export async function updateSettings(payload: Record<string, string>) {
+  const supabase = getSupabaseAdmin();
+  const rows = Object.entries(payload)
+    .filter(([, value]) => typeof value === "string")
+    .map(([key, value]) => ({ key, value }));
+
+  if (rows.length > 0) {
+    const { error } = await supabase.from("settings").upsert(rows);
+    if (error) throw new Error(error.message);
+  }
+
   return getSettings();
 }

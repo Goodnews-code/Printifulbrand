@@ -1,44 +1,91 @@
-import { getDb } from "@/lib/db";
 import type { Product, ProductImage, ProductSize } from "@/types";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
-function attachRelations(product: Product): Product {
-  const db = getDb();
-  const images = db
-    .prepare(
-      "SELECT id, image_url, color_code, is_primary FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, id ASC",
-    )
-    .all(product.id) as ProductImage[];
-  const sizes = db
-    .prepare(
-      "SELECT id, size_name, price FROM product_sizes WHERE product_id = ? ORDER BY id ASC",
-    )
-    .all(product.id) as ProductSize[];
-  return { ...product, images, sizes };
+type ProductRow = {
+  id: number;
+  title: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  category: string | null;
+  is_active: boolean;
+  created_at?: string;
+  product_images?: Array<{
+    id: number;
+    image_url: string;
+    color_code: string;
+    is_primary: boolean;
+  }>;
+  product_sizes?: Array<{
+    id: number;
+    size_name: string;
+    price: number;
+  }>;
+};
+
+function mapProduct(row: ProductRow): Product {
+  const images: ProductImage[] = (row.product_images ?? []).map((img) => ({
+    id: img.id,
+    image_url: img.image_url,
+    color_code: img.color_code,
+    is_primary: img.is_primary ? 1 : 0,
+  }));
+  const sizes: ProductSize[] = (row.product_sizes ?? []).map((size) => ({
+    id: size.id,
+    size_name: size.size_name,
+    price: size.price,
+  }));
+
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    price: row.price,
+    image_url: row.image_url,
+    category: row.category,
+    is_active: row.is_active ? 1 : 0,
+    created_at: row.created_at,
+    images,
+    sizes,
+  };
 }
 
-export function listProducts(includeInactive = false): Product[] {
-  const db = getDb();
-  const rows = (
-    includeInactive
-      ? db.prepare("SELECT * FROM products ORDER BY id DESC").all()
-      : db
-          .prepare(
-            "SELECT * FROM products WHERE is_active = 1 ORDER BY id DESC",
-          )
-          .all()
-  ) as Product[];
-  return rows.map(attachRelations);
+const productSelect = `
+  id, title, description, price, image_url, category, is_active, created_at,
+  product_images ( id, image_url, color_code, is_primary ),
+  product_sizes ( id, size_name, price )
+`;
+
+export async function listProducts(includeInactive = false): Promise<Product[]> {
+  const supabase = getSupabaseAdmin();
+  let query = supabase
+    .from("products")
+    .select(productSelect)
+    .order("id", { ascending: false });
+
+  if (!includeInactive) {
+    query = query.eq("is_active", true);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as ProductRow[]).map(mapProduct);
 }
 
-export function getProduct(id: number): Product | null {
-  const db = getDb();
-  const row = db.prepare("SELECT * FROM products WHERE id = ?").get(id) as
-    | Product
-    | undefined;
-  return row ? attachRelations(row) : null;
+export async function getProduct(id: number): Promise<Product | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("products")
+    .select(productSelect)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  return mapProduct(data as ProductRow);
 }
 
-export function createProduct(input: {
+type ProductInput = {
   title: string;
   description?: string;
   price: number;
@@ -47,95 +94,97 @@ export function createProduct(input: {
   is_active?: boolean;
   images?: ProductImage[];
   sizes?: ProductSize[];
-}) {
-  const db = getDb();
-  const result = db
-    .prepare(
-      "INSERT INTO products (title, description, price, image_url, category, is_active) VALUES (?, ?, ?, ?, ?, ?)",
-    )
-    .run(
-      input.title,
-      input.description ?? "",
-      input.price,
-      input.image_url ?? input.images?.[0]?.image_url ?? "",
-      input.category ?? "Apparels",
-      input.is_active === false ? 0 : 1,
-    );
+};
 
-  const productId = Number(result.lastInsertRowid);
-  replaceVariants(productId, input.images ?? [], input.sizes ?? []);
+export async function createProduct(input: ProductInput) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      title: input.title,
+      description: input.description ?? "",
+      price: input.price,
+      image_url: input.image_url ?? input.images?.[0]?.image_url ?? "",
+      category: input.category ?? "Apparels",
+      is_active: input.is_active !== false,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw new Error(error.message);
+  const productId = data.id as number;
+  await replaceVariants(productId, input.images ?? [], input.sizes ?? []);
   return getProduct(productId);
 }
 
-export function updateProduct(
-  id: number,
-  input: {
-    title: string;
-    description?: string;
-    price: number;
-    image_url?: string;
-    category?: string;
-    is_active?: boolean;
-    images?: ProductImage[];
-    sizes?: ProductSize[];
-  },
-) {
-  const db = getDb();
-  db.prepare(
-    "UPDATE products SET title = ?, description = ?, price = ?, image_url = ?, category = ?, is_active = ? WHERE id = ?",
-  ).run(
-    input.title,
-    input.description ?? "",
-    input.price,
-    input.image_url ?? input.images?.[0]?.image_url ?? "",
-    input.category ?? "Apparels",
-    input.is_active === false ? 0 : 1,
-    id,
-  );
-  replaceVariants(id, input.images ?? [], input.sizes ?? []);
+export async function updateProduct(id: number, input: ProductInput) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("products")
+    .update({
+      title: input.title,
+      description: input.description ?? "",
+      price: input.price,
+      image_url: input.image_url ?? input.images?.[0]?.image_url ?? "",
+      category: input.category ?? "Apparels",
+      is_active: input.is_active !== false,
+    })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+  await replaceVariants(id, input.images ?? [], input.sizes ?? []);
   return getProduct(id);
 }
 
-export function deleteProduct(id: number) {
-  const db = getDb();
-  const product = getProduct(id);
+export async function deleteProduct(id: number) {
+  const supabase = getSupabaseAdmin();
+  const product = await getProduct(id);
   if (!product) return null;
-  if (product.image_url?.startsWith("/uploads/")) {
-    db.prepare(
-      "INSERT INTO deleted_images (image_path, deleted_at) VALUES (?, datetime('now'))",
-    ).run(product.image_url);
+
+  if (
+    product.image_url?.includes("/product-images/") ||
+    product.image_url?.startsWith("/uploads/")
+  ) {
+    await supabase.from("deleted_images").insert({
+      image_path: product.image_url,
+    });
   }
-  db.prepare("DELETE FROM product_images WHERE product_id = ?").run(id);
-  db.prepare("DELETE FROM product_sizes WHERE product_id = ?").run(id);
-  db.prepare("DELETE FROM products WHERE id = ?").run(id);
+
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw new Error(error.message);
   return product;
 }
 
-function replaceVariants(
+async function replaceVariants(
   productId: number,
   images: ProductImage[],
   sizes: ProductSize[],
 ) {
-  const db = getDb();
-  db.prepare("DELETE FROM product_images WHERE product_id = ?").run(productId);
-  db.prepare("DELETE FROM product_sizes WHERE product_id = ?").run(productId);
+  const supabase = getSupabaseAdmin();
 
-  const imgStmt = db.prepare(
-    "INSERT INTO product_images (product_id, image_url, color_code, is_primary) VALUES (?, ?, ?, ?)",
-  );
-  images.forEach((img, index) => {
-    imgStmt.run(
-      productId,
-      img.image_url,
-      img.color_code || "#000000",
-      img.is_primary || index === 0 ? 1 : 0,
+  await supabase.from("product_images").delete().eq("product_id", productId);
+  await supabase.from("product_sizes").delete().eq("product_id", productId);
+
+  if (images.length > 0) {
+    const { error } = await supabase.from("product_images").insert(
+      images.map((img, index) => ({
+        product_id: productId,
+        image_url: img.image_url,
+        color_code: img.color_code || "#000000",
+        is_primary: Boolean(img.is_primary) || index === 0,
+      })),
     );
-  });
+    if (error) throw new Error(error.message);
+  }
 
-  const sizeStmt = db.prepare(
-    "INSERT INTO product_sizes (product_id, size_name, price) VALUES (?, ?, ?)",
-  );
-  sizes.forEach((size) => {
-    sizeStmt.run(productId, size.size_name, size.price);
-  });
+  if (sizes.length > 0) {
+    const { error } = await supabase.from("product_sizes").insert(
+      sizes.map((size) => ({
+        product_id: productId,
+        size_name: size.size_name,
+        price: size.price,
+      })),
+    );
+    if (error) throw new Error(error.message);
+  }
 }

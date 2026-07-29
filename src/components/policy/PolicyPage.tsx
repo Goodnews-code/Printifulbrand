@@ -1,7 +1,10 @@
 interface PolicySection {
   heading: string;
+  /** Paragraphs shown before the bullet list */
   paragraphs?: string[];
   bullets?: string[];
+  /** Paragraphs shown after the bullet list */
+  afterParagraphs?: string[];
 }
 
 interface PolicyPageProps {
@@ -47,6 +50,11 @@ export function PolicyPage({ title, intro, sections }: PolicyPageProps) {
                 ))}
               </ul>
             )}
+            {section.afterParagraphs?.map((p) => (
+              <p key={p} className="mt-3 text-sm leading-relaxed text-muted">
+                {p}
+              </p>
+            ))}
           </section>
         ))}
       </div>
