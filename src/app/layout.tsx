@@ -50,9 +50,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Printiful Custom Studio" }],
   icons: {
-    icon: "/assets/logo%20with%20printiful.svg",
-    shortcut: "/assets/logo%20with%20printiful.svg",
-    apple: "/assets/logo%20with%20printiful.svg",
+    icon: "/assets/logo.svg",
+    shortcut: "/assets/logo.svg",
+    apple: "/assets/logo.svg",
   },
   openGraph: {
     type: "website",
@@ -63,23 +63,23 @@ export const metadata: Metadata = {
     url: "https://shopprintiful.com/",
     images: [
       {
-        url: "/assets/logo%20with%20printiful.svg",
-        alt: "Printiful — Premium custom wear & printing",
-        width: 1200,
-        height: 630,
+        url: "/assets/logo.svg",
+        alt: "Printiful",
+        width: 512,
+        height: 512,
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     site: "@Printiful",
     title: "Printiful | Premium Custom wear & Printing",
     description:
       "Heavyweight luxury blanks. High-fidelity DTG prints & industrial embroidery.",
     images: [
       {
-        url: "/assets/logo%20with%20printiful.svg",
-        alt: "Printiful — Premium custom wear & printing",
+        url: "/assets/logo.svg",
+        alt: "Printiful",
       },
     ],
   },
