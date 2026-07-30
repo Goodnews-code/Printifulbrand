@@ -178,7 +178,14 @@ export function AdminDashboard() {
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {message && (
-          <p className="mb-4 border border-brand-purple/20 bg-brand-purple/5 px-4 py-2 text-sm text-brand-purple dark:border-brand-yellow/20 dark:bg-brand-yellow/10 dark:text-brand-yellow">
+          <p
+            className={cn(
+              "mb-4 border px-4 py-2 text-sm",
+              /rejected|too large|failed|not an allowed/i.test(message)
+                ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
+                : "border-brand-purple/20 bg-brand-purple/5 text-brand-purple dark:border-brand-yellow/20 dark:bg-brand-yellow/10 dark:text-brand-yellow",
+            )}
+          >
             {message}
           </p>
         )}
@@ -290,6 +297,7 @@ function ProductsTab({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -310,9 +318,39 @@ function ProductsTab({
       is_active: true,
     });
     setEditingId(null);
+    setUploadError("");
   };
 
+  const formatMb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
+
   const uploadImage = async (file: File) => {
+    const maxBytes = 5 * 1024 * 1024;
+    const allowed = new Set([
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]);
+
+    setUploadError("");
+
+    if (!file.type.startsWith("image/") || !allowed.has(file.type)) {
+      const reason = `Upload rejected: “${file.name}” is not an allowed image type (${file.type || "unknown"}). Use JPEG, PNG, WebP, or GIF. Max size: 5MB.`;
+      setUploadError(reason);
+      setMessage(reason);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
+    if (file.size > maxBytes) {
+      const reason = `Upload rejected: “${file.name}” is ${formatMb(file.size)}MB. Maximum allowed is 5MB. Please choose a smaller image.`;
+      setUploadError(reason);
+      setMessage(reason);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
       const body = new FormData();
@@ -324,11 +362,23 @@ function ProductsTab({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage(data.error || "Image upload failed.");
+        const reason =
+          (data.error as string) ||
+          "Upload rejected: the server could not accept this image.";
+        setUploadError(reason);
+        setMessage(reason);
         return;
       }
       setForm((f) => ({ ...f, image_url: data.image_url as string }));
-      setMessage("Image uploaded.");
+      setUploadError("");
+      const original = Number(data.originalBytes) || file.size;
+      const optimized = Number(data.optimizedBytes) || file.size;
+      const savedKb = Math.max(0, Math.round((original - optimized) / 1024));
+      setMessage(
+        savedKb > 0
+          ? `Image uploaded and optimized (−${savedKb}KB, quality preserved).`
+          : "Image uploaded.",
+      );
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -427,6 +477,7 @@ function ProductsTab({
 
   const startEdit = (p: Product) => {
     setEditingId(p.id);
+    setUploadError("");
     setForm({
       title: p.title,
       description: p.description || "",
@@ -490,6 +541,14 @@ function ProductsTab({
           <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
             Product image
           </p>
+          <p className="rounded-sm border border-brand-purple/25 bg-brand-purple/5 px-3 py-2 font-ui text-xs leading-relaxed text-foreground dark:border-brand-yellow/30 dark:bg-brand-yellow/10">
+            <span className="font-semibold text-brand-purple dark:text-brand-yellow">
+              Max file size: 5MB.
+            </span>{" "}
+            Larger files are rejected. Allowed formats: JPEG, PNG, WebP, GIF.
+            Images are auto-compressed on upload without reducing visual
+            quality (up to 2000px).
+          </p>
           {form.image_url ? (
             <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
               <SmartImage
@@ -507,7 +566,7 @@ function ProductsTab({
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -521,14 +580,27 @@ function ProductsTab({
             className="inline-flex w-full items-center justify-center gap-2 border border-border bg-surface px-3 py-2 font-ui text-sm font-medium disabled:opacity-60"
           >
             <Upload size={16} />
-            {uploading ? "Uploading…" : "Import image from device"}
+            {uploading ? "Optimizing & uploading…" : "Import image from device"}
           </button>
+          {uploadError ? (
+            <p
+              role="alert"
+              className="border border-red-500/30 bg-red-500/10 px-3 py-2 font-ui text-xs leading-relaxed text-red-700 dark:text-red-300"
+            >
+              {uploadError}
+            </p>
+          ) : (
+            <p className="font-ui text-[11px] text-muted">
+              Does not accept files over 5MB.
+            </p>
+          )}
           <input
             placeholder="Or paste image URL"
             value={form.image_url}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, image_url: e.target.value }))
-            }
+            onChange={(e) => {
+              setUploadError("");
+              setForm((f) => ({ ...f, image_url: e.target.value }));
+            }}
             className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple"
           />
         </div>

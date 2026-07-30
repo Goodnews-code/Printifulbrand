@@ -45,7 +45,7 @@ export function CareGuide() {
 
         <Stagger
           className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
-          stagger={0.1}
+          stagger={0.14}
         >
           {CARE.map((item) => {
             const Icon = item.icon;

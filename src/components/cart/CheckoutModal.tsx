@@ -154,7 +154,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.28 }}
         >
           <motion.div
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-border bg-surface shadow-2xl"
@@ -164,7 +164,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
             initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h3 id="checkout-title" className="font-heading text-xl italic">

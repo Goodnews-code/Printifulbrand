@@ -54,7 +54,7 @@ export function Reveal({
       initial={{ opacity: 0, ...offset(direction) }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once, amount: 0.2, margin: "0px 0px -40px 0px" }}
-      transition={{ duration: 0.55, ease: EASE, delay }}
+      transition={{ duration: 0.75, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -73,7 +73,7 @@ interface StaggerProps {
 export function Stagger({
   children,
   className,
-  stagger = 0.09,
+  stagger = 0.12,
   delay = 0,
   once = true,
 }: StaggerProps) {
@@ -129,7 +129,7 @@ export function StaggerItem({
           opacity: 1,
           x: 0,
           y: 0,
-          transition: { duration: 0.5, ease: EASE },
+          transition: { duration: 0.7, ease: EASE },
         },
       }}
       {...rest}
@@ -153,7 +153,7 @@ export function FadeIn({
   className,
   delay = 0,
   direction = "up",
-  duration = 0.6,
+  duration = 0.85,
 }: FadeInProps) {
   const reduce = useReducedMotion();
 

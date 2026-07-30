@@ -25,13 +25,13 @@ export function PolicyPage({ title, intro, sections }: PolicyPageProps) {
               Legal
             </p>
           </FadeIn>
-          <FadeIn delay={0.08}>
+          <FadeIn delay={0.12}>
             <h1 className="mt-3 font-display text-4xl font-black uppercase tracking-tight sm:text-5xl">
               {title}
             </h1>
           </FadeIn>
           {intro && (
-            <FadeIn delay={0.16}>
+            <FadeIn delay={0.24}>
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/75">
                 {intro}
               </p>

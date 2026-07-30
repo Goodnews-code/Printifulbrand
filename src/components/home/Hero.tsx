@@ -57,8 +57,8 @@ export function Hero() {
           />
           <Stagger
             className="relative z-10 mx-auto grid max-w-xl grid-cols-[1.1fr_0.9fr] gap-4 sm:gap-6 lg:mx-0 lg:max-w-none"
-            stagger={0.14}
-            delay={0.15}
+            stagger={0.2}
+            delay={0.2}
           >
             {HERO_IMAGES.map((image) => (
               <StaggerItem key={image.src}>
@@ -85,23 +85,23 @@ export function Hero() {
         </div>
 
         <div className="order-1 flex flex-col items-start text-left lg:order-2">
-          <FadeIn delay={0.05}>
+          <FadeIn delay={0.08}>
             <p className="mb-4 font-ui text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-purple dark:text-brand-yellow">
               00 / Curated wear & high-fidelity printing
             </p>
           </FadeIn>
-          <FadeIn delay={0.12}>
+          <FadeIn delay={0.2}>
             <h1 className="max-w-xl font-display text-4xl font-black uppercase leading-[0.95] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               {settings.hero_headline || "Be Bold! Be Seen!! Be Known!!!"}
             </h1>
           </FadeIn>
-          <FadeIn delay={0.22}>
+          <FadeIn delay={0.34}>
             <p className="mt-6 max-w-lg font-sans text-base leading-relaxed text-muted sm:text-lg">
               {settings.hero_subtext ||
                 "Printiful helps announce you and your brand even when you don't say a word — premium personalized items and branded merchandise."}
             </p>
           </FadeIn>
-          <FadeIn delay={0.32} className="mt-8 flex flex-wrap gap-3">
+          <FadeIn delay={0.48} className="mt-8 flex flex-wrap gap-3">
             <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={reduce ? undefined : { scale: 0.98 }}>
               <Link
                 href="#catalog"
