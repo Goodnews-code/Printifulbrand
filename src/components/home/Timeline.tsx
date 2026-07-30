@@ -65,9 +65,9 @@ export function Timeline() {
                   whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.35 }}
                   transition={{
-                    duration: 0.5,
+                    duration: 0.7,
                     ease: EASE,
-                    delay: index * 0.08,
+                    delay: index * 0.12,
                   }}
                 >
                   <div className="relative z-10 flex size-14 shrink-0 items-center justify-center border border-border bg-surface text-brand-purple transition-colors duration-300 hover:border-brand-purple hover:bg-brand-purple hover:text-white dark:text-brand-yellow dark:hover:border-brand-yellow dark:hover:bg-brand-yellow dark:hover:text-brand-black sm:size-16">

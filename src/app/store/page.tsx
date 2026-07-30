@@ -33,12 +33,12 @@ export default function StorePage() {
               Catalog Store
             </p>
           </FadeIn>
-          <FadeIn delay={0.08}>
+          <FadeIn delay={0.12}>
             <h1 className="mt-3 font-display text-4xl font-black uppercase tracking-tight sm:text-5xl">
               Shop Printiful
             </h1>
           </FadeIn>
-          <FadeIn delay={0.16}>
+          <FadeIn delay={0.24}>
             <p className="mt-4 max-w-xl text-white/70">
               Search, filter, and add premium custom merch to your cart — priced
               in ₦ NGN.

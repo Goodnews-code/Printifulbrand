@@ -98,7 +98,7 @@ export function Navbar() {
       style={{ backgroundColor: "var(--navbar)" }}
       initial={reduce ? false : { y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="shrink-0" aria-label="Printiful home">
@@ -184,7 +184,7 @@ export function Navbar() {
             initial={reduce ? false : { height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={reduce ? undefined : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden border-t border-border bg-surface md:hidden"
           >
             <nav className="flex flex-col gap-2 px-4 py-4" aria-label="Mobile">

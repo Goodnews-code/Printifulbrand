@@ -35,7 +35,7 @@ export function BrandValues() {
           </p>
         </Reveal>
 
-        <Stagger className="mt-14 grid gap-6 md:grid-cols-3" stagger={0.12}>
+        <Stagger className="mt-14 grid gap-6 md:grid-cols-3" stagger={0.16}>
           {VALUES.map((value) => (
             <StaggerItem
               key={value.num}

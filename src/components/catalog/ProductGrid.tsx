@@ -66,7 +66,7 @@ export function ProductGrid({
         className="mb-8 flex flex-wrap items-center justify-center gap-2"
         initial={reduce ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EASE }}
+        transition={{ duration: 0.55, ease: EASE }}
       >
         {CATEGORY_FILTERS.map((item) => (
           <button
@@ -128,7 +128,7 @@ export function ProductGrid({
           variants={{
             hidden: {},
             show: {
-              transition: { staggerChildren: reduce ? 0 : 0.06 },
+              transition: { staggerChildren: reduce ? 0 : 0.1 },
             },
           }}
         >
@@ -148,7 +148,7 @@ export function ProductGrid({
                   opacity: 1,
                   y: 0,
                   scale: 1,
-                  transition: { duration: 0.4, ease: EASE },
+                  transition: { duration: 0.55, ease: EASE },
                 },
               }}
             >

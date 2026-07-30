@@ -32,7 +32,7 @@ export function CartDrawer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.35 }}
             onClick={closeCart}
             aria-hidden
           />
@@ -47,7 +47,7 @@ export function CartDrawer() {
             initial={reduce ? { x: 0 } : { x: "100%" }}
             animate={{ x: 0 }}
             exit={reduce ? { opacity: 0 } : { x: "100%" }}
-            transition={{ duration: 0.35, ease: EASE }}
+            transition={{ duration: 0.48, ease: EASE }}
             aria-label="Shopping cart"
           >
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -67,7 +67,7 @@ export function CartDrawer() {
                 className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center"
                 initial={reduce ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.35 }}
+                transition={{ delay: 0.15, duration: 0.45 }}
               >
                 <Frown className="size-12 text-muted" strokeWidth={1.25} />
                 <p className="font-ui text-muted">Your shopping cart is empty!</p>
@@ -94,7 +94,7 @@ export function CartDrawer() {
                             ? undefined
                             : { opacity: 0, x: 40, height: 0, marginBottom: 0 }
                         }
-                        transition={{ duration: 0.28, ease: EASE }}
+                        transition={{ duration: 0.38, ease: EASE }}
                         className="flex gap-3 border-b border-border pb-4"
                       >
                         <div className="relative size-20 shrink-0 overflow-hidden bg-surface-alt">
