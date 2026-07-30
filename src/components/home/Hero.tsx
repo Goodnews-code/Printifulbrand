@@ -39,6 +39,14 @@ export function Hero() {
             "radial-gradient(ellipse 50% 55% at 22% 40%, rgba(83,0,155,0.12), transparent 65%), linear-gradient(180deg, var(--surface-alt) 0%, var(--surface) 55%)",
         }}
       />
+      {/* Brand mark in the hero background */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/logo.svg"
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(92vw,520px)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.08] animate-float-slow dark:invert sm:w-[min(70vw,640px)] lg:left-[22%] lg:w-[42%] lg:max-w-xl lg:translate-x-0"
+      />
       {!reduce && (
         <div
           className="pointer-events-none absolute -right-24 top-16 size-72 rounded-full bg-brand-purple/10 blur-3xl animate-float-slow dark:bg-brand-yellow/10"
@@ -46,15 +54,8 @@ export function Hero() {
         />
       )}
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:pt-6">
+      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:pt-6">
         <div className="relative order-2 lg:order-1">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/logo.svg"
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute -left-6 top-1/2 z-0 w-[55%] max-w-sm -translate-y-1/2 opacity-[0.07] animate-float-slow dark:invert"
-          />
           <Stagger
             className="relative z-10 mx-auto grid max-w-xl grid-cols-[1.1fr_0.9fr] gap-4 sm:gap-6 lg:mx-0 lg:max-w-none"
             stagger={0.2}
