@@ -35,6 +35,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://shopprintiful.com"),
   title: "Printiful | Premium Custom wear & High-Fidelity Printing",
   description:
     "Printiful crafts premium customized merch on heavyweight luxury blanks. High-fidelity Direct-to-Merch prints, industrial embroidery, and curated wear designed to endure.",
@@ -49,7 +50,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Printiful Custom Studio" }],
   icons: {
-    icon: "/assets/logo.svg",
+    icon: "/assets/logo%20with%20printiful.svg",
+    shortcut: "/assets/logo%20with%20printiful.svg",
+    apple: "/assets/logo%20with%20printiful.svg",
   },
   openGraph: {
     type: "website",
@@ -57,11 +60,13 @@ export const metadata: Metadata = {
     title: "Printiful | Premium Custom wear & Printing",
     description:
       "Heavyweight luxury blanks. High-fidelity DTG prints & industrial embroidery. Custom wear designed to endure.",
-    url: "https://printiful.store/",
+    url: "https://shopprintiful.com/",
     images: [
       {
         url: "/assets/logo%20with%20printiful.svg",
-        alt: "Printiful Logo",
+        alt: "Printiful — Premium custom wear & printing",
+        width: 1200,
+        height: 630,
       },
     ],
   },
@@ -71,6 +76,12 @@ export const metadata: Metadata = {
     title: "Printiful | Premium Custom wear & Printing",
     description:
       "Heavyweight luxury blanks. High-fidelity DTG prints & industrial embroidery.",
+    images: [
+      {
+        url: "/assets/logo%20with%20printiful.svg",
+        alt: "Printiful — Premium custom wear & printing",
+      },
+    ],
   },
 };
 

@@ -10,6 +10,7 @@ import { InquiryForm } from "@/components/home/InquiryForm";
 import { CareGuide } from "@/components/home/CareGuide";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { Reveal } from "@/components/motion/Reveal";
+import { MobileHandHint } from "@/components/motion/MobileHandHint";
 
 function ShowcaseCatalog() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -78,6 +79,7 @@ function ShowcaseCatalog() {
 export default function HomePage() {
   return (
     <>
+      <MobileHandHint />
       <Hero />
       <BrandValues />
       <ShowcaseCatalog />
