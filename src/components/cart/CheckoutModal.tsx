@@ -175,7 +175,16 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                 setSubmitting(false);
                 return;
               }
-              alert(`Payment successful! Ref: ${reference}`);
+              const notifyBits = [
+                data.notified ? "Telegram: sent" : "Telegram: not sent",
+                data.receiptSent ? "Email: sent" : "Email: not sent",
+              ].join(" · ");
+              const extra = data.notifyError
+                ? `\n\nNotify detail: ${data.notifyError}`
+                : "";
+              alert(
+                `Payment successful! Ref: ${reference}\n\n${notifyBits}${extra}`,
+              );
               clearCart();
               onClose();
             } catch {
