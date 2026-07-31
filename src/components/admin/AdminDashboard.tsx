@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
+  ChevronDown,
   ImagePlus,
   LayoutDashboard,
   LogOut,
@@ -16,7 +17,91 @@ import { SmartImage } from "@/components/ui/SmartImage";
 
 const TOKEN_KEY = "printiful_token";
 
+const PRODUCT_CATEGORIES = [
+  "Apparels",
+  "Stationery",
+  "Brand Packaging",
+  "Gadgets",
+  "Corporate Gift",
+  "Lifestyle",
+] as const;
+
 type Tab = "overview" | "products" | "settings";
+
+function CategorySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between border border-border bg-surface px-3 py-2 text-left text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+      >
+        <span>{value}</span>
+        <ChevronDown
+          size={16}
+          className={cn("shrink-0 text-muted transition-transform", open && "rotate-180")}
+        />
+      </button>
+      {open && (
+        <ul
+          role="listbox"
+          aria-label="Product category"
+          className="absolute z-30 mt-1 max-h-60 w-full overflow-auto border border-border bg-white py-1 text-sm text-brand-black shadow-lg dark:border-[#281a3d] dark:bg-[#1a0a2e] dark:text-[#f0e8ff]"
+        >
+          {PRODUCT_CATEGORIES.map((category) => {
+            const selected = category === value;
+            return (
+              <li key={category} role="option" aria-selected={selected}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(category);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "no-hover w-full px-3 py-2.5 text-left transition-colors",
+                    selected
+                      ? "bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
+                      : "text-brand-black hover:bg-[#f7f5ff] dark:text-[#f0e8ff] dark:hover:bg-[#150025]",
+                  )}
+                >
+                  {category}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function authHeaders(token: string): HeadersInit {
   return {
@@ -502,7 +587,7 @@ function ProductsTab({
           placeholder="Title"
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
         />
         <textarea
           placeholder="Description"
@@ -511,7 +596,7 @@ function ProductsTab({
             setForm((f) => ({ ...f, description: e.target.value }))
           }
           rows={3}
-          className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
         />
         <input
           required
@@ -521,20 +606,12 @@ function ProductsTab({
           placeholder="Price (₦)"
           value={form.price}
           onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-          className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
         />
-        <select
+        <CategorySelect
           value={form.category}
-          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-          className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
-        >
-          <option value="Apparels">Apparels</option>
-          <option value="Stationery">Stationery</option>
-          <option value="Brand Packaging">Brand Packaging</option>
-          <option value="Gadgets">Gadgets</option>
-          <option value="Corporate Gift">Corporate Gift</option>
-          <option value="Lifestyle">Lifestyle</option>
-        </select>
+          onChange={(category) => setForm((f) => ({ ...f, category }))}
+        />
 
         {/* Image: upload or URL */}
         <div className="space-y-2 border border-border bg-surface-alt p-3">
