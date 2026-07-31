@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 
 const bodySchema = z.object({
   reference: z.string().min(3),
+  forceNotify: z.boolean().optional(),
   customer: z
     .object({
       name: z.string().min(1),
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { reference, customer, items } = parsed.data;
+    const { reference, customer, items, forceNotify } = parsed.data;
     const data = await verifyPaystackTransaction(reference);
 
     if (data.status !== "success") {
@@ -108,14 +109,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await processPaidOrder({
-      reference: data.reference,
-      amountNaira,
-      currency: data.currency || "NGN",
-      customer: { name, email, phone },
-      items: items as OrderItemSnapshot[] | undefined,
-      paystackPayload: data,
-    });
+    const result = await processPaidOrder(
+      {
+        reference: data.reference,
+        amountNaira,
+        currency: data.currency || "NGN",
+        customer: { name, email, phone },
+        items: items as OrderItemSnapshot[] | undefined,
+        paystackPayload: data,
+      },
+      { forceNotify: Boolean(forceNotify) },
+    );
 
     return Response.json({
       ok: true,

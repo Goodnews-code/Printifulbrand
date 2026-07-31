@@ -31,6 +31,12 @@ export type ProcessPaidResult = {
   alreadyRecorded: boolean;
   notified: boolean;
   receiptSent: boolean;
+  notifyError?: string;
+};
+
+export type ProcessPaidOptions = {
+  /** Re-send Telegram/email even if this order was already marked success. */
+  forceNotify?: boolean;
 };
 
 function buildTelegramText(order: PaidOrderInput): string {
@@ -67,6 +73,7 @@ function buildTelegramText(order: PaidOrderInput): string {
  */
 export async function processPaidOrder(
   input: PaidOrderInput,
+  options: ProcessPaidOptions = {},
 ): Promise<ProcessPaidResult> {
   const supabase = getSupabaseAdmin();
   const now = new Date().toISOString();
@@ -112,13 +119,17 @@ export async function processPaidOrder(
 
   let notified = false;
   let receiptSent = false;
-  if (!alreadySuccess) {
-    const [telegramOk, emailOk] = await Promise.all([
+  let notifyError: string | undefined;
+  if (!alreadySuccess || options.forceNotify) {
+    const [telegram, emailOk] = await Promise.all([
       sendTelegramMessage(buildTelegramText(input)),
       sendOrderReceipt(input),
     ]);
-    notified = telegramOk;
+    notified = telegram.ok;
     receiptSent = emailOk;
+    if (!telegram.ok) {
+      notifyError = telegram.error;
+    }
   }
 
   return {
@@ -126,5 +137,6 @@ export async function processPaidOrder(
     alreadyRecorded: alreadySuccess,
     notified,
     receiptSent,
+    notifyError,
   };
 }
