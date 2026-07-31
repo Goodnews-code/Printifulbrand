@@ -1,7 +1,17 @@
 /** Clean env values Netlify sometimes stores with quotes/whitespace. */
 function cleanEnv(value: string | undefined): string {
   if (!value) return "";
-  return value.trim().replace(/^["']|["']$/g, "").trim();
+  return value
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .trim()
+    // Normalize en/em dashes people paste from docs/phones
+    .replace(/[\u2010-\u2015\u2212]/g, "-");
+}
+
+function parseChatId(raw: string): string | number {
+  if (/^-?\d+$/.test(raw)) return Number(raw);
+  return raw;
 }
 
 export type TelegramSendResult = {
@@ -11,17 +21,30 @@ export type TelegramSendResult = {
   configured: boolean;
 };
 
+export function getTelegramConfig() {
+  const token = cleanEnv(process.env.TELEGRAM_BOT_TOKEN);
+  const chatIdRaw = cleanEnv(process.env.TELEGRAM_CHAT_ID);
+  return {
+    token,
+    chatIdRaw,
+    chatId: chatIdRaw ? parseChatId(chatIdRaw) : "",
+    tokenSet: Boolean(token),
+    chatSet: Boolean(chatIdRaw),
+    chatStartsWithMinus: chatIdRaw.startsWith("-"),
+    chatLength: chatIdRaw.length,
+  };
+}
+
 /** Send a Telegram message to the shop owner chat. */
 export async function sendTelegramMessage(
   text: string,
 ): Promise<TelegramSendResult> {
-  const token = cleanEnv(process.env.TELEGRAM_BOT_TOKEN);
-  const chatId = cleanEnv(process.env.TELEGRAM_CHAT_ID);
+  const { token, chatId, tokenSet, chatSet } = getTelegramConfig();
 
-  if (!token || !chatId) {
+  if (!tokenSet || !chatSet) {
     const missing = [
-      !token ? "TELEGRAM_BOT_TOKEN" : null,
-      !chatId ? "TELEGRAM_CHAT_ID" : null,
+      !tokenSet ? "TELEGRAM_BOT_TOKEN" : null,
+      !chatSet ? "TELEGRAM_CHAT_ID" : null,
     ]
       .filter(Boolean)
       .join(", ");
