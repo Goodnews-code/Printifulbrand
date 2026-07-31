@@ -1,0 +1,128 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { verifyPaystackTransaction } from "@/lib/paystack";
+import {
+  processPaidOrder,
+  type OrderItemSnapshot,
+} from "@/lib/orders";
+
+export const runtime = "nodejs";
+
+const bodySchema = z.object({
+  reference: z.string().min(3),
+  customer: z
+    .object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      phone: z.string().optional(),
+    })
+    .optional(),
+  items: z
+    .array(
+      z.object({
+        name: z.string(),
+        qty: z.number().positive(),
+        price: z.number().nonnegative(),
+        size: z.string().optional(),
+        color: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+
+function nameFromMetadata(meta: Record<string, unknown> | null | undefined) {
+  if (!meta) return "";
+  const fields = meta.custom_fields;
+  if (Array.isArray(fields)) {
+    for (const field of fields) {
+      if (
+        field &&
+        typeof field === "object" &&
+        "variable_name" in field &&
+        (field as { variable_name?: string }).variable_name === "name" &&
+        "value" in field
+      ) {
+        return String((field as { value?: unknown }).value ?? "");
+      }
+    }
+  }
+  if (typeof meta.customer_name === "string") return meta.customer_name;
+  return "";
+}
+
+function phoneFromMetadata(meta: Record<string, unknown> | null | undefined) {
+  if (!meta) return "";
+  const fields = meta.custom_fields;
+  if (Array.isArray(fields)) {
+    for (const field of fields) {
+      if (
+        field &&
+        typeof field === "object" &&
+        "variable_name" in field &&
+        (field as { variable_name?: string }).variable_name === "phone" &&
+        "value" in field
+      ) {
+        return String((field as { value?: unknown }).value ?? "");
+      }
+    }
+  }
+  if (typeof meta.customer_phone === "string") return meta.customer_phone;
+  return "";
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const json = await req.json();
+    const parsed = bodySchema.safeParse(json);
+    if (!parsed.success) {
+      return Response.json(
+        { error: "Invalid verify payload", details: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
+
+    const { reference, customer, items } = parsed.data;
+    const data = await verifyPaystackTransaction(reference);
+
+    if (data.status !== "success") {
+      return Response.json(
+        { error: "Payment not successful", status: data.status },
+        { status: 400 },
+      );
+    }
+
+    const meta = (data.metadata ?? null) as Record<string, unknown> | null;
+    const amountNaira = data.amount / 100;
+    const email =
+      customer?.email ||
+      data.customer?.email ||
+      "";
+    const name =
+      customer?.name || nameFromMetadata(meta) || email || "Customer";
+    const phone = customer?.phone || phoneFromMetadata(meta) || undefined;
+
+    if (!email) {
+      return Response.json(
+        { error: "Missing customer email on payment" },
+        { status: 400 },
+      );
+    }
+
+    const result = await processPaidOrder({
+      reference: data.reference,
+      amountNaira,
+      currency: data.currency || "NGN",
+      customer: { name, email, phone },
+      items: items as OrderItemSnapshot[] | undefined,
+      paystackPayload: data,
+    });
+
+    return Response.json({
+      ok: true,
+      ...result,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Verify failed";
+    return Response.json({ error: message }, { status: 500 });
+  }
+}

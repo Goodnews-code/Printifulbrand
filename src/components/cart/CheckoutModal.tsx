@@ -115,26 +115,78 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     try {
       // Paystack amounts are in kobo (NGN * 100)
       const amountKobo = Math.round(subtotal * 100);
+      const cartItems = items.map((item) => ({
+        name: item.name,
+        qty: item.qty,
+        price: item.price,
+        size: item.size,
+        color: item.color,
+      }));
+      const customerSnapshot = {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+      };
+
       const paystack = new window.PaystackPop();
       paystack.newTransaction({
         key: publicKey,
-        email: email.trim(),
+        email: customerSnapshot.email,
         amount: amountKobo,
         currency: "NGN",
         ref: txnRef,
         metadata: {
+          customer_name: customerSnapshot.name,
+          customer_phone: customerSnapshot.phone,
+          cart_items: cartItems,
           custom_fields: [
-            { display_name: "Customer Name", variable_name: "name", value: name },
-            { display_name: "Phone", variable_name: "phone", value: phone },
+            {
+              display_name: "Customer Name",
+              variable_name: "name",
+              value: customerSnapshot.name,
+            },
+            {
+              display_name: "Phone",
+              variable_name: "phone",
+              value: customerSnapshot.phone,
+            },
           ],
         },
         onSuccess: (response: { reference?: string; status?: string }) => {
-          alert(
-            `Payment successful! Ref: ${response.reference || txnRef}`,
-          );
-          clearCart();
-          onClose();
-          setSubmitting(false);
+          void (async () => {
+            const reference = response.reference || txnRef;
+            try {
+              const res = await fetch("/api/paystack/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  reference,
+                  customer: customerSnapshot,
+                  items: cartItems,
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) {
+                alert(
+                  data.error ||
+                    "Payment received, but confirmation failed. Please contact us with your reference: " +
+                      reference,
+                );
+                setSubmitting(false);
+                return;
+              }
+              alert(`Payment successful! Ref: ${reference}`);
+              clearCart();
+              onClose();
+            } catch {
+              alert(
+                "Payment may have succeeded, but we could not confirm it. Please contact us with reference: " +
+                  reference,
+              );
+            } finally {
+              setSubmitting(false);
+            }
+          })();
         },
         onCancel: () => {
           setSubmitting(false);
