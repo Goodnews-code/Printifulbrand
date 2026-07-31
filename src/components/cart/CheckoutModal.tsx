@@ -79,6 +79,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("Nigeria");
   const [submitting, setSubmitting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [paidTotal, setPaidTotal] = useState(0);
   const [paidRef, setPaidRef] = useState("");
@@ -91,6 +92,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     if (!open) {
       setStep(1);
       setSubmitting(false);
+      setConfirming(false);
       setFormError(null);
       setPaidTotal(0);
       setPaidRef("");
@@ -226,12 +228,16 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         onSuccess: (response: { reference?: string; status?: string }) => {
           void (async () => {
             const reference = response.reference || txnRef;
+            // Browser callback is not enough — wait for Paystack API confirmation.
+            setConfirming(true);
+            setFormError(null);
             try {
               const res = await fetch("/api/paystack/verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   reference,
+                  expectedAmountKobo: amountKobo,
                   customer: customerSnapshot,
                   items: cartItems,
                 }),
@@ -240,9 +246,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               if (!res.ok) {
                 setFormError(
                   data.error ||
-                    `Payment received, but confirmation failed. Contact us with reference ${reference}.`,
+                    `Paystack has not confirmed this payment yet. Reference: ${reference}`,
                 );
                 setSubmitting(false);
+                setConfirming(false);
                 return;
               }
 
@@ -254,20 +261,23 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               setStep("success");
             } catch {
               setFormError(
-                `Payment may have succeeded, but we could not confirm it. Contact us with reference ${reference}.`,
+                `Could not confirm payment with Paystack. Reference: ${reference}`,
               );
             } finally {
               setSubmitting(false);
+              setConfirming(false);
             }
           })();
         },
         onCancel: () => {
           setSubmitting(false);
+          setConfirming(false);
         },
       });
     } catch {
       setFormError("Failed to initialize Paystack. Please try again.");
       setSubmitting(false);
+      setConfirming(false);
     }
   };
 
@@ -346,6 +356,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                     <span>{formatNaira(subtotal)}</span>
                   </div>
                 </div>
+
+                {confirming && (
+                  <div
+                    role="status"
+                    className="mx-5 mt-4 border border-brand-purple/30 bg-brand-purple/10 px-3 py-2.5 text-sm text-brand-purple dark:border-brand-yellow/30 dark:bg-brand-yellow/10 dark:text-brand-yellow"
+                  >
+                    Confirming payment with Paystack before sending your receipt…
+                  </div>
+                )}
 
                 {formError && (
                   <div
@@ -502,12 +521,16 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                       </button>
                       <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || confirming}
                         className={cn(
                           "flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black disabled:opacity-60",
                         )}
                       >
-                        {submitting ? "Processing…" : "Pay with Paystack"}
+                        {confirming
+                          ? "Confirming with Paystack…"
+                          : submitting
+                            ? "Processing…"
+                            : "Pay with Paystack"}
                       </button>
                     </div>
                   </form>

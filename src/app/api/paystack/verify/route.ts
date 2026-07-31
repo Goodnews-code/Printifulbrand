@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { verifyPaystackTransaction } from "@/lib/paystack";
+import { confirmPaystackPayment } from "@/lib/paystack";
 import {
   processPaidOrder,
   type OrderItemSnapshot,
@@ -19,6 +19,8 @@ const shippingSchema = z.object({
 
 const bodySchema = z.object({
   reference: z.string().min(3),
+  /** Cart total in kobo — must match what Paystack recorded. */
+  expectedAmountKobo: z.number().int().positive().optional(),
   forceNotify: z.boolean().optional(),
   customer: z
     .object({
@@ -92,22 +94,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { reference, customer, items, forceNotify } = parsed.data;
-    const data = await verifyPaystackTransaction(reference);
+    const { reference, customer, items, forceNotify, expectedAmountKobo } =
+      parsed.data;
 
-    if (data.status !== "success") {
-      return Response.json(
-        { error: "Payment not successful", status: data.status },
-        { status: 400 },
-      );
-    }
+    // Never trust the browser alone — confirm with Paystack API.
+    const data = await confirmPaystackPayment(reference, {
+      expectedAmountKobo,
+      expectedCurrency: "NGN",
+      attempts: 5,
+      delayMs: 2000,
+    });
 
     const meta = (data.metadata ?? null) as Record<string, unknown> | null;
     const amountNaira = data.amount / 100;
     const email =
-      customer?.email ||
-      data.customer?.email ||
-      "";
+      customer?.email || data.customer?.email || "";
     const name =
       customer?.name || nameFromMetadata(meta) || email || "Customer";
     const phone = customer?.phone || phoneFromMetadata(meta) || undefined;
@@ -147,10 +148,12 @@ export async function POST(req: NextRequest) {
 
     return Response.json({
       ok: true,
+      paystackStatus: data.status,
+      paidAt: data.paid_at ?? null,
       ...result,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Verify failed";
-    return Response.json({ error: message }, { status: 500 });
+    return Response.json({ error: message }, { status: 400 });
   }
 }

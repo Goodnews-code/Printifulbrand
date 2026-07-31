@@ -81,6 +81,7 @@ function buildTelegramText(order: PaidOrderInput): string {
 
 /**
  * Upsert a successful payment, notify Telegram, and email the customer receipt once.
+ * Call only after Paystack verify API returns status=success.
  * Idempotent on `reference` — skips notify/email if already status=success.
  */
 export async function processPaidOrder(
