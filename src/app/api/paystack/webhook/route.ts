@@ -59,6 +59,23 @@ export async function POST(req: NextRequest) {
     const email = data.customer?.email || "";
     const name = metaField(meta, "name") || email || "Customer";
     const phone = metaField(meta, "phone") || undefined;
+    let shipping:
+      | {
+          line1: string;
+          line2?: string;
+          city: string;
+          state: string;
+          postalCode?: string;
+          country: string;
+        }
+      | undefined;
+    if (
+      meta &&
+      meta.shipping_address &&
+      typeof meta.shipping_address === "object"
+    ) {
+      shipping = meta.shipping_address as typeof shipping;
+    }
     const amountNaira = data.amount / 100;
 
     if (!email || !data.reference) {
@@ -86,7 +103,7 @@ export async function POST(req: NextRequest) {
       reference: data.reference,
       amountNaira,
       currency: data.currency || "NGN",
-      customer: { name, email, phone },
+      customer: { name, email, phone, shipping },
       items,
       paystackPayload: data,
     });

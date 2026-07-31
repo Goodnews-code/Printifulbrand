@@ -5,6 +5,7 @@ import { ArrowLeft, Check, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
+import { NIGERIA_STATES, formatShippingLines } from "@/lib/shipping";
 import { formatNaira, cn } from "@/lib/utils";
 
 declare global {
@@ -50,6 +51,20 @@ function loadPaystackScript(): Promise<boolean> {
   });
 }
 
+function hasCompleteShipping(fields: {
+  line1: string;
+  city: string;
+  state: string;
+  country: string;
+}) {
+  return Boolean(
+    fields.line1.trim() &&
+      fields.city.trim() &&
+      fields.state.trim() &&
+      fields.country.trim(),
+  );
+}
+
 export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const { items, subtotal, clearCart } = useCart();
   const { settings } = useSettings();
@@ -57,6 +72,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [line1, setLine1] = useState("");
+  const [line2, setLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("Nigeria");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [paidTotal, setPaidTotal] = useState(0);
@@ -90,11 +111,25 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     onClose();
   };
 
+  const shippingSnapshot = () => ({
+    line1: line1.trim(),
+    line2: line2.trim() || undefined,
+    city: city.trim(),
+    state: state.trim(),
+    postalCode: postalCode.trim() || undefined,
+    country: country.trim(),
+  });
+
   const goNext = (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (!name.trim() || !email.trim() || !phone.trim()) {
-      setFormError("Please fill all required checkout fields.");
+    if (
+      !name.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !hasCompleteShipping({ line1, city, state, country })
+    ) {
+      setFormError("Please fill all required checkout and delivery fields.");
       return;
     }
     setStep(2);
@@ -104,8 +139,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     e.preventDefault();
     setFormError(null);
     if (items.length === 0) return;
-    if (!name.trim() || !email.trim() || !phone.trim()) {
-      setFormError("Please fill all required checkout fields.");
+    if (
+      !name.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !hasCompleteShipping({ line1, city, state, country })
+    ) {
+      setFormError("Please fill all required checkout and delivery fields.");
       return;
     }
 
@@ -140,10 +180,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         size: item.size,
         color: item.color,
       }));
+      const shipping = shippingSnapshot();
       const customerSnapshot = {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
+        shipping,
       };
 
       const paystack = new window.PaystackPop();
@@ -156,6 +198,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         metadata: {
           customer_name: customerSnapshot.name,
           customer_phone: customerSnapshot.phone,
+          shipping_address: shipping,
           cart_items: cartItems,
           custom_fields: [
             {
@@ -167,6 +210,16 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               display_name: "Phone",
               variable_name: "phone",
               value: customerSnapshot.phone,
+            },
+            {
+              display_name: "Delivery City",
+              variable_name: "city",
+              value: shipping.city,
+            },
+            {
+              display_name: "Delivery State",
+              variable_name: "state",
+              value: shipping.state,
             },
           ],
         },
@@ -224,6 +277,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       : step === 1
         ? "Checkout Details"
         : "Confirm Order";
+
+  const shippingLines = formatShippingLines(shippingSnapshot());
 
   return (
     <AnimatePresence>
@@ -326,6 +381,76 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                       placeholder="e.g. 08012345678"
                       required
                     />
+
+                    <div className="border-t border-border pt-4">
+                      <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                        Delivery address
+                      </p>
+                      <div className="space-y-4">
+                        <Field
+                          label="Street address *"
+                          value={line1}
+                          onChange={setLine1}
+                          placeholder="House number and street"
+                          required
+                          autoComplete="street-address"
+                        />
+                        <Field
+                          label="Apartment, suite, etc."
+                          value={line2}
+                          onChange={setLine2}
+                          placeholder="Optional"
+                          autoComplete="address-line2"
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field
+                            label="City *"
+                            value={city}
+                            onChange={setCity}
+                            placeholder="e.g. Ikeja"
+                            required
+                            autoComplete="address-level2"
+                          />
+                          <label className="block space-y-1.5">
+                            <span className="font-ui text-sm font-medium">
+                              State / Province *
+                            </span>
+                            <select
+                              required
+                              value={state}
+                              onChange={(e) => setState(e.target.value)}
+                              autoComplete="address-level1"
+                              className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                            >
+                              <option value="">Select state</option>
+                              {NIGERIA_STATES.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field
+                            label="Postal / ZIP code"
+                            value={postalCode}
+                            onChange={setPostalCode}
+                            placeholder="Optional"
+                            autoComplete="postal-code"
+                          />
+                          <Field
+                            label="Country *"
+                            value={country}
+                            onChange={setCountry}
+                            placeholder="Nigeria"
+                            required
+                            autoComplete="country-name"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 pt-2">
                       <button
                         type="button"
@@ -357,6 +482,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         <span className="text-muted">Phone: </span>
                         {phone}
                       </p>
+                      <div className="border-t border-border pt-2">
+                        <p className="text-muted">Deliver to:</p>
+                        {shippingLines.map((line) => (
+                          <p key={line}>{line}</p>
+                        ))}
+                      </div>
                     </div>
                     <div className="flex gap-3 pt-2">
                       <button
@@ -480,6 +611,7 @@ function Field({
   placeholder,
   type = "text",
   required,
+  autoComplete,
 }: {
   label: string;
   value: string;
@@ -487,6 +619,7 @@ function Field({
   placeholder?: string;
   type?: string;
   required?: boolean;
+  autoComplete?: string;
 }) {
   return (
     <label className="block space-y-1.5">
@@ -497,7 +630,8 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+        autoComplete={autoComplete}
+        className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
       />
     </label>
   );

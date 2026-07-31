@@ -8,6 +8,15 @@ import {
 
 export const runtime = "nodejs";
 
+const shippingSchema = z.object({
+  line1: z.string().min(1),
+  line2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  postalCode: z.string().optional(),
+  country: z.string().min(1),
+});
+
 const bodySchema = z.object({
   reference: z.string().min(3),
   forceNotify: z.boolean().optional(),
@@ -16,6 +25,7 @@ const bodySchema = z.object({
       name: z.string().min(1),
       email: z.string().email(),
       phone: z.string().optional(),
+      shipping: shippingSchema.optional(),
     })
     .optional(),
   items: z
@@ -101,6 +111,20 @@ export async function POST(req: NextRequest) {
     const name =
       customer?.name || nameFromMetadata(meta) || email || "Customer";
     const phone = customer?.phone || phoneFromMetadata(meta) || undefined;
+    const shipping =
+      customer?.shipping ||
+      (meta &&
+      meta.shipping_address &&
+      typeof meta.shipping_address === "object"
+        ? (meta.shipping_address as {
+            line1: string;
+            line2?: string;
+            city: string;
+            state: string;
+            postalCode?: string;
+            country: string;
+          })
+        : undefined);
 
     if (!email) {
       return Response.json(
@@ -114,7 +138,7 @@ export async function POST(req: NextRequest) {
         reference: data.reference,
         amountNaira,
         currency: data.currency || "NGN",
-        customer: { name, email, phone },
+        customer: { name, email, phone, shipping },
         items: items as OrderItemSnapshot[] | undefined,
         paystackPayload: data,
       },
