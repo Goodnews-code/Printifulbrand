@@ -483,7 +483,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         {phone}
                       </p>
                       <div className="border-t border-border pt-2">
-                        <p className="text-muted">Deliver to:</p>
+                        <p className="text-muted">Delivery location:</p>
                         {shippingLines.map((line) => (
                           <p key={line}>{line}</p>
                         ))}
