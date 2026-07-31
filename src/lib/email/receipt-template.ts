@@ -100,7 +100,7 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
   }
 
   if (data.customer.shipping) {
-    lines.push("Deliver to:");
+    lines.push("Delivery location:");
     lines.push(...formatShippingLines(data.customer.shipping));
     lines.push("");
   }
@@ -267,7 +267,7 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                     ? `
                 <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
                   <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
-                    Deliver to
+                    Delivery location
                   </div>
                   <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                     ${shippingHtml}

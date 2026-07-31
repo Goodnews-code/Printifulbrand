@@ -61,7 +61,7 @@ function buildTelegramText(order: PaidOrderInput): string {
   }
 
   if (order.customer.shipping) {
-    lines.push("", "Delivery:");
+    lines.push("", "Delivery location:");
     lines.push(formatShippingAddress(order.customer.shipping));
   }
 
