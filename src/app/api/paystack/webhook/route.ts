@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import {
+  confirmPaystackPayment,
   getPaystackSecretKey,
   isValidPaystackSignature,
-  type PaystackVerifyData,
 } from "@/lib/paystack";
 import { processPaidOrder } from "@/lib/orders";
 
@@ -41,22 +41,30 @@ export async function POST(req: NextRequest) {
 
     const event = JSON.parse(rawBody) as {
       event?: string;
-      data?: PaystackVerifyData & {
+      data?: {
+        reference?: string;
+        status?: string;
+        amount?: number;
+        currency?: string;
         metadata?: Record<string, unknown> | null;
+        customer?: { email?: string };
       };
     };
 
-    if (event.event !== "charge.success" || !event.data) {
+    if (event.event !== "charge.success" || !event.data?.reference) {
       return Response.json({ received: true, ignored: true });
     }
 
-    const data = event.data;
-    if (data.status && data.status !== "success") {
-      return Response.json({ received: true, ignored: true });
-    }
+    // Re-confirm with Paystack verify API — do not trust webhook body alone.
+    const data = await confirmPaystackPayment(event.data.reference, {
+      expectedAmountKobo: event.data.amount,
+      expectedCurrency: event.data.currency || "NGN",
+      attempts: 3,
+      delayMs: 1500,
+    });
 
     const meta = (data.metadata ?? null) as Record<string, unknown> | null;
-    const email = data.customer?.email || "";
+    const email = data.customer?.email || event.data.customer?.email || "";
     const name = metaField(meta, "name") || email || "Customer";
     const phone = metaField(meta, "phone") || undefined;
     let shipping:
@@ -78,14 +86,13 @@ export async function POST(req: NextRequest) {
     }
     const amountNaira = data.amount / 100;
 
-    if (!email || !data.reference) {
+    if (!email) {
       return Response.json(
         { error: "Missing email or reference" },
         { status: 400 },
       );
     }
 
-    // Prefer items from metadata if checkout stored them
     let items:
       | Array<{
           name: string;
