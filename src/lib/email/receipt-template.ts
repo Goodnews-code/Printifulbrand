@@ -1,4 +1,5 @@
 import { formatNaira } from "@/lib/utils";
+import { formatShippingLines } from "@/lib/shipping";
 import type { OrderCustomer, OrderItemSnapshot, PaidOrderInput } from "@/lib/orders";
 
 const BRAND = {
@@ -14,7 +15,8 @@ const BRAND = {
 };
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://shopprintiful.com";
-const LOGO_URL = `${SITE_URL}/assets/logo%20with%20printiful.svg`;
+/** PNG mark — many email clients block SVG; used as brand avatar in the receipt. */
+const LOGO_MARK_URL = `${SITE_URL}/assets/logo-email.png`;
 const CONTACT_EMAIL = "shopprintiful@gmail.com";
 
 function escapeHtml(value: string) {
@@ -97,6 +99,12 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
     lines.push("");
   }
 
+  if (data.customer.shipping) {
+    lines.push("Deliver to:");
+    lines.push(...formatShippingLines(data.customer.shipping));
+    lines.push("");
+  }
+
   lines.push(
     "Questions? Reply to this email or write shopprintiful@gmail.com",
     "",
@@ -127,6 +135,11 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
   const safePhone = data.customer.phone
     ? escapeHtml(data.customer.phone)
     : "";
+  const shippingHtml = data.customer.shipping
+    ? formatShippingLines(data.customer.shipping)
+        .map((line) => escapeHtml(line))
+        .join("<br />")
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -149,15 +162,22 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
             <td style="background:${BRAND.black};padding:28px 28px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td>
-                    <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;letter-spacing:0.04em;color:${BRAND.yellow};">
-                      PRINTIFUL
-                    </div>
-                    <div style="margin-top:4px;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);">
-                      Custom Studio
-                    </div>
-                    <!-- Logo image (may be blocked by some clients) -->
-                    <img src="${LOGO_URL}" alt="" width="1" height="1" style="display:none;max-height:0;overflow:hidden;" />
+                  <td style="vertical-align:middle;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;padding-right:14px;">
+                          <img src="${LOGO_MARK_URL}" alt="Printiful" width="52" height="52" style="display:block;border:0;border-radius:50%;width:52px;height:52px;" />
+                        </td>
+                        <td style="vertical-align:middle;">
+                          <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;letter-spacing:0.04em;color:${BRAND.yellow};">
+                            PRINTIFUL
+                          </div>
+                          <div style="margin-top:4px;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);">
+                            Custom Studio
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                   <td align="right" style="vertical-align:middle;">
                     <span style="display:inline-block;background:${BRAND.yellow};color:${BRAND.black};font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:6px 10px;">
@@ -242,6 +262,19 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   ${safeEmail}
                   ${safePhone ? `<br />${safePhone}` : ""}
                 </div>
+                ${
+                  shippingHtml
+                    ? `
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
+                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+                    Deliver to
+                  </div>
+                  <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
+                    ${shippingHtml}
+                  </div>
+                </div>`
+                    : ""
+                }
               </div>
 
               <div style="margin-top:28px;text-align:center;">

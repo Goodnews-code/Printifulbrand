@@ -1,7 +1,13 @@
 import { sendOrderReceipt } from "@/lib/email/send-receipt";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/notify/telegram";
+import {
+  formatShippingAddress,
+  type OrderShippingAddress,
+} from "@/lib/shipping";
 import { formatNaira } from "@/lib/utils";
+
+export type { OrderShippingAddress };
 
 export type OrderItemSnapshot = {
   name: string;
@@ -15,6 +21,7 @@ export type OrderCustomer = {
   name: string;
   email: string;
   phone?: string;
+  shipping?: OrderShippingAddress;
 };
 
 export type PaidOrderInput = {
@@ -53,6 +60,11 @@ function buildTelegramText(order: PaidOrderInput): string {
     lines.push(`Phone: ${order.customer.phone}`);
   }
 
+  if (order.customer.shipping) {
+    lines.push("", "Delivery:");
+    lines.push(formatShippingAddress(order.customer.shipping));
+  }
+
   if (order.items && order.items.length > 0) {
     lines.push("", "Items:");
     for (const item of order.items) {
@@ -88,6 +100,7 @@ export async function processPaidOrder(
 
   const payload = {
     items: input.items ?? [],
+    shipping: input.customer.shipping ?? null,
     paystack: input.paystackPayload ?? null,
   };
 
