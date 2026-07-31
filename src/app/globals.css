@@ -64,6 +64,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Native <option> often inherits light text in dark mode → invisible on OS white menus */
+select option {
+  background-color: #ffffff;
+  color: #111111;
+}
+
 ::selection {
   background: #53009b;
   color: #ffffff;

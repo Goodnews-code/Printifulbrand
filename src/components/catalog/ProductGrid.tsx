@@ -106,7 +106,7 @@ export function ProductGrid({
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="border border-border bg-surface px-3 py-2.5 font-ui text-sm outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+              className="border border-border bg-surface px-3 py-2.5 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
             >
               <option value="featured">Featured</option>
               <option value="price-asc">Price: Low to High</option>
