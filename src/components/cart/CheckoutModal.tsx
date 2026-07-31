@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
@@ -19,6 +19,8 @@ interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
 }
+
+type CheckoutStep = 1 | 2 | "success";
 
 function loadPaystackScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -51,11 +53,16 @@ function loadPaystackScript(): Promise<boolean> {
 export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const { items, subtotal, clearCart } = useCart();
   const { settings } = useSettings();
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<CheckoutStep>(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [paidTotal, setPaidTotal] = useState(0);
+  const [paidRef, setPaidRef] = useState("");
+  const [paidEmail, setPaidEmail] = useState("");
+  const [paidName, setPaidName] = useState("");
 
   const reduce = useReducedMotion();
 
@@ -63,6 +70,11 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     if (!open) {
       setStep(1);
       setSubmitting(false);
+      setFormError(null);
+      setPaidTotal(0);
+      setPaidRef("");
+      setPaidEmail("");
+      setPaidName("");
     }
   }, [open]);
 
@@ -74,10 +86,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     }
   }, [open, settings.paystack_public_key]);
 
+  const handleClose = () => {
+    onClose();
+  };
+
   const goNext = (e: FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (!name.trim() || !email.trim() || !phone.trim()) {
-      alert("Please fill all required checkout fields.");
+      setFormError("Please fill all required checkout fields.");
       return;
     }
     setStep(2);
@@ -85,19 +102,21 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
   const pay = async (e: FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     if (items.length === 0) return;
     if (!name.trim() || !email.trim() || !phone.trim()) {
-      alert("Please fill all required checkout fields.");
+      setFormError("Please fill all required checkout fields.");
       return;
     }
 
     setSubmitting(true);
     const txnRef = `PRNTFL-${Date.now()}`;
     const publicKey = settings.paystack_public_key || "";
+    const amountSnapshot = subtotal;
 
     if (!publicKey.startsWith("pk_")) {
-      alert(
-        `Checkout stub: Paystack public key not configured.\n\nAdd pk_test_… in Admin → Settings.\n\nOrder ${txnRef}\n${name} · ${email} · ${phone}\nTotal: ${formatNaira(subtotal)}`,
+      setFormError(
+        "Paystack is not configured yet. Add your public key in Admin → Settings.",
       );
       setSubmitting(false);
       return;
@@ -105,16 +124,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
     const loaded = await loadPaystackScript();
     if (!loaded || !window.PaystackPop) {
-      alert(
-        "Paystack checkout failed to load. Please check your internet connection.",
+      setFormError(
+        "Paystack checkout failed to load. Check your internet connection and try again.",
       );
       setSubmitting(false);
       return;
     }
 
     try {
-      // Paystack amounts are in kobo (NGN * 100)
-      const amountKobo = Math.round(subtotal * 100);
+      const amountKobo = Math.round(amountSnapshot * 100);
       const cartItems = items.map((item) => ({
         name: item.name,
         qty: item.qty,
@@ -167,30 +185,23 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               });
               const data = await res.json().catch(() => ({}));
               if (!res.ok) {
-                alert(
+                setFormError(
                   data.error ||
-                    "Payment received, but confirmation failed. Please contact us with your reference: " +
-                      reference,
+                    `Payment received, but confirmation failed. Contact us with reference ${reference}.`,
                 );
                 setSubmitting(false);
                 return;
               }
-              const notifyBits = [
-                data.notified ? "Telegram: sent" : "Telegram: not sent",
-                data.receiptSent ? "Email: sent" : "Email: not sent",
-              ].join(" · ");
-              const extra = data.notifyError
-                ? `\n\nNotify detail: ${data.notifyError}`
-                : "";
-              alert(
-                `Payment successful! Ref: ${reference}\n\n${notifyBits}${extra}`,
-              );
+
+              setPaidRef(reference);
+              setPaidTotal(amountSnapshot);
+              setPaidEmail(customerSnapshot.email);
+              setPaidName(customerSnapshot.name);
               clearCart();
-              onClose();
+              setStep("success");
             } catch {
-              alert(
-                "Payment may have succeeded, but we could not confirm it. Please contact us with reference: " +
-                  reference,
+              setFormError(
+                `Payment may have succeeded, but we could not confirm it. Contact us with reference ${reference}.`,
               );
             } finally {
               setSubmitting(false);
@@ -202,10 +213,17 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         },
       });
     } catch {
-      alert("Failed to initialize Paystack. Please try again.");
+      setFormError("Failed to initialize Paystack. Please try again.");
       setSubmitting(false);
     }
   };
+
+  const title =
+    step === "success"
+      ? "Order confirmed"
+      : step === 1
+        ? "Checkout Details"
+        : "Confirm Order";
 
   return (
     <AnimatePresence>
@@ -227,123 +245,231 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
             exit={reduce ? undefined : { opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           >
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h3 id="checkout-title" className="font-heading text-xl italic">
-            {step === 1 ? "Checkout Details" : "Confirm Order"}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex size-9 items-center justify-center border border-border"
-            aria-label="Close checkout"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="border-b border-border bg-surface-alt px-5 py-4">
-          <p className="mb-2 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
-            Order summary
-          </p>
-          <ul className="space-y-1.5 text-sm">
-            {items.map((item) => (
-              <li key={item.id} className="flex justify-between gap-3">
-                <span className="truncate text-muted">
-                  {item.name} × {item.qty}
-                </span>
-                <span className="shrink-0 font-ui">
-                  {formatNaira(item.price * item.qty)}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-3 flex justify-between border-t border-border pt-3 font-ui font-bold">
-            <span>Total</span>
-            <span>{formatNaira(subtotal)}</span>
-          </div>
-        </div>
-
-        {step === 1 ? (
-          <form onSubmit={goNext} className="space-y-4 px-5 py-5">
-            <Field
-              label="Full Name *"
-              value={name}
-              onChange={setName}
-              placeholder="e.g. Ada Okafor"
-              required
-            />
-            <Field
-              label="Email *"
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="e.g. ada@email.com"
-              required
-            />
-            <Field
-              label="Phone *"
-              type="tel"
-              value={phone}
-              onChange={setPhone}
-              placeholder="e.g. 08012345678"
-              required
-            />
-            <div className="flex gap-3 pt-2">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <h3 id="checkout-title" className="font-heading text-xl italic">
+                {title}
+              </h3>
               <button
                 type="button"
-                onClick={onClose}
-                className="flex-1 border border-brand-purple px-4 py-3 font-ui text-sm font-semibold text-brand-purple dark:border-brand-yellow dark:text-brand-yellow"
+                onClick={handleClose}
+                className="inline-flex size-9 items-center justify-center border border-border"
+                aria-label="Close checkout"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
-              >
-                Continue
+                <X size={18} />
               </button>
             </div>
-          </form>
-        ) : (
-          <form onSubmit={pay} className="space-y-4 px-5 py-5">
-            <div className="space-y-2 bg-surface-alt p-4 text-sm">
-              <p>
-                <span className="text-muted">Name: </span>
-                {name}
-              </p>
-              <p>
-                <span className="text-muted">Email: </span>
-                {email}
-              </p>
-              <p>
-                <span className="text-muted">Phone: </span>
-                {phone}
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="inline-flex flex-1 items-center justify-center gap-2 border border-border px-4 py-3 font-ui text-sm font-semibold"
-              >
-                <ArrowLeft size={16} /> Back
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className={cn(
-                  "flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black disabled:opacity-60",
+
+            {step === "success" ? (
+              <SuccessPanel
+                name={paidName}
+                email={paidEmail}
+                reference={paidRef}
+                total={paidTotal}
+                onDone={handleClose}
+                reduce={Boolean(reduce)}
+              />
+            ) : (
+              <>
+                <div className="border-b border-border bg-surface-alt px-5 py-4">
+                  <p className="mb-2 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                    Order summary
+                  </p>
+                  <ul className="space-y-1.5 text-sm">
+                    {items.map((item) => (
+                      <li key={item.id} className="flex justify-between gap-3">
+                        <span className="truncate text-muted">
+                          {item.name} × {item.qty}
+                        </span>
+                        <span className="shrink-0 font-ui">
+                          {formatNaira(item.price * item.qty)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 flex justify-between border-t border-border pt-3 font-ui font-bold">
+                    <span>Total</span>
+                    <span>{formatNaira(subtotal)}</span>
+                  </div>
+                </div>
+
+                {formError && (
+                  <div
+                    role="alert"
+                    className="mx-5 mt-4 border border-red-500/40 bg-red-500/10 px-3 py-2.5 text-sm text-red-700 dark:text-red-300"
+                  >
+                    {formError}
+                  </div>
                 )}
-              >
-                {submitting ? "Processing…" : "Pay with Paystack"}
-              </button>
-            </div>
-          </form>
-        )}
+
+                {step === 1 ? (
+                  <form onSubmit={goNext} className="space-y-4 px-5 py-5">
+                    <Field
+                      label="Full Name *"
+                      value={name}
+                      onChange={setName}
+                      placeholder="e.g. Ada Okafor"
+                      required
+                    />
+                    <Field
+                      label="Email *"
+                      type="email"
+                      value={email}
+                      onChange={setEmail}
+                      placeholder="e.g. ada@email.com"
+                      required
+                    />
+                    <Field
+                      label="Phone *"
+                      type="tel"
+                      value={phone}
+                      onChange={setPhone}
+                      placeholder="e.g. 08012345678"
+                      required
+                    />
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={handleClose}
+                        className="flex-1 border border-brand-purple px-4 py-3 font-ui text-sm font-semibold text-brand-purple dark:border-brand-yellow dark:text-brand-yellow"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={pay} className="space-y-4 px-5 py-5">
+                    <div className="space-y-2 bg-surface-alt p-4 text-sm">
+                      <p>
+                        <span className="text-muted">Name: </span>
+                        {name}
+                      </p>
+                      <p>
+                        <span className="text-muted">Email: </span>
+                        {email}
+                      </p>
+                      <p>
+                        <span className="text-muted">Phone: </span>
+                        {phone}
+                      </p>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormError(null);
+                          setStep(1);
+                        }}
+                        className="inline-flex flex-1 items-center justify-center gap-2 border border-border px-4 py-3 font-ui text-sm font-semibold"
+                      >
+                        <ArrowLeft size={16} /> Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className={cn(
+                          "flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black disabled:opacity-60",
+                        )}
+                      >
+                        {submitting ? "Processing…" : "Pay with Paystack"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function SuccessPanel({
+  name,
+  email,
+  reference,
+  total,
+  onDone,
+  reduce,
+}: {
+  name: string;
+  email: string;
+  reference: string;
+  total: number;
+  onDone: () => void;
+  reduce: boolean;
+}) {
+  const firstName = name.trim().split(/\s+/)[0] || "there";
+
+  return (
+    <div className="relative overflow-hidden px-5 py-8 text-center">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(83,0,155,0.14),_transparent_55%)]"
+      />
+      <motion.div
+        className="relative mx-auto mb-5 flex size-16 items-center justify-center bg-brand-purple text-brand-yellow"
+        initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 280, damping: 18 }}
+      >
+        <Check size={32} strokeWidth={2.5} aria-hidden />
+      </motion.div>
+
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08, duration: 0.4 }}
+      >
+        <p className="font-ui text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-purple dark:text-brand-yellow">
+          Payment successful
+        </p>
+        <h4 className="mt-2 font-heading text-3xl italic leading-tight text-ink">
+          Thank you for shopping with us
+        </h4>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted">
+          {firstName}, your order is confirmed and queued for production. A
+          receipt will be sent to{" "}
+          <span className="font-medium text-ink">{email}</span>.
+        </p>
+      </motion.div>
+
+      <motion.div
+        className="relative mx-auto mt-6 max-w-sm border border-border bg-surface-alt px-4 py-4 text-left text-sm"
+        initial={reduce ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16, duration: 0.4 }}
+      >
+        <div className="flex justify-between gap-3">
+          <span className="text-muted">Amount paid</span>
+          <span className="font-ui font-bold">{formatNaira(total)}</span>
+        </div>
+        <div className="mt-2 flex justify-between gap-3 border-t border-border pt-2">
+          <span className="text-muted">Reference</span>
+          <span className="max-w-[60%] break-all text-right font-ui text-xs font-semibold">
+            {reference}
+          </span>
+        </div>
+      </motion.div>
+
+      <p className="relative mt-5 font-heading text-sm italic text-brand-purple dark:text-brand-yellow">
+        Be Bold. Be Seen. Be Known.
+      </p>
+
+      <button
+        type="button"
+        onClick={onDone}
+        className="relative mt-6 w-full bg-brand-purple px-4 py-3.5 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
+      >
+        Continue shopping
+      </button>
+    </div>
   );
 }
 
