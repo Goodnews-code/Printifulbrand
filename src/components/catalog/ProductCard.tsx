@@ -6,6 +6,7 @@ import { ShoppingBag } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product } from "@/types";
 import { useCart } from "@/context/CartContext";
+import { parseProductColor } from "@/lib/product-color";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -20,8 +21,8 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   const images = product.images?.length
     ? product.images
     : product.image_url
-      ? [{ image_url: product.image_url, color_code: "#111111" }]
-      : [{ image_url: "/assets/tshirt_base.svg", color_code: "#111111" }];
+      ? [{ image_url: product.image_url, color_code: "Default|#111111" }]
+      : [{ image_url: "/assets/tshirt_base.svg", color_code: "Default|#111111" }];
 
   const sizes = product.sizes?.length
     ? product.sizes
@@ -34,6 +35,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   const activeImage = images[Math.min(colorIdx, images.length - 1)];
   const activeSize = sizes[Math.min(sizeIdx, sizes.length - 1)];
   const price = activeSize?.price ?? product.price;
+  const activeColor = parseProductColor(activeImage.color_code);
 
   const categoryLabel = useMemo(() => {
     const slug = normalizeCategory(product.category);
@@ -45,7 +47,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
       productId: product.id,
       name: product.title,
       category: product.category || "Merch",
-      color: activeImage.color_code || "Default",
+      color: activeColor.name,
       size: activeSize.size_name,
       image: activeImage.image_url,
       price,
@@ -117,24 +119,34 @@ export function ProductCard({ product, mode }: ProductCardProps) {
           </p>
         </div>
 
-        {images.length > 1 && (
-          <div className="flex flex-wrap gap-2">
-            {images.map((img, i) => (
-              <button
-                key={`${img.image_url}-${i}`}
-                type="button"
-                onClick={() => setColorIdx(i)}
-                className={cn(
-                  "size-6 rounded-full border-2 transition-transform active:scale-90",
-                  colorIdx === i
-                    ? "border-brand-purple dark:border-brand-yellow"
-                    : "border-transparent ring-1 ring-border",
-                )}
-                style={{ backgroundColor: img.color_code || "#ccc" }}
-                aria-label={`Color ${img.color_code}`}
+        {images.length > 0 && (
+          <label className="block space-y-1.5">
+            <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Color
+            </span>
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="size-5 shrink-0 rounded-full border border-border"
+                style={{ backgroundColor: activeColor.hex }}
               />
-            ))}
-          </div>
+              <select
+                value={String(colorIdx)}
+                onChange={(e) => setColorIdx(Number(e.target.value))}
+                className="w-full border border-border bg-surface px-3 py-2 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+                aria-label="Select color"
+              >
+                {images.map((img, i) => {
+                  const color = parseProductColor(img.color_code);
+                  return (
+                    <option key={`${img.image_url}-${i}`} value={i}>
+                      {color.name}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </label>
         )}
 
         {sizes.length > 0 && (

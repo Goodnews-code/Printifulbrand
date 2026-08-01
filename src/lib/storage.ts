@@ -6,7 +6,9 @@ import { optimizeProductImage } from "@/lib/image-optimize";
 
 export async function uploadProductImage(file: File) {
   const supabase = getSupabaseAdmin();
-  const input = Buffer.from(await file.arrayBuffer());
+  // Copy into a plain Buffer — avoids SharedArrayBuffer restrictions on some hosts.
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const input = Buffer.from(bytes);
   const optimized = await optimizeProductImage(
     input,
     file.type || "image/jpeg",
