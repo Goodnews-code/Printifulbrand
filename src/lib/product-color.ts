@@ -7,7 +7,7 @@ export function encodeProductColor(name: string, hex: string): string {
 
 export function normalizeHex(raw: string): string {
   const value = raw.trim();
-  if /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)) return value;
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)) return value;
   if (/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)) return `#${value}`;
   return "#888888";
 }
