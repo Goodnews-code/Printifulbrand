@@ -7,11 +7,13 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Plus,
   Settings as SettingsIcon,
   Trash2,
   Upload,
 } from "lucide-react";
 import type { Product, SiteSettings } from "@/types";
+import { encodeProductColor, parseProductColor } from "@/lib/product-color";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -391,7 +393,11 @@ function ProductsTab({
     image_url: "",
     is_active: true,
   });
+  const [colors, setColors] = useState<Array<{ name: string; hex: string }>>([
+    { name: "Default", hex: "#53009B" },
+  ]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingSizes, setEditingSizes] = useState<Product["sizes"]>([]);
 
   const reset = () => {
     setForm({
@@ -402,7 +408,9 @@ function ProductsTab({
       image_url: "",
       is_active: true,
     });
+    setColors([{ name: "Default", hex: "#53009B" }]);
     setEditingId(null);
+    setEditingSizes([]);
     setUploadError("");
   };
 
@@ -472,22 +480,34 @@ function ProductsTab({
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
+    const cleanedColors = colors
+      .map((c) => ({
+        name: c.name.trim(),
+        hex: c.hex.trim() || "#53009B",
+      }))
+      .filter((c) => c.name);
+
+    if (cleanedColors.length === 0) {
+      setMessage("Add at least one color for this product.");
+      return;
+    }
+
+    const imageUrl = form.image_url || "";
     const payload = {
       title: form.title,
       description: form.description,
       price: Number(form.price) || 0,
       category: form.category,
-      image_url: form.image_url || undefined,
+      image_url: imageUrl || undefined,
       is_active: form.is_active,
-      images: form.image_url
-        ? [
-            {
-              image_url: form.image_url,
-              color_code: "#53009B",
-              is_primary: true,
-            },
-          ]
+      images: imageUrl
+        ? cleanedColors.map((c, index) => ({
+            image_url: imageUrl,
+            color_code: encodeProductColor(c.name, c.hex),
+            is_primary: index === 0,
+          }))
         : undefined,
+      sizes: editingSizes,
     };
 
     const url =
@@ -540,7 +560,7 @@ function ProductsTab({
             ? [
                 {
                   image_url: product.image_url,
-                  color_code: "#53009B",
+                  color_code: encodeProductColor("Default", "#53009B"),
                   is_primary: true,
                 },
               ]
@@ -563,6 +583,7 @@ function ProductsTab({
   const startEdit = (p: Product) => {
     setEditingId(p.id);
     setUploadError("");
+    setEditingSizes(p.sizes ?? []);
     setForm({
       title: p.title,
       description: p.description || "",
@@ -571,6 +592,16 @@ function ProductsTab({
       image_url: p.image_url || "",
       is_active: p.is_active === 1 || p.is_active === true,
     });
+    if (p.images?.length) {
+      setColors(
+        p.images.map((img) => {
+          const parsed = parseProductColor(img.color_code);
+          return { name: parsed.name, hex: parsed.hex };
+        }),
+      );
+    } else {
+      setColors([{ name: "Default", hex: "#53009B" }]);
+    }
   };
 
   return (
@@ -612,6 +643,93 @@ function ProductsTab({
           value={form.category}
           onChange={(category) => setForm((f) => ({ ...f, category }))}
         />
+
+        {/* Colors */}
+        <div className="space-y-2 border border-border bg-surface-alt p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
+              Colors
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                setColors((prev) => [
+                  ...prev,
+                  { name: "", hex: "#53009B" },
+                ])
+              }
+              className="inline-flex items-center gap-1 border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
+            >
+              <Plus size={14} /> Add color
+            </button>
+          </div>
+          <p className="font-ui text-[11px] text-muted">
+            Customers pick these from a dropdown on the store. Names appear on
+            receipts and Telegram alerts.
+          </p>
+          <div className="space-y-2">
+            {colors.map((color, index) => (
+              <div
+                key={index}
+                className="flex flex-wrap items-center gap-2 border border-border bg-surface p-2"
+              >
+                <input
+                  type="color"
+                  value={
+                    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color.hex)
+                      ? color.hex
+                      : "#53009B"
+                  }
+                  onChange={(e) =>
+                    setColors((prev) =>
+                      prev.map((c, i) =>
+                        i === index ? { ...c, hex: e.target.value } : c,
+                      ),
+                    )
+                  }
+                  className="size-9 cursor-pointer border border-border bg-transparent p-0"
+                  aria-label={`Color swatch ${index + 1}`}
+                />
+                <input
+                  required
+                  placeholder="Color name (e.g. Black)"
+                  value={color.name}
+                  onChange={(e) =>
+                    setColors((prev) =>
+                      prev.map((c, i) =>
+                        i === index ? { ...c, name: e.target.value } : c,
+                      ),
+                    )
+                  }
+                  className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
+                />
+                <input
+                  placeholder="#000000"
+                  value={color.hex}
+                  onChange={(e) =>
+                    setColors((prev) =>
+                      prev.map((c, i) =>
+                        i === index ? { ...c, hex: e.target.value } : c,
+                      ),
+                    )
+                  }
+                  className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
+                />
+                <button
+                  type="button"
+                  disabled={colors.length <= 1}
+                  onClick={() =>
+                    setColors((prev) => prev.filter((_, i) => i !== index))
+                  }
+                  className="inline-flex size-9 items-center justify-center border border-border text-muted disabled:opacity-40"
+                  aria-label={`Remove color ${color.name || index + 1}`}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Image: upload or URL */}
         <div className="space-y-2 border border-border bg-surface-alt p-3">
@@ -766,6 +884,11 @@ function ProductsTab({
                   </p>
                   <p className="text-xs text-muted">
                     {p.category || "—"} · {formatNaira(p.price)}
+                    {p.images && p.images.length > 0
+                      ? ` · ${p.images
+                          .map((img) => parseProductColor(img.color_code).name)
+                          .join(", ")}`
+                      : ""}
                   </p>
                   <span
                     className={cn(

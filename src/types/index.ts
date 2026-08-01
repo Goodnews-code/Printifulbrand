@@ -9,6 +9,7 @@ export type CategorySlug =
 export interface ProductImage {
   id?: number;
   image_url: string;
+  /** Encoded as `Name|#hex` or legacy `#hex` / plain name. */
   color_code: string;
   is_primary?: number | boolean;
 }
