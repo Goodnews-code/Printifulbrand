@@ -112,7 +112,14 @@ export function CartDrawer() {
                                 {item.name}
                               </p>
                               <p className="mt-0.5 text-xs text-muted">
-                                {item.color} · {item.size}
+                                {[
+                                  item.color !== "—" && item.color !== "Default"
+                                    ? item.color
+                                    : null,
+                                  item.size !== "One Size" ? item.size : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ") || "Standard"}
                               </p>
                             </div>
                             <button

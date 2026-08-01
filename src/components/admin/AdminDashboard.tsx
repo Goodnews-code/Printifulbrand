@@ -13,10 +13,9 @@ import {
   Upload,
 } from "lucide-react";
 import type { Product, SiteSettings } from "@/types";
-import { encodeProductColor, parseProductColor } from "@/lib/product-color";
+import { encodeProductColor, hexFromColorName, parseProductColor } from "@/lib/product-color";
 import {
   ALL_STANDARD_SIZES,
-  DEFAULT_SELECTED_SIZES,
 } from "@/lib/product-sizes";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
@@ -397,12 +396,10 @@ function ProductsTab({
     image_url: "",
     is_active: true,
   });
-  const [colors, setColors] = useState<Array<{ name: string; hex: string }>>([
-    { name: "Default", hex: "#53009B" },
-  ]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([
-    ...DEFAULT_SELECTED_SIZES,
-  ]);
+  const [colors, setColors] = useState<Array<{ name: string; hex: string }>>(
+    [],
+  );
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const reset = () => {
@@ -414,8 +411,8 @@ function ProductsTab({
       image_url: "",
       is_active: true,
     });
-    setColors([{ name: "Default", hex: "#53009B" }]);
-    setSelectedSizes([...DEFAULT_SELECTED_SIZES]);
+    setColors([]);
+    setSelectedSizes([]);
     setEditingId(null);
     setUploadError("");
   };
@@ -487,29 +484,25 @@ function ProductsTab({
   const save = async (e: FormEvent) => {
     e.preventDefault();
     const cleanedColors = colors
-      .map((c) => ({
-        name: c.name.trim(),
-        hex: c.hex.trim() || "#53009B",
-      }))
+      .map((c) => {
+        const name = c.name.trim();
+        const fromName = hexFromColorName(name);
+        return {
+          name,
+          hex: (fromName || c.hex.trim() || "#888888") as string,
+        };
+      })
       .filter((c) => c.name);
-
-    if (cleanedColors.length === 0) {
-      setMessage("Add at least one color for this product.");
-      return;
-    }
-
-    if (selectedSizes.length === 0) {
-      setMessage("Select at least one size for this product.");
-      return;
-    }
 
     const basePrice = Number(form.price) || 0;
     const orderedSizes = ALL_STANDARD_SIZES.filter((s) =>
       selectedSizes.includes(s),
     );
-    // Keep any custom sizes that aren't in the standard list
     const customSizes = selectedSizes.filter(
-      (s) => !ALL_STANDARD_SIZES.includes(s as (typeof ALL_STANDARD_SIZES)[number]),
+      (s) =>
+        !ALL_STANDARD_SIZES.includes(
+          s as (typeof ALL_STANDARD_SIZES)[number],
+        ),
     );
 
     const imageUrl = form.image_url || "";
@@ -520,13 +513,23 @@ function ProductsTab({
       category: form.category,
       image_url: imageUrl || undefined,
       is_active: form.is_active,
+      // Colors optional: none → single Default image (no storefront color picker)
       images: imageUrl
-        ? cleanedColors.map((c, index) => ({
-            image_url: imageUrl,
-            color_code: encodeProductColor(c.name, c.hex),
-            is_primary: index === 0,
-          }))
+        ? cleanedColors.length > 0
+          ? cleanedColors.map((c, index) => ({
+              image_url: imageUrl,
+              color_code: encodeProductColor(c.name, c.hex),
+              is_primary: index === 0,
+            }))
+          : [
+              {
+                image_url: imageUrl,
+                color_code: encodeProductColor("Default", "#888888"),
+                is_primary: true,
+              },
+            ]
         : undefined,
+      // Sizes optional: none → empty (storefront hides size picker)
       sizes: [...orderedSizes, ...customSizes].map((size_name) => ({
         size_name,
         price: basePrice,
@@ -609,11 +612,7 @@ function ProductsTab({
     const existingSizes = (p.sizes ?? [])
       .map((s) => s.size_name)
       .filter(Boolean);
-    setSelectedSizes(
-      existingSizes.length > 0
-        ? existingSizes
-        : [...DEFAULT_SELECTED_SIZES],
-    );
+    setSelectedSizes(existingSizes);
     setForm({
       title: p.title,
       description: p.description || "",
@@ -623,14 +622,15 @@ function ProductsTab({
       is_active: p.is_active === 1 || p.is_active === true,
     });
     if (p.images?.length) {
-      setColors(
-        p.images.map((img) => {
+      const loaded = p.images
+        .map((img) => {
           const parsed = parseProductColor(img.color_code);
           return { name: parsed.name, hex: parsed.hex };
-        }),
-      );
+        })
+        .filter((c) => c.name && c.name !== "Default");
+      setColors(loaded);
     } else {
-      setColors([{ name: "Default", hex: "#53009B" }]);
+      setColors([]);
     }
   };
 
@@ -674,18 +674,18 @@ function ProductsTab({
           onChange={(category) => setForm((f) => ({ ...f, category }))}
         />
 
-        {/* Colors */}
+        {/* Colors (optional) */}
         <div className="space-y-2 border border-border bg-surface-alt p-3">
           <div className="flex items-center justify-between gap-2">
             <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-              Colors
+              Colors (optional)
             </p>
             <button
               type="button"
               onClick={() =>
                 setColors((prev) => [
                   ...prev,
-                  { name: "", hex: "#53009B" },
+                  { name: "", hex: "#888888" },
                 ])
               }
               className="inline-flex items-center gap-1 border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
@@ -694,85 +694,96 @@ function ProductsTab({
             </button>
           </div>
           <p className="font-ui text-[11px] text-muted">
-            Customers pick these from a dropdown on the store. Names appear on
-            receipts and Telegram alerts.
+            Leave empty if this product has no color choice. Type a name like
+            Black or Navy — the swatch updates automatically.
           </p>
-          <div className="space-y-2">
-            {colors.map((color, index) => (
-              <div
-                key={index}
-                className="flex flex-wrap items-center gap-2 border border-border bg-surface p-2"
-              >
-                <input
-                  type="color"
-                  value={
-                    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color.hex)
-                      ? color.hex
-                      : "#53009B"
-                  }
-                  onChange={(e) =>
-                    setColors((prev) =>
-                      prev.map((c, i) =>
-                        i === index ? { ...c, hex: e.target.value } : c,
-                      ),
-                    )
-                  }
-                  className="size-9 cursor-pointer border border-border bg-transparent p-0"
-                  aria-label={`Color swatch ${index + 1}`}
-                />
-                <input
-                  required
-                  placeholder="Color name (e.g. Black)"
-                  value={color.name}
-                  onChange={(e) =>
-                    setColors((prev) =>
-                      prev.map((c, i) =>
-                        i === index ? { ...c, name: e.target.value } : c,
-                      ),
-                    )
-                  }
-                  className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
-                />
-                <input
-                  placeholder="#000000"
-                  value={color.hex}
-                  onChange={(e) =>
-                    setColors((prev) =>
-                      prev.map((c, i) =>
-                        i === index ? { ...c, hex: e.target.value } : c,
-                      ),
-                    )
-                  }
-                  className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
-                />
-                <button
-                  type="button"
-                  disabled={colors.length <= 1}
-                  onClick={() =>
-                    setColors((prev) => prev.filter((_, i) => i !== index))
-                  }
-                  className="inline-flex size-9 items-center justify-center border border-border text-muted disabled:opacity-40"
-                  aria-label={`Remove color ${color.name || index + 1}`}
+          {colors.length === 0 ? (
+            <p className="border border-dashed border-border bg-surface px-3 py-3 font-ui text-xs text-muted">
+              No colors — storefront won&apos;t show a color dropdown.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {colors.map((color, index) => (
+                <div
+                  key={index}
+                  className="flex flex-wrap items-center gap-2 border border-border bg-surface p-2"
                 >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <input
+                    type="color"
+                    value={
+                      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color.hex)
+                        ? color.hex.length === 4
+                          ? `#${color.hex[1]}${color.hex[1]}${color.hex[2]}${color.hex[2]}${color.hex[3]}${color.hex[3]}`
+                          : color.hex
+                        : "#888888"
+                    }
+                    onChange={(e) =>
+                      setColors((prev) =>
+                        prev.map((c, i) =>
+                          i === index ? { ...c, hex: e.target.value } : c,
+                        ),
+                      )
+                    }
+                    className="size-9 cursor-pointer border border-border bg-transparent p-0"
+                    aria-label={`Color swatch ${index + 1}`}
+                  />
+                  <input
+                    placeholder="Color name (e.g. Black)"
+                    value={color.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const matched = hexFromColorName(name);
+                      setColors((prev) =>
+                        prev.map((c, i) =>
+                          i === index
+                            ? {
+                                name,
+                                hex: matched || c.hex,
+                              }
+                            : c,
+                        ),
+                      );
+                    }}
+                    className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
+                  />
+                  <input
+                    placeholder="#000000"
+                    value={color.hex}
+                    onChange={(e) =>
+                      setColors((prev) =>
+                        prev.map((c, i) =>
+                          i === index ? { ...c, hex: e.target.value } : c,
+                        ),
+                      )
+                    }
+                    className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setColors((prev) => prev.filter((_, i) => i !== index))
+                    }
+                    className="inline-flex size-9 items-center justify-center border border-border text-muted"
+                    aria-label={`Remove color ${color.name || index + 1}`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Sizes */}
+        {/* Sizes (optional) */}
         <div className="space-y-2 border border-border bg-surface-alt p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-              Sizes
+              Sizes (optional)
             </p>
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() =>
-                  setSelectedSizes([...ALL_STANDARD_SIZES])
-                }
+                onClick={() => setSelectedSizes([...ALL_STANDARD_SIZES])}
                 className="border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
               >
                 Select all
@@ -787,8 +798,8 @@ function ProductsTab({
             </div>
           </div>
           <p className="font-ui text-[11px] text-muted">
-            Customers pick a size on the store. Selected sizes use the product
-            price and appear on receipts and Telegram.
+            Leave all unselected if this product has no size choice.
+            Selected sizes use the product price.
           </p>
           <div className="flex flex-wrap gap-2">
             {ALL_STANDARD_SIZES.map((size) => {
@@ -817,8 +828,8 @@ function ProductsTab({
             })}
           </div>
           {selectedSizes.length === 0 && (
-            <p className="font-ui text-xs text-red-600 dark:text-red-300">
-              Select at least one size.
+            <p className="font-ui text-xs text-muted">
+              No sizes — storefront won&apos;t show a size dropdown.
             </p>
           )}
         </div>
