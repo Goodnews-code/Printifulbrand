@@ -4,15 +4,36 @@ import {
 } from "@/lib/supabase/admin";
 import { optimizeProductImage } from "@/lib/image-optimize";
 
+function extensionFromNameOrMime(file: File): string {
+  const fromName = file.name.match(/\.(jpe?g|png|webp|gif)$/i)?.[0];
+  if (fromName) return fromName.toLowerCase().replace("jpeg", "jpg");
+  if (file.type === "image/png") return ".png";
+  if (file.type === "image/webp") return ".webp";
+  if (file.type === "image/gif") return ".gif";
+  return ".jpg";
+}
+
 export async function uploadProductImage(file: File) {
   const supabase = getSupabaseAdmin();
-  // Copy into a plain Buffer — avoids SharedArrayBuffer restrictions on some hosts.
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const input = Buffer.from(bytes);
-  const optimized = await optimizeProductImage(
-    input,
-    file.type || "image/jpeg",
-  );
+
+  // Plain copy — never pass SharedArrayBuffer views into Node/Sharp.
+  const ab = await file.arrayBuffer();
+  const input = Buffer.from(new Uint8Array(ab));
+
+  let optimized;
+  try {
+    optimized = await optimizeProductImage(input, file.type || "image/jpeg");
+  } catch (err) {
+    console.error("[storage] optimize failed, using original:", err);
+    const ext = extensionFromNameOrMime(file);
+    optimized = {
+      buffer: input,
+      contentType: file.type || "image/jpeg",
+      extension: ext.startsWith(".") ? ext : `.${ext}`,
+      originalBytes: input.length,
+      optimizedBytes: input.length,
+    };
+  }
 
   const filename = `prod-${Date.now()}${optimized.extension}`;
 

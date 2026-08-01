@@ -833,8 +833,7 @@ function ProductsTab({
               Max file size: 5MB.
             </span>{" "}
             Larger files are rejected. Allowed formats: JPEG, PNG, WebP, GIF.
-            Images are auto-compressed on upload without reducing visual
-            quality (up to 2000px).
+            Keep files under 5MB for a reliable upload.
           </p>
           {form.image_url ? (
             <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
