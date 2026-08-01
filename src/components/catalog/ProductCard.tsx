@@ -6,7 +6,10 @@ import { ShoppingBag } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product } from "@/types";
 import { useCart } from "@/context/CartContext";
-import { parseProductColor } from "@/lib/product-color";
+import {
+  parseProductColor,
+  productHasColorOptions,
+} from "@/lib/product-color";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -18,14 +21,20 @@ interface ProductCardProps {
 export function ProductCard({ product, mode }: ProductCardProps) {
   const reduce = useReducedMotion();
   const { addItem } = useCart();
-  const images = product.images?.length
-    ? product.images
+  const showColors = productHasColorOptions(product.images);
+  const configuredSizes = product.sizes?.length ? product.sizes : [];
+  const showSizes = configuredSizes.length > 0;
+
+  const images = showColors
+    ? product.images!
     : product.image_url
       ? [{ image_url: product.image_url, color_code: "Default|#111111" }]
-      : [{ image_url: "/assets/tshirt_base.svg", color_code: "Default|#111111" }];
+      : product.images?.length
+        ? product.images
+        : [{ image_url: "/assets/tshirt_base.svg", color_code: "Default|#111111" }];
 
-  const sizes = product.sizes?.length
-    ? product.sizes
+  const sizes = showSizes
+    ? configuredSizes
     : [{ size_name: "One Size", price: product.price }];
 
   const [colorIdx, setColorIdx] = useState(0);
@@ -47,8 +56,8 @@ export function ProductCard({ product, mode }: ProductCardProps) {
       productId: product.id,
       name: product.title,
       category: product.category || "Merch",
-      color: activeColor.name,
-      size: activeSize.size_name,
+      color: showColors ? activeColor.name : "—",
+      size: showSizes ? activeSize.size_name : "One Size",
       image: activeImage.image_url,
       price,
     });
@@ -119,7 +128,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
           </p>
         </div>
 
-        {images.length > 0 && (
+        {showColors && (
           <label className="block space-y-1.5">
             <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
               Color
@@ -149,7 +158,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
           </label>
         )}
 
-        {sizes.length > 0 && (
+        {showSizes && (
           <label className="block space-y-1.5">
             <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
               Size

@@ -68,7 +68,14 @@ function buildTelegramText(order: PaidOrderInput): string {
   if (order.items && order.items.length > 0) {
     lines.push("", "Items:");
     for (const item of order.items) {
-      const meta = [item.size, item.color].filter(Boolean).join(" · ");
+      const meta = [
+        item.size && item.size !== "One Size" ? item.size : null,
+        item.color && item.color !== "—" && item.color !== "Default"
+          ? item.color
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
       const label = meta ? `${item.name} (${meta})` : item.name;
       lines.push(
         `• ${label} × ${item.qty} — ${formatNaira(item.price * item.qty)}`,
