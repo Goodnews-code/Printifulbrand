@@ -1,25 +1,10 @@
-import sharp from "sharp";
-
-/** Hard cap for admin uploads (before compression). */
+/** Hard cap for admin uploads. */
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
-/** Longest edge — enough for product cards / retina, drops unused megapixels. */
+/** Longest edge when Sharp is available (local / hosts that support it). */
 const MAX_EDGE = 2000;
-
-/**
- * High visual quality for web product photos.
- * 92 + 4:4:4 is effectively lossless for storefront use.
- */
 const JPEG_QUALITY = 92;
 const WEBP_QUALITY = 92;
-
-// Netlify / some serverless hosts disallow SharedArrayBuffer (sharp workers).
-try {
-  sharp.concurrency(1);
-  sharp.cache(false);
-} catch {
-  // ignore — older sharp builds
-}
 
 export type OptimizedImage = {
   buffer: Buffer;
@@ -33,6 +18,7 @@ function extensionFromMime(mimeType: string) {
   if (mimeType === "image/png") return ".png";
   if (mimeType === "image/webp") return ".webp";
   if (mimeType === "image/gif") return ".gif";
+  if (mimeType === "image/jpeg" || mimeType === "image/jpg") return ".jpg";
   return ".jpg";
 }
 
@@ -50,10 +36,18 @@ function passthrough(
   };
 }
 
+function shouldSkipSharp() {
+  // Netlify Functions often block SharedArrayBuffer (Sharp workers fail).
+  return (
+    process.env.NETLIFY === "true" ||
+    process.env.SKIP_IMAGE_OPTIMIZE === "true" ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME != null
+  );
+}
+
 /**
- * Auto-compress product uploads while keeping visual quality high.
- * Falls back to the original bytes if Sharp fails (e.g. SharedArrayBuffer
- * blocked on the host) or if compression would enlarge the file.
+ * Optionally compress product uploads.
+ * On Netlify / restricted hosts, Sharp is skipped and the original file is kept.
  */
 export async function optimizeProductImage(
   input: Buffer,
@@ -61,8 +55,25 @@ export async function optimizeProductImage(
 ): Promise<OptimizedImage> {
   const originalBytes = input.length;
 
+  if (shouldSkipSharp()) {
+    return passthrough(input, mimeType, originalBytes);
+  }
+
   try {
-    const image = sharp(input, { failOn: "none", sequentialRead: true }).rotate();
+    // Dynamic import — avoids loading Sharp (and SAB workers) when skipped.
+    const sharpMod = await import("sharp");
+    const sharp = sharpMod.default;
+    try {
+      sharp.concurrency(1);
+      sharp.cache(false);
+    } catch {
+      // ignore
+    }
+
+    const image = sharp(input, {
+      failOn: "none",
+      sequentialRead: true,
+    }).rotate();
     const meta = await image.metadata();
 
     const width = meta.width ?? 0;
@@ -116,7 +127,7 @@ export async function optimizeProductImage(
     };
   } catch (err) {
     console.error(
-      "[image-optimize] Sharp failed — uploading original:",
+      "[image-optimize] Sharp unavailable — uploading original:",
       err instanceof Error ? err.message : err,
     );
     return passthrough(input, mimeType, originalBytes);
