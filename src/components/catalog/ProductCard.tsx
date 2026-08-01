@@ -150,23 +150,23 @@ export function ProductCard({ product, mode }: ProductCardProps) {
         )}
 
         {sizes.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {sizes.map((size, i) => (
-              <button
-                key={size.size_name}
-                type="button"
-                onClick={() => setSizeIdx(i)}
-                className={cn(
-                  "min-w-10 border px-2.5 py-1 font-ui text-xs font-medium transition-colors active:scale-95",
-                  sizeIdx === i
-                    ? "border-brand-purple bg-brand-purple text-white dark:border-brand-yellow dark:bg-brand-yellow dark:text-brand-black"
-                    : "border-border text-foreground hover:border-brand-purple dark:hover:border-brand-yellow",
-                )}
-              >
-                {size.size_name}
-              </button>
-            ))}
-          </div>
+          <label className="block space-y-1.5">
+            <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Size
+            </span>
+            <select
+              value={String(sizeIdx)}
+              onChange={(e) => setSizeIdx(Number(e.target.value))}
+              className="w-full border border-border bg-surface px-3 py-2 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+              aria-label="Select size"
+            >
+              {sizes.map((size, i) => (
+                <option key={size.size_name} value={i}>
+                  {size.size_name}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
 
         <motion.button

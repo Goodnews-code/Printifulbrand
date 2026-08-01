@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import type { Product, SiteSettings } from "@/types";
 import { encodeProductColor, parseProductColor } from "@/lib/product-color";
+import {
+  ALL_STANDARD_SIZES,
+  DEFAULT_SELECTED_SIZES,
+} from "@/lib/product-sizes";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -396,8 +400,10 @@ function ProductsTab({
   const [colors, setColors] = useState<Array<{ name: string; hex: string }>>([
     { name: "Default", hex: "#53009B" },
   ]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([
+    ...DEFAULT_SELECTED_SIZES,
+  ]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingSizes, setEditingSizes] = useState<Product["sizes"]>([]);
 
   const reset = () => {
     setForm({
@@ -409,8 +415,8 @@ function ProductsTab({
       is_active: true,
     });
     setColors([{ name: "Default", hex: "#53009B" }]);
+    setSelectedSizes([...DEFAULT_SELECTED_SIZES]);
     setEditingId(null);
-    setEditingSizes([]);
     setUploadError("");
   };
 
@@ -492,11 +498,25 @@ function ProductsTab({
       return;
     }
 
+    if (selectedSizes.length === 0) {
+      setMessage("Select at least one size for this product.");
+      return;
+    }
+
+    const basePrice = Number(form.price) || 0;
+    const orderedSizes = ALL_STANDARD_SIZES.filter((s) =>
+      selectedSizes.includes(s),
+    );
+    // Keep any custom sizes that aren't in the standard list
+    const customSizes = selectedSizes.filter(
+      (s) => !ALL_STANDARD_SIZES.includes(s as (typeof ALL_STANDARD_SIZES)[number]),
+    );
+
     const imageUrl = form.image_url || "";
     const payload = {
       title: form.title,
       description: form.description,
-      price: Number(form.price) || 0,
+      price: basePrice,
       category: form.category,
       image_url: imageUrl || undefined,
       is_active: form.is_active,
@@ -507,7 +527,10 @@ function ProductsTab({
             is_primary: index === 0,
           }))
         : undefined,
-      sizes: editingSizes,
+      sizes: [...orderedSizes, ...customSizes].map((size_name) => ({
+        size_name,
+        price: basePrice,
+      })),
     };
 
     const url =
@@ -583,7 +606,14 @@ function ProductsTab({
   const startEdit = (p: Product) => {
     setEditingId(p.id);
     setUploadError("");
-    setEditingSizes(p.sizes ?? []);
+    const existingSizes = (p.sizes ?? [])
+      .map((s) => s.size_name)
+      .filter(Boolean);
+    setSelectedSizes(
+      existingSizes.length > 0
+        ? existingSizes
+        : [...DEFAULT_SELECTED_SIZES],
+    );
     setForm({
       title: p.title,
       description: p.description || "",
@@ -729,6 +759,68 @@ function ProductsTab({
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Sizes */}
+        <div className="space-y-2 border border-border bg-surface-alt p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
+              Sizes
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedSizes([...ALL_STANDARD_SIZES])
+                }
+                className="border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedSizes([])}
+                className="border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <p className="font-ui text-[11px] text-muted">
+            Customers pick a size on the store. Selected sizes use the product
+            price and appear on receipts and Telegram.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ALL_STANDARD_SIZES.map((size) => {
+              const active = selectedSizes.includes(size);
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() =>
+                    setSelectedSizes((prev) =>
+                      prev.includes(size)
+                        ? prev.filter((s) => s !== size)
+                        : [...prev, size],
+                    )
+                  }
+                  className={cn(
+                    "min-w-12 border px-2.5 py-1.5 font-ui text-xs font-semibold transition-colors",
+                    active
+                      ? "border-brand-purple bg-brand-purple text-white dark:border-brand-yellow dark:bg-brand-yellow dark:text-brand-black"
+                      : "border-border bg-surface text-foreground hover:border-brand-purple dark:hover:border-brand-yellow",
+                  )}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+          {selectedSizes.length === 0 && (
+            <p className="font-ui text-xs text-red-600 dark:text-red-300">
+              Select at least one size.
+            </p>
+          )}
         </div>
 
         {/* Image: upload or URL */}
@@ -888,6 +980,9 @@ function ProductsTab({
                       ? ` · ${p.images
                           .map((img) => parseProductColor(img.color_code).name)
                           .join(", ")}`
+                      : ""}
+                    {p.sizes && p.sizes.length > 0
+                      ? ` · ${p.sizes.map((s) => s.size_name).join(", ")}`
                       : ""}
                   </p>
                   <span
