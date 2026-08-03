@@ -10,6 +10,7 @@ import {
   parseProductColor,
   productHasColorOptions,
 } from "@/lib/product-color";
+import { getCategoryAttributes } from "@/lib/product-attributes";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -24,6 +25,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   const showColors = productHasColorOptions(product.images);
   const configuredSizes = product.sizes?.length ? product.sizes : [];
   const showSizes = configuredSizes.length > 0;
+  const sizeLabel = getCategoryAttributes(product.category).sizeLabel;
 
   const images = showColors
     ? product.images!
@@ -108,8 +110,9 @@ export function ProductCard({ product, mode }: ProductCardProps) {
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
         <SmartImage
+          key={`${activeImage.image_url}-${colorIdx}`}
           src={activeImage.image_url}
-          alt={product.title}
+          alt={`${product.title}${showColors ? ` — ${activeColor.name}` : ""}`}
           fillCover
           className="transition-transform duration-500 hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
@@ -129,39 +132,50 @@ export function ProductCard({ product, mode }: ProductCardProps) {
         </div>
 
         {showColors && (
-          <label className="block space-y-1.5">
-            <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
-              Color
-            </span>
-            <div className="flex items-center gap-2">
-              <span
-                aria-hidden
-                className="size-5 shrink-0 rounded-full border border-border"
-                style={{ backgroundColor: activeColor.hex }}
-              />
-              <select
-                value={String(colorIdx)}
-                onChange={(e) => setColorIdx(Number(e.target.value))}
-                className="w-full border border-border bg-surface px-3 py-2 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
-                aria-label="Select color"
-              >
-                {images.map((img, i) => {
-                  const color = parseProductColor(img.color_code);
-                  return (
-                    <option key={`${img.image_url}-${i}`} value={i}>
-                      {color.name}
-                    </option>
-                  );
-                })}
-              </select>
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+                Color
+              </span>
+              <span className="font-ui text-xs text-foreground">
+                {activeColor.name}
+              </span>
             </div>
-          </label>
+            <div
+              className="flex flex-wrap gap-2"
+              role="listbox"
+              aria-label="Select color"
+            >
+              {images.map((img, i) => {
+                const color = parseProductColor(img.color_code);
+                const selected = colorIdx === i;
+                return (
+                  <button
+                    key={`${img.image_url}-${i}`}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    aria-label={color.name}
+                    title={color.name}
+                    onClick={() => setColorIdx(i)}
+                    className={cn(
+                      "size-8 shrink-0 rounded-full border-2 transition-transform",
+                      selected
+                        ? "scale-110 border-brand-purple ring-2 ring-brand-purple/30 dark:border-brand-yellow dark:ring-brand-yellow/30"
+                        : "border-border hover:scale-105",
+                    )}
+                    style={{ backgroundColor: color.hex }}
+                  />
+                );
+              })}
+            </div>
+          </div>
         )}
 
         {showSizes && (
           <label className="block space-y-1.5">
             <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
-              Size
+              {sizeLabel}
             </span>
             <select
               value={String(sizeIdx)}

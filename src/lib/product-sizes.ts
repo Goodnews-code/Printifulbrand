@@ -1,4 +1,6 @@
-/** Standard apparel sizes for Printiful merch. */
+/**
+ * Legacy apparel size helpers — prefer `product-attributes.ts` for category presets.
+ */
 export const STANDARD_APPAREL_SIZES = [
   "XS",
   "S",
