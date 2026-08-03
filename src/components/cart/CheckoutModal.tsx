@@ -1,11 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
-import { NIGERIA_STATES, formatShippingLines } from "@/lib/shipping";
+import {
+  DELIVERY_ZONES,
+  getDeliveryZoneForState,
+  formatShippingLines,
+} from "@/lib/shipping";
 import { formatNaira, cn } from "@/lib/utils";
 
 declare global {
@@ -88,6 +92,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
   const reduce = useReducedMotion();
 
+  const deliveryZone = useMemo(
+    () => getDeliveryZoneForState(state),
+    [state],
+  );
+  const deliveryFee = deliveryZone?.fee ?? 0;
+  const orderTotal = subtotal + deliveryFee;
+
   useEffect(() => {
     if (!open) {
       setStep(1);
@@ -120,6 +131,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     state: state.trim(),
     postalCode: postalCode.trim() || undefined,
     country: country.trim(),
+    deliveryZone: deliveryZone?.label,
+    deliveryFee: deliveryZone?.fee,
   });
 
   const goNext = (e: FormEvent) => {
@@ -132,6 +145,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       !hasCompleteShipping({ line1, city, state, country })
     ) {
       setFormError("Please fill all required checkout and delivery fields.");
+      return;
+    }
+    if (!deliveryZone) {
+      setFormError(
+        "Select a delivery destination we currently serve (Lagos, Ogun, Ondo, Oyo, Ekiti, Kwara, or Abuja).",
+      );
       return;
     }
     setStep(2);
@@ -150,11 +169,17 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       setFormError("Please fill all required checkout and delivery fields.");
       return;
     }
+    if (!deliveryZone) {
+      setFormError(
+        "Select a delivery destination we currently serve before paying.",
+      );
+      return;
+    }
 
     setSubmitting(true);
     const txnRef = `PRNTFL-${Date.now()}`;
     const publicKey = settings.paystack_public_key || "";
-    const amountSnapshot = subtotal;
+    const amountSnapshot = orderTotal;
 
     if (!publicKey.startsWith("pk_")) {
       setFormError(
@@ -201,6 +226,9 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           customer_name: customerSnapshot.name,
           customer_phone: customerSnapshot.phone,
           shipping_address: shipping,
+          delivery_fee: deliveryFee,
+          delivery_zone: deliveryZone.label,
+          cart_subtotal: subtotal,
           cart_items: cartItems,
           custom_fields: [
             {
@@ -222,6 +250,11 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               display_name: "Delivery State",
               variable_name: "state",
               value: shipping.state,
+            },
+            {
+              display_name: "Delivery Fee",
+              variable_name: "delivery_fee",
+              value: String(deliveryFee),
             },
           ],
         },
@@ -351,9 +384,26 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-3 flex justify-between border-t border-border pt-3 font-ui font-bold">
-                    <span>Total</span>
-                    <span>{formatNaira(subtotal)}</span>
+                  <div className="mt-3 space-y-1.5 border-t border-border pt-3 font-ui text-sm">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-muted">Subtotal</span>
+                      <span>{formatNaira(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-muted">
+                        Delivery
+                        {deliveryZone ? ` (${deliveryZone.label})` : ""}
+                      </span>
+                      <span>
+                        {deliveryZone
+                          ? formatNaira(deliveryFee)
+                          : "Select destination"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3 border-t border-border pt-2 font-bold">
+                      <span>Total</span>
+                      <span>{formatNaira(orderTotal)}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -403,9 +453,31 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
                     <div className="border-t border-border pt-4">
                       <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
-                        Delivery address
+                        Delivery details
                       </p>
                       <div className="space-y-4">
+                        <label className="block space-y-1.5">
+                          <span className="font-ui text-sm font-medium">
+                            Delivery destination *
+                          </span>
+                          <select
+                            required
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                            autoComplete="address-level1"
+                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                          >
+                            <option value="">Select destination</option>
+                            {DELIVERY_ZONES.map((zone) => (
+                              <option key={zone.id} value={zone.state}>
+                                {zone.label} ({formatNaira(zone.fee)})
+                              </option>
+                            ))}
+                          </select>
+                          <p className="font-ui text-[11px] text-muted">
+                            Fee is added to your order total at checkout.
+                          </p>
+                        </label>
                         <Field
                           label="Street address *"
                           value={line1}
@@ -423,34 +495,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         />
                         <div className="grid gap-4 sm:grid-cols-2">
                           <Field
-                            label="City *"
+                            label="City / Area *"
                             value={city}
                             onChange={setCity}
                             placeholder="e.g. Ikeja"
                             required
                             autoComplete="address-level2"
                           />
-                          <label className="block space-y-1.5">
-                            <span className="font-ui text-sm font-medium">
-                              State / Province *
-                            </span>
-                            <select
-                              required
-                              value={state}
-                              onChange={(e) => setState(e.target.value)}
-                              autoComplete="address-level1"
-                              className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
-                            >
-                              <option value="">Select state</option>
-                              {NIGERIA_STATES.map((s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
                           <Field
                             label="Postal / ZIP code"
                             value={postalCode}
@@ -458,15 +509,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                             placeholder="Optional"
                             autoComplete="postal-code"
                           />
-                          <Field
-                            label="Country *"
-                            value={country}
-                            onChange={setCountry}
-                            placeholder="Nigeria"
-                            required
-                            autoComplete="country-name"
-                          />
                         </div>
+                        <Field
+                          label="Country *"
+                          value={country}
+                          onChange={setCountry}
+                          placeholder="Nigeria"
+                          required
+                          autoComplete="country-name"
+                        />
                       </div>
                     </div>
 
@@ -506,6 +557,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         {shippingLines.map((line) => (
                           <p key={line}>{line}</p>
                         ))}
+                        {deliveryZone && (
+                          <p className="mt-2">
+                            <span className="text-muted">Delivery fee: </span>
+                            {deliveryZone.label} — {formatNaira(deliveryFee)}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-3 pt-2">

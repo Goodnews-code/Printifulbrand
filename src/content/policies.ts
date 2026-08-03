@@ -4,14 +4,20 @@ export const shippingPolicy = {
   sections: [
     {
       heading: "Shipping Fees",
-      paragraphs: ["Shipping fees are calculated based on:"],
+      paragraphs: [
+        "Delivery fees are calculated at checkout based on your destination from Lagos and added to your order total before payment.",
+      ],
       bullets: [
-        "Delivery location",
-        "Distance to the delivery address",
-        "Weight and size of the package",
+        "Lagos to Lagos — ₦5,500",
+        "Lagos to Ogun — ₦8,000",
+        "Lagos to Ondo — ₦8,000",
+        "Lagos to Oyo — ₦8,000",
+        "Lagos to Ekiti — ₦8,000",
+        "Lagos to Kwara — ₦8,000",
+        "Lagos to Abuja — ₦9,500",
       ],
       afterParagraphs: [
-        "The applicable shipping fee will be communicated before your order is confirmed.",
+        "Online checkout currently supports the destinations listed above. For other locations, contact shopprintiful@gmail.com for a delivery quote.",
       ],
     },
     {
