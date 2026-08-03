@@ -15,6 +15,8 @@ const shippingSchema = z.object({
   state: z.string().min(1),
   postalCode: z.string().optional(),
   country: z.string().min(1),
+  deliveryZone: z.string().optional(),
+  deliveryFee: z.number().nonnegative().optional(),
 });
 
 const bodySchema = z.object({

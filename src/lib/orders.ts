@@ -63,6 +63,18 @@ function buildTelegramText(order: PaidOrderInput): string {
   if (order.customer.shipping) {
     lines.push("", "Delivery location:");
     lines.push(formatShippingAddress(order.customer.shipping));
+    if (
+      typeof order.customer.shipping.deliveryFee === "number" &&
+      order.customer.shipping.deliveryFee > 0
+    ) {
+      const zone =
+        order.customer.shipping.deliveryZone ||
+        order.customer.shipping.state ||
+        "Delivery";
+      lines.push(
+        `Delivery fee: ${zone} — ${formatNaira(order.customer.shipping.deliveryFee)}`,
+      );
+    }
   }
 
   if (order.items && order.items.length > 0) {
@@ -81,6 +93,11 @@ function buildTelegramText(order: PaidOrderInput): string {
         `• ${label} × ${item.qty} — ${formatNaira(item.price * item.qty)}`,
       );
     }
+    const itemsSubtotal = order.items.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0,
+    );
+    lines.push(`Items subtotal: ${formatNaira(itemsSubtotal)}`);
   }
 
   return lines.join("\n");

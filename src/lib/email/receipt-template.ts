@@ -90,7 +90,6 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
     "Thank you for your order. Your payment was successful.",
     "",
     `Reference: ${data.reference}`,
-    `Total: ${formatNaira(data.amountNaira)} ${data.currency || "NGN"}`,
     "",
   ];
 
@@ -110,16 +109,35 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
         `- ${label} × ${item.qty} — ${formatNaira(item.price * item.qty)}`,
       );
     }
+    const itemsSubtotal = data.items.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0,
+    );
+    lines.push(`Items subtotal: ${formatNaira(itemsSubtotal)}`);
     lines.push("");
   }
 
   if (data.customer.shipping) {
     lines.push("Delivery location:");
     lines.push(...formatShippingLines(data.customer.shipping));
+    if (
+      typeof data.customer.shipping.deliveryFee === "number" &&
+      data.customer.shipping.deliveryFee > 0
+    ) {
+      const zone =
+        data.customer.shipping.deliveryZone ||
+        data.customer.shipping.state ||
+        "Delivery";
+      lines.push(
+        `Delivery fee: ${zone} — ${formatNaira(data.customer.shipping.deliveryFee)}`,
+      );
+    }
     lines.push("");
   }
 
   lines.push(
+    `Total paid: ${formatNaira(data.amountNaira)} ${data.currency || "NGN"}`,
+    "",
     "Questions? Reply to this email or write shopprintiful@gmail.com",
     "",
     "Be Bold. Be Seen. Be Known.",
@@ -154,6 +172,18 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
         .map((line) => escapeHtml(line))
         .join("<br />")
     : "";
+  const deliveryFee =
+    typeof data.customer.shipping?.deliveryFee === "number"
+      ? data.customer.shipping.deliveryFee
+      : 0;
+  const deliveryZoneLabel =
+    data.customer.shipping?.deliveryZone ||
+    data.customer.shipping?.state ||
+    "Delivery";
+  const itemsSubtotal = items.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0,
+  );
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -251,11 +281,37 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
               </table>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;">
+                ${
+                  items.length
+                    ? `
                 <tr>
-                  <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                  <td style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                    Items subtotal
+                  </td>
+                  <td align="right" style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
+                    ${escapeHtml(formatNaira(itemsSubtotal))}
+                  </td>
+                </tr>`
+                    : ""
+                }
+                ${
+                  deliveryFee > 0
+                    ? `
+                <tr>
+                  <td style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                    Delivery (${escapeHtml(deliveryZoneLabel)})
+                  </td>
+                  <td align="right" style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
+                    ${escapeHtml(formatNaira(deliveryFee))}
+                  </td>
+                </tr>`
+                    : ""
+                }
+                <tr>
+                  <td style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
                     Grand total
                   </td>
-                  <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:${BRAND.purple};">
+                  <td align="right" style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:${BRAND.purple};">
                     ${escapeHtml(formatNaira(data.amountNaira))}
                   </td>
                 </tr>
