@@ -13,23 +13,18 @@ import {
   Upload,
 } from "lucide-react";
 import type { Product, SiteSettings } from "@/types";
-import { encodeProductColor, hexFromColorName, parseProductColor } from "@/lib/product-color";
 import {
-  ALL_STANDARD_SIZES,
-} from "@/lib/product-sizes";
+  PRODUCT_CATEGORIES,
+  getCategoryAttributes,
+  productUsesColors,
+  productUsesSizes,
+  sizeOptionsForProduct,
+} from "@/lib/product-attributes";
+import { encodeProductColor, hexFromColorName, parseProductColor } from "@/lib/product-color";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 
 const TOKEN_KEY = "printiful_token";
-
-const PRODUCT_CATEGORIES = [
-  "Apparels",
-  "Stationery",
-  "Brand Packaging",
-  "Gadgets",
-  "Corporate Gift",
-  "Lifestyle",
-] as const;
 
 type Tab = "overview" | "products" | "settings";
 
@@ -386,8 +381,11 @@ function ProductsTab({
   setMessage: (m: string) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const colorFileRef = useRef<HTMLInputElement>(null);
+  const uploadTargetRef = useRef<"main" | number>("main");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [uploadTarget, setUploadTarget] = useState<"main" | number>("main");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -396,13 +394,44 @@ function ProductsTab({
     image_url: "",
     is_active: true,
   });
-  const [colors, setColors] = useState<Array<{ name: string; hex: string }>>(
-    [],
+  const [colors, setColors] = useState<
+    Array<{ name: string; hex: string; image_url: string }>
+  >([]);
+  const apparelDefaults = getCategoryAttributes("Apparels");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([
+    ...apparelDefaults.defaultSelectedSizes,
+  ]);
+  const [enableColors, setEnableColors] = useState(
+    apparelDefaults.colorsDefaultOn,
   );
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [enableSizes, setEnableSizes] = useState(
+    apparelDefaults.sizesDefaultOn,
+  );
+  const [customSizeInput, setCustomSizeInput] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  const categoryAttrs = getCategoryAttributes(form.category);
+  const sizeChipOptions = sizeOptionsForProduct(form.category, selectedSizes);
+
+  const setTarget = (target: "main" | number) => {
+    uploadTargetRef.current = target;
+    setUploadTarget(target);
+  };
+
+  const applyCategoryDefaults = (category: string, keepExisting: boolean) => {
+    const cfg = getCategoryAttributes(category);
+    if (!keepExisting) {
+      setEnableColors(cfg.colorsDefaultOn);
+      setEnableSizes(cfg.sizesDefaultOn);
+      setSelectedSizes(
+        cfg.sizesDefaultOn ? [...cfg.defaultSelectedSizes] : [],
+      );
+      setColors([]);
+    }
+  };
+
   const reset = () => {
+    const cfg = getCategoryAttributes("Apparels");
     setForm({
       title: "",
       description: "",
@@ -412,14 +441,22 @@ function ProductsTab({
       is_active: true,
     });
     setColors([]);
-    setSelectedSizes([]);
+    setSelectedSizes([...cfg.defaultSelectedSizes]);
+    setEnableColors(cfg.colorsDefaultOn);
+    setEnableSizes(cfg.sizesDefaultOn);
+    setCustomSizeInput("");
     setEditingId(null);
     setUploadError("");
   };
 
   const formatMb = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 
-  const uploadImage = async (file: File) => {
+  const clearFileInputs = () => {
+    if (fileRef.current) fileRef.current.value = "";
+    if (colorFileRef.current) colorFileRef.current.value = "";
+  };
+
+  const uploadImage = async (file: File, target: "main" | number = "main") => {
     const maxBytes = 5 * 1024 * 1024;
     const allowed = new Set([
       "image/jpeg",
@@ -435,7 +472,7 @@ function ProductsTab({
       const reason = `Upload rejected: “${file.name}” is not an allowed image type (${file.type || "unknown"}). Use JPEG, PNG, WebP, or GIF. Max size: 5MB.`;
       setUploadError(reason);
       setMessage(reason);
-      if (fileRef.current) fileRef.current.value = "";
+      clearFileInputs();
       return;
     }
 
@@ -443,7 +480,7 @@ function ProductsTab({
       const reason = `Upload rejected: “${file.name}” is ${formatMb(file.size)}MB. Maximum allowed is 5MB. Please choose a smaller image.`;
       setUploadError(reason);
       setMessage(reason);
-      if (fileRef.current) fileRef.current.value = "";
+      clearFileInputs();
       return;
     }
 
@@ -465,7 +502,15 @@ function ProductsTab({
         setMessage(reason);
         return;
       }
-      setForm((f) => ({ ...f, image_url: data.image_url as string }));
+      const url = data.image_url as string;
+      if (target === "main") {
+        setForm((f) => ({ ...f, image_url: url }));
+      } else {
+        setColors((prev) =>
+          prev.map((c, i) => (i === target ? { ...c, image_url: url } : c)),
+        );
+        setForm((f) => (f.image_url ? f : { ...f, image_url: url }));
+      }
       setUploadError("");
       const original = Number(data.originalBytes) || file.size;
       const optimized = Number(data.optimizedBytes) || file.size;
@@ -477,60 +522,84 @@ function ProductsTab({
       );
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
+      clearFileInputs();
     }
   };
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
-    const cleanedColors = colors
-      .map((c) => {
-        const name = c.name.trim();
-        const fromName = hexFromColorName(name);
-        return {
-          name,
-          hex: (fromName || c.hex.trim() || "#888888") as string,
-        };
-      })
-      .filter((c) => c.name);
+    const cleanedColors = enableColors
+      ? colors
+          .map((c) => {
+            const name = c.name.trim();
+            const fromName = hexFromColorName(name);
+            return {
+              name,
+              hex: (fromName || c.hex.trim() || "#888888") as string,
+              image_url: (c.image_url || "").trim(),
+            };
+          })
+          .filter((c) => c.name)
+      : [];
 
     const basePrice = Number(form.price) || 0;
-    const orderedSizes = ALL_STANDARD_SIZES.filter((s) =>
-      selectedSizes.includes(s),
-    );
-    const customSizes = selectedSizes.filter(
-      (s) =>
-        !ALL_STANDARD_SIZES.includes(
-          s as (typeof ALL_STANDARD_SIZES)[number],
-        ),
-    );
+    const sizesToSave = enableSizes ? selectedSizes : [];
 
-    const imageUrl = form.image_url || "";
+    const coverUrl = form.image_url || "";
+    const colorImages =
+      cleanedColors.length > 0
+        ? cleanedColors.map((c, index) => ({
+            image_url: c.image_url || coverUrl,
+            color_code: encodeProductColor(c.name, c.hex),
+            is_primary: index === 0,
+          }))
+        : [];
+
+    if (enableColors && cleanedColors.length > 0) {
+      const missing = colorImages.filter((img) => !img.image_url);
+      if (missing.length > 0) {
+        setMessage(
+          "Each color needs an image (upload per color, or set a cover image as fallback).",
+        );
+        return;
+      }
+    }
+
+    if (enableColors && cleanedColors.length === 0) {
+      setMessage(
+        "Color options are on — add at least one color, or turn colors off for this product.",
+      );
+      return;
+    }
+
+    if (enableSizes && sizesToSave.length === 0) {
+      setMessage(
+        "Size options are on — select at least one size, or turn sizes off for this product.",
+      );
+      return;
+    }
+
+    const primaryUrl = colorImages[0]?.image_url || coverUrl || "";
     const payload = {
       title: form.title,
       description: form.description,
       price: basePrice,
       category: form.category,
-      image_url: imageUrl || undefined,
+      image_url: primaryUrl || undefined,
       is_active: form.is_active,
-      // Colors optional: none → single Default image (no storefront color picker)
-      images: imageUrl
-        ? cleanedColors.length > 0
-          ? cleanedColors.map((c, index) => ({
-              image_url: imageUrl,
-              color_code: encodeProductColor(c.name, c.hex),
-              is_primary: index === 0,
-            }))
-          : [
-              {
-                image_url: imageUrl,
-                color_code: encodeProductColor("Default", "#888888"),
-                is_primary: true,
-              },
-            ]
-        : undefined,
-      // Sizes optional: none → empty (storefront hides size picker)
-      sizes: [...orderedSizes, ...customSizes].map((size_name) => ({
+      images:
+        colorImages.length > 0
+          ? colorImages
+          : primaryUrl
+            ? [
+                {
+                  image_url: primaryUrl,
+                  color_code: encodeProductColor("Default", "#888888"),
+                  is_primary: true,
+                },
+              ]
+            : undefined,
+      sizes: sizesToSave.map((size_name) => ({
         size_name,
         price: basePrice,
       })),
@@ -609,10 +678,13 @@ function ProductsTab({
   const startEdit = (p: Product) => {
     setEditingId(p.id);
     setUploadError("");
+    setCustomSizeInput("");
     const existingSizes = (p.sizes ?? [])
       .map((s) => s.size_name)
       .filter(Boolean);
     setSelectedSizes(existingSizes);
+    setEnableColors(productUsesColors(p));
+    setEnableSizes(productUsesSizes(p));
     setForm({
       title: p.title,
       description: p.description || "",
@@ -625,7 +697,11 @@ function ProductsTab({
       const loaded = p.images
         .map((img) => {
           const parsed = parseProductColor(img.color_code);
-          return { name: parsed.name, hex: parsed.hex };
+          return {
+            name: parsed.name,
+            hex: parsed.hex,
+            image_url: img.image_url || "",
+          };
         })
         .filter((c) => c.name && c.name !== "Default");
       setColors(loaded);
@@ -643,13 +719,37 @@ function ProductsTab({
         <h2 className="font-heading text-xl italic">
           {editingId != null ? "Edit Product" : "Add Product"}
         </h2>
-        <input
-          required
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
-        />
+
+        <label className="block space-y-1">
+          <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Title
+          </span>
+          <input
+            required
+            placeholder="Product title"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Product category
+          </span>
+          <CategorySelect
+            value={form.category}
+            onChange={(category) => {
+              setForm((f) => ({ ...f, category }));
+              applyCategoryDefaults(category, editingId != null);
+            }}
+          />
+          <p className="font-ui text-[11px] text-muted">
+            Attributes below update for {form.category}. Turn color or size off
+            when this product does not need them.
+          </p>
+        </label>
+
         <textarea
           placeholder="Description"
           value={form.description}
@@ -669,182 +769,371 @@ function ProductsTab({
           onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
         />
-        <CategorySelect
-          value={form.category}
-          onChange={(category) => setForm((f) => ({ ...f, category }))}
-        />
 
-        {/* Colors (optional) */}
-        <div className="space-y-2 border border-border bg-surface-alt p-3">
-          <div className="flex items-center justify-between gap-2">
+        {/* Category-driven attributes */}
+        <div className="space-y-3 border border-border bg-surface-alt p-3">
+          <div>
             <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-              Colors (optional)
+              {categoryAttrs.attributesTitle}
             </p>
-            <button
-              type="button"
-              onClick={() =>
-                setColors((prev) => [
-                  ...prev,
-                  { name: "", hex: "#888888" },
-                ])
-              }
-              className="inline-flex items-center gap-1 border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
-            >
-              <Plus size={14} /> Add color
-            </button>
+            <p className="mt-1 font-ui text-[11px] text-muted">
+              Only enable what shoppers should choose for this product.
+            </p>
           </div>
-          <p className="font-ui text-[11px] text-muted">
-            Leave empty if this product has no color choice. Type a name like
-            Black or Navy — the swatch updates automatically.
-          </p>
-          {colors.length === 0 ? (
-            <p className="border border-dashed border-border bg-surface px-3 py-3 font-ui text-xs text-muted">
-              No colors — storefront won&apos;t show a color dropdown.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {colors.map((color, index) => (
-                <div
-                  key={index}
-                  className="flex flex-wrap items-center gap-2 border border-border bg-surface p-2"
-                >
-                  <input
-                    type="color"
-                    value={
-                      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color.hex)
-                        ? color.hex.length === 4
-                          ? `#${color.hex[1]}${color.hex[1]}${color.hex[2]}${color.hex[2]}${color.hex[3]}${color.hex[3]}`
-                          : color.hex
-                        : "#888888"
-                    }
-                    onChange={(e) =>
-                      setColors((prev) =>
-                        prev.map((c, i) =>
-                          i === index ? { ...c, hex: e.target.value } : c,
-                        ),
-                      )
-                    }
-                    className="size-9 cursor-pointer border border-border bg-transparent p-0"
-                    aria-label={`Color swatch ${index + 1}`}
-                  />
-                  <input
-                    placeholder="Color name (e.g. Black)"
-                    value={color.name}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      const matched = hexFromColorName(name);
-                      setColors((prev) =>
-                        prev.map((c, i) =>
-                          i === index
-                            ? {
-                                name,
-                                hex: matched || c.hex,
-                              }
-                            : c,
-                        ),
-                      );
-                    }}
-                    className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
-                  />
-                  <input
-                    placeholder="#000000"
-                    value={color.hex}
-                    onChange={(e) =>
-                      setColors((prev) =>
-                        prev.map((c, i) =>
-                          i === index ? { ...c, hex: e.target.value } : c,
-                        ),
-                      )
-                    }
-                    className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
-                  />
+
+          {/* Colors toggle + editor */}
+          <div className="space-y-2 border border-border bg-surface p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-ui text-sm font-semibold">Color options</p>
+                <p className="font-ui text-[11px] text-muted">
+                  {categoryAttrs.colorHelp}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enableColors}
+                onClick={() => {
+                  const next = !enableColors;
+                  setEnableColors(next);
+                  if (!next) setColors([]);
+                  else if (colors.length === 0) {
+                    setColors([{ name: "", hex: "#888888", image_url: "" }]);
+                  }
+                }}
+                className={cn(
+                  "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+                  enableColors ? "bg-emerald-500" : "bg-border",
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                    enableColors && "translate-x-5",
+                  )}
+                />
+              </button>
+            </div>
+
+            {enableColors && (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-ui text-[11px] text-muted">
+                    Upload a photo per color — storefront image swaps on click.
+                  </p>
                   <button
                     type="button"
                     onClick={() =>
-                      setColors((prev) => prev.filter((_, i) => i !== index))
+                      setColors((prev) => [
+                        ...prev,
+                        { name: "", hex: "#888888", image_url: "" },
+                      ])
                     }
-                    className="inline-flex size-9 items-center justify-center border border-border text-muted"
-                    aria-label={`Remove color ${color.name || index + 1}`}
+                    className="inline-flex items-center gap-1 border border-border bg-surface-alt px-2 py-1 font-ui text-xs font-medium"
                   >
-                    <Trash2 size={14} />
+                    <Plus size={14} /> Add color
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <input
+                  ref={colorFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    const target = uploadTargetRef.current;
+                    if (file && typeof target === "number") {
+                      void uploadImage(file, target);
+                    }
+                  }}
+                />
+                {colors.length === 0 ? (
+                  <p className="border border-dashed border-border bg-surface-alt px-3 py-3 font-ui text-xs text-muted">
+                    No colors yet — add one, or turn color options off.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {colors.map((color, index) => (
+                      <div
+                        key={index}
+                        className="space-y-2 border border-border bg-surface-alt p-2"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <input
+                            type="color"
+                            value={
+                              /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(
+                                color.hex,
+                              )
+                                ? color.hex.length === 4
+                                  ? `#${color.hex[1]}${color.hex[1]}${color.hex[2]}${color.hex[2]}${color.hex[3]}${color.hex[3]}`
+                                  : color.hex
+                                : "#888888"
+                            }
+                            onChange={(e) =>
+                              setColors((prev) =>
+                                prev.map((c, i) =>
+                                  i === index
+                                    ? { ...c, hex: e.target.value }
+                                    : c,
+                                ),
+                              )
+                            }
+                            className="size-9 cursor-pointer border border-border bg-transparent p-0"
+                            aria-label={`Color swatch ${index + 1}`}
+                          />
+                          <input
+                            placeholder="Color name (e.g. Black)"
+                            value={color.name}
+                            onChange={(e) => {
+                              const name = e.target.value;
+                              const matched = hexFromColorName(name);
+                              setColors((prev) =>
+                                prev.map((c, i) =>
+                                  i === index
+                                    ? {
+                                        ...c,
+                                        name,
+                                        hex: matched || c.hex,
+                                      }
+                                    : c,
+                                ),
+                              );
+                            }}
+                            className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
+                          />
+                          <input
+                            placeholder="#000000"
+                            value={color.hex}
+                            onChange={(e) =>
+                              setColors((prev) =>
+                                prev.map((c, i) =>
+                                  i === index
+                                    ? { ...c, hex: e.target.value }
+                                    : c,
+                                ),
+                              )
+                            }
+                            className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setColors((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              )
+                            }
+                            className="inline-flex size-9 items-center justify-center border border-border text-muted"
+                            aria-label={`Remove color ${color.name || index + 1}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {color.image_url ? (
+                            <div className="relative size-14 shrink-0 overflow-hidden border border-border bg-surface">
+                              <SmartImage
+                                src={color.image_url}
+                                alt={color.name || `Color ${index + 1}`}
+                                fillCover
+                                sizes="56px"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex size-14 shrink-0 items-center justify-center border border-dashed border-border text-muted">
+                              <ImagePlus size={18} strokeWidth={1.25} />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <button
+                              type="button"
+                              disabled={uploading}
+                              onClick={() => {
+                                setTarget(index);
+                                colorFileRef.current?.click();
+                              }}
+                              className="inline-flex w-full items-center justify-center gap-1.5 border border-border bg-surface px-2 py-1.5 font-ui text-xs font-medium disabled:opacity-60"
+                            >
+                              <Upload size={14} />
+                              {uploading && uploadTarget === index
+                                ? "Uploading…"
+                                : color.image_url
+                                  ? "Replace color image"
+                                  : "Upload color image"}
+                            </button>
+                            <input
+                              placeholder="Or paste image URL for this color"
+                              value={color.image_url}
+                              onChange={(e) =>
+                                setColors((prev) =>
+                                  prev.map((c, i) =>
+                                    i === index
+                                      ? { ...c, image_url: e.target.value }
+                                      : c,
+                                  ),
+                                )
+                              }
+                              className="w-full border border-border bg-surface px-2 py-1 font-ui text-[11px] outline-none focus:border-brand-purple"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
-        {/* Sizes (optional) */}
-        <div className="space-y-2 border border-border bg-surface-alt p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-              Sizes (optional)
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedSizes([...ALL_STANDARD_SIZES])}
-                className="border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
-              >
-                Select all
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedSizes([])}
-                className="border border-border bg-surface px-2 py-1 font-ui text-xs font-medium"
-              >
-                Clear
-              </button>
-            </div>
+            {!enableColors && (
+              <p className="font-ui text-xs text-muted">
+                Colors off — shoppers won&apos;t see a color picker for this
+                product.
+              </p>
+            )}
           </div>
-          <p className="font-ui text-[11px] text-muted">
-            Leave all unselected if this product has no size choice.
-            Selected sizes use the product price.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {ALL_STANDARD_SIZES.map((size) => {
-              const active = selectedSizes.includes(size);
-              return (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() =>
-                    setSelectedSizes((prev) =>
-                      prev.includes(size)
-                        ? prev.filter((s) => s !== size)
-                        : [...prev, size],
-                    )
+
+          {/* Sizes toggle + editor */}
+          <div className="space-y-2 border border-border bg-surface p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-ui text-sm font-semibold">
+                  {categoryAttrs.sizeLabel}
+                </p>
+                <p className="font-ui text-[11px] text-muted">
+                  {categoryAttrs.sizeHelp}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enableSizes}
+                onClick={() => {
+                  const next = !enableSizes;
+                  setEnableSizes(next);
+                  if (!next) setSelectedSizes([]);
+                  else if (selectedSizes.length === 0) {
+                    setSelectedSizes([
+                      ...categoryAttrs.defaultSelectedSizes,
+                    ]);
                   }
+                }}
+                className={cn(
+                  "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+                  enableSizes ? "bg-emerald-500" : "bg-border",
+                )}
+              >
+                <span
                   className={cn(
-                    "min-w-12 border px-2.5 py-1.5 font-ui text-xs font-semibold transition-colors",
-                    active
-                      ? "border-brand-purple bg-brand-purple text-white dark:border-brand-yellow dark:bg-brand-yellow dark:text-brand-black"
-                      : "border-border bg-surface text-foreground hover:border-brand-purple dark:hover:border-brand-yellow",
+                    "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                    enableSizes && "translate-x-5",
                   )}
-                >
-                  {size}
-                </button>
-              );
-            })}
+                />
+              </button>
+            </div>
+
+            {enableSizes && (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedSizes([...categoryAttrs.sizePresets])
+                    }
+                    className="border border-border bg-surface-alt px-2 py-1 font-ui text-xs font-medium"
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSizes([])}
+                    className="border border-border bg-surface-alt px-2 py-1 font-ui text-xs font-medium"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {sizeChipOptions.map((size) => {
+                    const active = selectedSizes.includes(size);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() =>
+                          setSelectedSizes((prev) =>
+                            prev.includes(size)
+                              ? prev.filter((s) => s !== size)
+                              : [...prev, size],
+                          )
+                        }
+                        className={cn(
+                          "min-w-12 border px-2.5 py-1.5 font-ui text-xs font-semibold transition-colors",
+                          active
+                            ? "border-brand-purple bg-brand-purple text-white dark:border-brand-yellow dark:bg-brand-yellow dark:text-brand-black"
+                            : "border-border bg-surface-alt text-foreground hover:border-brand-purple dark:hover:border-brand-yellow",
+                        )}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    placeholder="Custom size (e.g. Kids M)"
+                    value={customSizeInput}
+                    onChange={(e) => setCustomSizeInput(e.target.value)}
+                    className="min-w-0 flex-1 border border-border bg-surface-alt px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const value = customSizeInput.trim();
+                      if (!value) return;
+                      setSelectedSizes((prev) =>
+                        prev.includes(value) ? prev : [...prev, value],
+                      );
+                      setCustomSizeInput("");
+                    }}
+                    className="border border-border bg-surface-alt px-3 py-1.5 font-ui text-xs font-medium"
+                  >
+                    Add
+                  </button>
+                </div>
+                {selectedSizes.length === 0 && (
+                  <p className="font-ui text-xs text-muted">
+                    Select at least one size, or turn size options off.
+                  </p>
+                )}
+              </>
+            )}
+
+            {!enableSizes && (
+              <p className="font-ui text-xs text-muted">
+                Sizes off — shoppers won&apos;t see a size dropdown for this
+                product.
+              </p>
+            )}
           </div>
-          {selectedSizes.length === 0 && (
-            <p className="font-ui text-xs text-muted">
-              No sizes — storefront won&apos;t show a size dropdown.
-            </p>
-          )}
         </div>
 
-        {/* Image: upload or URL */}
+        {/* Image: cover / fallback when no per-color images */}
         <div className="space-y-2 border border-border bg-surface-alt p-3">
           <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-            Product image
+            {enableColors && colors.length > 0
+              ? "Cover image (fallback)"
+              : "Product image"}
+          </p>
+          <p className="font-ui text-[11px] text-muted">
+            {enableColors && colors.length > 0
+              ? "Used as fallback if a color has no photo, and as the listing thumbnail."
+              : "Main photo shown on the storefront."}
           </p>
           <p className="rounded-sm border border-brand-purple/25 bg-brand-purple/5 px-3 py-2 font-ui text-xs leading-relaxed text-foreground dark:border-brand-yellow/30 dark:bg-brand-yellow/10">
             <span className="font-semibold text-brand-purple dark:text-brand-yellow">
               Max file size: 5MB.
             </span>{" "}
             Larger files are rejected. Allowed formats: JPEG, PNG, WebP, GIF.
-            Keep files under 5MB for a reliable upload.
           </p>
           {form.image_url ? (
             <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
@@ -867,17 +1156,22 @@ function ProductsTab({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) void uploadImage(file);
+              if (file) void uploadImage(file, "main");
             }}
           />
           <button
             type="button"
             disabled={uploading}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => {
+              setTarget("main");
+              fileRef.current?.click();
+            }}
             className="inline-flex w-full items-center justify-center gap-2 border border-border bg-surface px-3 py-2 font-ui text-sm font-medium disabled:opacity-60"
           >
             <Upload size={16} />
-            {uploading ? "Optimizing & uploading…" : "Import image from device"}
+            {uploading && uploadTarget === "main"
+              ? "Optimizing & uploading…"
+              : "Import image from device"}
           </button>
           {uploadError ? (
             <p
