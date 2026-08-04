@@ -1,5 +1,8 @@
 import { formatNaira } from "@/lib/utils";
-import { formatShippingLines } from "@/lib/shipping";
+import {
+  formatShippingLines,
+  formatBillingLines,
+} from "@/lib/shipping";
 import type { OrderCustomer, OrderItemSnapshot, PaidOrderInput } from "@/lib/orders";
 
 const BRAND = {
@@ -136,6 +139,16 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
     lines.push("");
   }
 
+  if (data.customer.billing) {
+    lines.push("Billing address:");
+    if (data.customer.billing.sameAsShipping) {
+      lines.push("Same as shipping address");
+    } else {
+      lines.push(...formatBillingLines(data.customer.billing));
+    }
+    lines.push("");
+  }
+
   lines.push(
     `Total paid: ${formatNaira(data.amountNaira)} ${data.currency || "NGN"}`,
     "",
@@ -172,6 +185,13 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
     ? formatShippingLines(data.customer.shipping)
         .map((line) => escapeHtml(line))
         .join("<br />")
+    : "";
+  const billingHtml = data.customer.billing
+    ? data.customer.billing.sameAsShipping
+      ? "Same as shipping address"
+      : formatBillingLines(data.customer.billing)
+          .map((line) => escapeHtml(line))
+          .join("<br />")
     : "";
   const deliveryFee =
     typeof data.customer.shipping?.deliveryFee === "number"
@@ -342,6 +362,19 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   </div>
                   <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                     ${shippingHtml}
+                  </div>
+                </div>`
+                    : ""
+                }
+                ${
+                  billingHtml
+                    ? `
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
+                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+                    Billing address
+                  </div>
+                  <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
+                    ${billingHtml}
                   </div>
                 </div>`
                     : ""

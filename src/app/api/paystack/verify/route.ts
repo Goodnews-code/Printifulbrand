@@ -21,6 +21,16 @@ const shippingSchema = z.object({
   deliveryFee: z.number().nonnegative().optional(),
 });
 
+const billingSchema = z.object({
+  sameAsShipping: z.boolean(),
+  line1: z.string().min(1),
+  line2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  postalCode: z.string().optional(),
+  country: z.string().min(1),
+});
+
 const bodySchema = z.object({
   reference: z.string().min(3),
   /** Cart total in kobo — must match what Paystack recorded. */
@@ -32,6 +42,7 @@ const bodySchema = z.object({
       email: z.string().email(),
       phone: z.string().optional(),
       shipping: shippingSchema.optional(),
+      billing: billingSchema.optional(),
     })
     .optional(),
   items: z
@@ -130,6 +141,21 @@ export async function POST(req: NextRequest) {
             country: string;
           })
         : undefined);
+    const billing =
+      customer?.billing ||
+      (meta &&
+      meta.billing_address &&
+      typeof meta.billing_address === "object"
+        ? (meta.billing_address as {
+            sameAsShipping: boolean;
+            line1: string;
+            line2?: string;
+            city: string;
+            state: string;
+            postalCode?: string;
+            country: string;
+          })
+        : undefined);
 
     if (!email) {
       return Response.json(
@@ -143,7 +169,7 @@ export async function POST(req: NextRequest) {
         reference: data.reference,
         amountNaira,
         currency: data.currency || "NGN",
-        customer: { name, email, phone, shipping },
+        customer: { name, email, phone, shipping, billing },
         items: items as OrderItemSnapshot[] | undefined,
         paystackPayload: data,
       },
