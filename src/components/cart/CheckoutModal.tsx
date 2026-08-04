@@ -6,10 +6,10 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import {
-  SHIPPING_REGIONS,
   NIGERIA_STATES,
   getShippingRegion,
   getShippingZone,
+  getOutsideLagosAreasForState,
   formatShippingLines,
   formatBillingLines,
   billingFromShipping,
@@ -30,7 +30,9 @@ interface CheckoutModalProps {
   onClose: () => void;
 }
 
-type CheckoutStep = 1 | "billing" | "billing-form" | "confirm" | "success";
+type CheckoutStep = 1 | "billing-form" | "confirm" | "success";
+
+type LagosSide = "" | "mainland" | "island";
 
 function loadPaystackScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -60,16 +62,18 @@ function loadPaystackScript(): Promise<boolean> {
   });
 }
 
-function hasCompleteShipping(fields: {
+function hasCompleteContactAddress(fields: {
+  name: string;
+  email: string;
+  phone: string;
   line1: string;
-  regionId: string;
-  areaId: string;
   country: string;
 }) {
   return Boolean(
-    fields.line1.trim() &&
-      fields.regionId.trim() &&
-      fields.areaId.trim() &&
+    fields.name.trim() &&
+      fields.email.trim() &&
+      fields.phone.trim() &&
+      fields.line1.trim() &&
       fields.country.trim(),
   );
 }
@@ -97,9 +101,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [phone, setPhone] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
-  const [shippingRegionId, setShippingRegionId] = useState<
-    ShippingRegionId | ""
-  >("");
+  const [addressState, setAddressState] = useState("");
+  const [lagosSide, setLagosSide] = useState<LagosSide>("");
   const [shippingAreaId, setShippingAreaId] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("Nigeria");
@@ -120,6 +123,23 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
   const reduce = useReducedMotion();
 
+  const isLagos = addressState === "Lagos";
+
+  const shippingRegionId: ShippingRegionId | "" = isLagos
+    ? lagosSide
+    : addressState
+      ? "outside-lagos"
+      : "";
+
+  const availableAreas = useMemo(() => {
+    if (isLagos) {
+      if (!lagosSide) return [];
+      return getShippingRegion(lagosSide)?.areas ?? [];
+    }
+    if (!addressState) return [];
+    return getOutsideLagosAreasForState(addressState);
+  }, [isLagos, lagosSide, addressState]);
+
   const selectedRegion = useMemo(
     () => getShippingRegion(shippingRegionId),
     [shippingRegionId],
@@ -130,6 +150,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   );
   const deliveryFee = shippingZone?.fee ?? 0;
   const orderTotal = subtotal + deliveryFee;
+  const outsideLagosUnsupported =
+    Boolean(addressState) && !isLagos && availableAreas.length === 0;
 
   useEffect(() => {
     if (!open) {
@@ -160,7 +182,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     line1: line1.trim(),
     line2: line2.trim() || undefined,
     city: shippingZone?.city || "",
-    state: shippingZone?.state || "",
+    state: shippingZone?.state || addressState || "",
     postalCode: postalCode.trim() || undefined,
     country: country.trim(),
     shippingRegion: shippingZone?.regionLabel,
@@ -185,23 +207,39 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     };
   };
 
-  const validateShipping = () => {
+  const validateContactAddress = () => {
     if (
-      !name.trim() ||
-      !email.trim() ||
-      !phone.trim() ||
-      !hasCompleteShipping({
+      !hasCompleteContactAddress({
+        name,
+        email,
+        phone,
         line1,
-        regionId: shippingRegionId,
-        areaId: shippingAreaId,
         country,
       })
     ) {
-      setFormError("Please fill all required checkout and shipping fields.");
+      setFormError("Please fill all required contact and address fields.");
       return false;
     }
-    if (!shippingZone) {
-      setFormError("Select a shipping region and area to continue.");
+    if (!addressState.trim()) {
+      setFormError("Please select your state.");
+      return false;
+    }
+    return true;
+  };
+
+  const validateShippingMethod = () => {
+    if (outsideLagosUnsupported) {
+      setFormError(
+        "We don't currently deliver to this state. Please contact shopprintiful@gmail.com.",
+      );
+      return false;
+    }
+    if (isLagos && !lagosSide) {
+      setFormError("Select Mainland or Island for Lagos delivery.");
+      return false;
+    }
+    if (!shippingRegionId || !shippingAreaId || !shippingZone) {
+      setFormError("Select a delivery area to continue.");
       return false;
     }
     return true;
@@ -222,17 +260,18 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     return true;
   };
 
+  const validateOrderReady = () => {
+    if (!validateContactAddress()) return false;
+    if (!validateShippingMethod()) return false;
+    if (!billingSameAsShipping && !validateBillingForm()) return false;
+    return true;
+  };
+
   const goFromDetails = (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (!validateShipping()) return;
-    setStep("billing");
-  };
-
-  const goFromBillingChoice = (e: FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-    if (!validateShipping()) return;
+    if (!validateContactAddress()) return;
+    if (!validateShippingMethod()) return;
     if (billingSameAsShipping) {
       setStep("confirm");
       return;
@@ -243,7 +282,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const goFromBillingForm = (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (!validateShipping()) return;
+    if (!validateContactAddress()) return;
+    if (!validateShippingMethod()) return;
     if (!validateBillingForm()) return;
     setBillingSameAsShipping(false);
     setStep("confirm");
@@ -253,8 +293,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     e.preventDefault();
     setFormError(null);
     if (items.length === 0) return;
-    if (!validateShipping() || !shippingZone) return;
-    if (!billingSameAsShipping && !validateBillingForm()) return;
+    if (!validateOrderReady() || !shippingZone) return;
 
     setSubmitting(true);
     const txnRef = `PRNTFL-${Date.now()}`;
@@ -416,12 +455,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     step === "success"
       ? "Order confirmed"
       : step === 1
-        ? "Checkout Details"
-        : step === "billing"
+        ? "Checkout details"
+        : step === "billing-form"
           ? "Billing address"
-          : step === "billing-form"
-            ? "Billing address"
-            : "Confirm Order";
+          : "Confirm Order";
 
   const shippingLines = formatShippingLines(shippingSnapshot());
   const billing = billingSnapshot();
@@ -559,73 +596,9 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
                     <div className="border-t border-border pt-4">
                       <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
-                        Shipping address
+                        Delivery address
                       </p>
                       <div className="space-y-4">
-                        <label className="block space-y-1.5">
-                          <span className="font-ui text-sm font-medium">
-                            Shipping region *
-                          </span>
-                          <select
-                            required
-                            value={shippingRegionId}
-                            onChange={(e) => {
-                              setShippingRegionId(
-                                e.target.value as ShippingRegionId | "",
-                              );
-                              setShippingAreaId("");
-                            }}
-                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
-                          >
-                            <option value="">Select region</option>
-                            {SHIPPING_REGIONS.map((region) => (
-                              <option key={region.id} value={region.id}>
-                                {region.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="block space-y-1.5">
-                          <span className="font-ui text-sm font-medium">
-                            Area / town *
-                          </span>
-                          <select
-                            required
-                            value={shippingAreaId}
-                            disabled={!selectedRegion}
-                            onChange={(e) =>
-                              setShippingAreaId(e.target.value)
-                            }
-                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple disabled:opacity-50 dark:focus:border-brand-yellow"
-                          >
-                            <option value="">
-                              {selectedRegion
-                                ? "Select area"
-                                : "Choose a region first"}
-                            </option>
-                            {selectedRegion?.areas.map((area) => (
-                              <option key={area.id} value={area.id}>
-                                {area.name} ({formatNaira(area.fee)})
-                              </option>
-                            ))}
-                          </select>
-                          {selectedRegion && (
-                            <p className="font-ui text-[11px] leading-relaxed text-muted">
-                              {selectedRegion.note}
-                            </p>
-                          )}
-                        </label>
-
-                        {shippingZone && (
-                          <div className="border border-border bg-surface-alt px-3 py-2.5 font-ui text-xs leading-relaxed text-muted">
-                            <span className="font-semibold text-foreground">
-                              Location locked to selection:{" "}
-                            </span>
-                            {shippingZone.city}, {shippingZone.state}
-                          </div>
-                        )}
-
                         <Field
                           label="Street address *"
                           value={line1}
@@ -641,6 +614,29 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                           placeholder="Optional"
                           autoComplete="address-line2"
                         />
+                        <label className="block space-y-1.5">
+                          <span className="font-ui text-sm font-medium">
+                            State *
+                          </span>
+                          <select
+                            required
+                            value={addressState}
+                            onChange={(e) => {
+                              setAddressState(e.target.value);
+                              setLagosSide("");
+                              setShippingAreaId("");
+                            }}
+                            autoComplete="address-level1"
+                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                          >
+                            <option value="">Select state</option>
+                            {NIGERIA_STATES.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                         <div className="grid gap-4 sm:grid-cols-2">
                           <Field
                             label="Postal / ZIP code"
@@ -658,21 +654,230 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                             autoComplete="country-name"
                           />
                         </div>
+                      </div>
+                    </div>
 
-                        {shippingZone && line1.trim() && (
-                          <div className="border border-border bg-surface px-3 py-3 text-sm">
-                            <p className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
-                              Shipping address preview
+                    {addressState ? (
+                      <div className="border-t border-border pt-4">
+                        <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                          Shipping payment details
+                        </p>
+                        <div className="space-y-4">
+                          {isLagos ? (
+                            <>
+                              <div className="space-y-2">
+                                <span className="font-ui text-sm font-medium">
+                                  Lagos side *
+                                </span>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  {(
+                                    [
+                                      {
+                                        id: "mainland" as const,
+                                        label: "Mainland",
+                                      },
+                                      {
+                                        id: "island" as const,
+                                        label: "Island",
+                                      },
+                                    ] as const
+                                  ).map((side) => (
+                                    <button
+                                      key={side.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setLagosSide(side.id);
+                                        setShippingAreaId("");
+                                      }}
+                                      className={cn(
+                                        "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                                        lagosSide === side.id
+                                          ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                                          : "border-border bg-surface hover:border-brand-purple/50",
+                                      )}
+                                    >
+                                      <span
+                                        className={cn(
+                                          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                                          lagosSide === side.id
+                                            ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                            : "border-border",
+                                        )}
+                                      >
+                                        {lagosSide === side.id && (
+                                          <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                                        )}
+                                      </span>
+                                      <span className="font-ui text-sm font-medium">
+                                        {side.label}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <label className="block space-y-1.5">
+                                <span className="font-ui text-sm font-medium">
+                                  Area / town *
+                                </span>
+                                <select
+                                  required
+                                  value={shippingAreaId}
+                                  disabled={!lagosSide}
+                                  onChange={(e) =>
+                                    setShippingAreaId(e.target.value)
+                                  }
+                                  className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple disabled:opacity-50 dark:focus:border-brand-yellow"
+                                >
+                                  <option value="">
+                                    {lagosSide
+                                      ? "Select area"
+                                      : "Choose Mainland or Island first"}
+                                  </option>
+                                  {availableAreas.map((area) => (
+                                    <option key={area.id} value={area.id}>
+                                      {area.name} ({formatNaira(area.fee)})
+                                    </option>
+                                  ))}
+                                </select>
+                                {selectedRegion && (
+                                  <p className="font-ui text-[11px] leading-relaxed text-muted">
+                                    {selectedRegion.note}
+                                  </p>
+                                )}
+                              </label>
+                            </>
+                          ) : outsideLagosUnsupported ? (
+                            <p className="font-ui text-sm leading-relaxed text-muted">
+                              We don&apos;t currently list delivery towns for{" "}
+                              {addressState}. Please contact{" "}
+                              <a
+                                href="mailto:shopprintiful@gmail.com"
+                                className="font-medium text-brand-purple underline dark:text-brand-yellow"
+                              >
+                                shopprintiful@gmail.com
+                              </a>{" "}
+                              to arrange shipping.
                             </p>
-                            <div className="mt-2 space-y-0.5">
-                              {formatShippingLines(shippingSnapshot()).map(
-                                (line) => (
-                                  <p key={line}>{line}</p>
-                                ),
+                          ) : (
+                            <label className="block space-y-1.5">
+                              <span className="font-ui text-sm font-medium">
+                                Delivery town *
+                              </span>
+                              <select
+                                required
+                                value={shippingAreaId}
+                                onChange={(e) =>
+                                  setShippingAreaId(e.target.value)
+                                }
+                                className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                              >
+                                <option value="">Select town</option>
+                                {availableAreas.map((area) => (
+                                  <option key={area.id} value={area.id}>
+                                    {area.name} ({formatNaira(area.fee)})
+                                  </option>
+                                ))}
+                              </select>
+                              {selectedRegion && (
+                                <p className="font-ui text-[11px] leading-relaxed text-muted">
+                                  {selectedRegion.note}
+                                </p>
                               )}
+                            </label>
+                          )}
+
+                          {shippingZone && (
+                            <div className="border border-border bg-surface-alt px-3 py-3 text-sm">
+                              <div className="flex justify-between gap-3 font-ui">
+                                <span className="text-muted">
+                                  {shippingZone.label}
+                                </span>
+                                <span className="font-semibold">
+                                  {formatNaira(shippingZone.fee)}
+                                </span>
+                              </div>
+                              <p className="mt-2 font-ui text-xs text-muted">
+                                Order total with shipping:{" "}
+                                {formatNaira(orderTotal)}
+                              </p>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="border-t border-border pt-4">
+                      <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                        Billing address
+                      </p>
+                      <p className="mb-3 font-ui text-sm text-muted">
+                        Is your billing address the same as your shipping
+                        address?
+                      </p>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setBillingSameAsShipping(true)}
+                          className={cn(
+                            "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                            billingSameAsShipping
+                              ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                              : "border-border bg-surface hover:border-brand-purple/50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                              billingSameAsShipping
+                                ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                : "border-border",
+                            )}
+                          >
+                            {billingSameAsShipping && (
+                              <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                            )}
+                          </span>
+                          <span>
+                            <span className="block font-ui text-sm font-medium">
+                              Yes — same as shipping
+                            </span>
+                            <span className="mt-0.5 block font-ui text-xs text-muted">
+                              Use the shipping address for billing
+                            </span>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBillingSameAsShipping(false)}
+                          className={cn(
+                            "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                            !billingSameAsShipping
+                              ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                              : "border-border bg-surface hover:border-brand-purple/50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                              !billingSameAsShipping
+                                ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                : "border-border",
+                            )}
+                          >
+                            {!billingSameAsShipping && (
+                              <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                            )}
+                          </span>
+                          <span>
+                            <span className="block font-ui text-sm font-medium">
+                              No — use a different address
+                            </span>
+                            <span className="mt-0.5 block font-ui text-xs text-muted">
+                              Enter a separate billing address next
+                            </span>
+                          </span>
+                        </button>
                       </div>
                     </div>
 
@@ -683,97 +888,6 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         className="flex-1 border border-brand-purple px-4 py-3 font-ui text-sm font-semibold text-brand-purple dark:border-brand-yellow dark:text-brand-yellow"
                       >
                         Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="flex-1 bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
-                      >
-                        Continue
-                      </button>
-                    </div>
-                  </form>
-                ) : step === "billing" ? (
-                  <form
-                    onSubmit={goFromBillingChoice}
-                    className="space-y-4 px-5 py-5"
-                  >
-                    <p className="font-ui text-sm text-muted">
-                      Is your billing address the same as your shipping address?
-                    </p>
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => setBillingSameAsShipping(true)}
-                        className={cn(
-                          "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
-                          billingSameAsShipping
-                            ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
-                            : "border-border bg-surface hover:border-brand-purple/50",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-                            billingSameAsShipping
-                              ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
-                              : "border-border",
-                          )}
-                        >
-                          {billingSameAsShipping && (
-                            <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
-                          )}
-                        </span>
-                        <span>
-                          <span className="block font-ui text-sm font-medium">
-                            Yes — same as shipping
-                          </span>
-                          <span className="mt-0.5 block font-ui text-xs text-muted">
-                            Use the shipping address for billing
-                          </span>
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setBillingSameAsShipping(false)}
-                        className={cn(
-                          "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
-                          !billingSameAsShipping
-                            ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
-                            : "border-border bg-surface hover:border-brand-purple/50",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
-                            !billingSameAsShipping
-                              ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
-                              : "border-border",
-                          )}
-                        >
-                          {!billingSameAsShipping && (
-                            <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
-                          )}
-                        </span>
-                        <span>
-                          <span className="block font-ui text-sm font-medium">
-                            No — use a different address
-                          </span>
-                          <span className="mt-0.5 block font-ui text-xs text-muted">
-                            Enter a separate billing address next
-                          </span>
-                        </span>
-                      </button>
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormError(null);
-                          setStep(1);
-                        }}
-                        className="inline-flex flex-1 items-center justify-center gap-2 border border-border px-4 py-3 font-ui text-sm font-semibold"
-                      >
-                        <ArrowLeft size={16} /> Back
                       </button>
                       <button
                         type="submit"
@@ -857,7 +971,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         type="button"
                         onClick={() => {
                           setFormError(null);
-                          setStep("billing");
+                          setStep(1);
                         }}
                         className="inline-flex flex-1 items-center justify-center gap-2 border border-border px-4 py-3 font-ui text-sm font-semibold"
                       >
@@ -916,7 +1030,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         onClick={() => {
                           setFormError(null);
                           setStep(
-                            billingSameAsShipping ? "billing" : "billing-form",
+                            billingSameAsShipping ? 1 : "billing-form",
                           );
                         }}
                         className="inline-flex flex-1 items-center justify-center gap-2 border border-border px-4 py-3 font-ui text-sm font-semibold"

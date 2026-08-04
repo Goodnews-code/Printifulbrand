@@ -197,6 +197,36 @@ export function getShippingZone(
   };
 }
 
+/** Outside-Lagos towns that ship to a given Nigerian state. */
+export function getOutsideLagosAreasForState(
+  state?: string | null,
+): ShippingArea[] {
+  if (!state?.trim()) return [];
+  const key = state.trim().toLowerCase();
+  return OUTSIDE_LAGOS_AREAS.filter((area) => {
+    const areaState = (area.stateName || "").toLowerCase();
+    if (!areaState) return false;
+    if (areaState === key) return true;
+    // Abuja aliases
+    if (
+      (key === "abuja" || key.includes("abuja") || key.startsWith("fct")) &&
+      areaState.includes("abuja")
+    ) {
+      return true;
+    }
+    return false;
+  });
+}
+
+/** States that currently have Outside Lagos delivery rates. */
+export function getOutsideLagosServedStates(): string[] {
+  const set = new Set<string>();
+  for (const area of OUTSIDE_LAGOS_AREAS) {
+    if (area.stateName) set.add(area.stateName);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
 /** @deprecated Prefer getShippingZone — kept for older order payloads. */
 export function getDeliveryZoneForState(state?: string | null) {
   if (!state?.trim()) return null;
