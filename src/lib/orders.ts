@@ -3,11 +3,13 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/notify/telegram";
 import {
   formatShippingAddress,
+  formatBillingAddress,
   type OrderShippingAddress,
+  type OrderBillingAddress,
 } from "@/lib/shipping";
 import { formatNaira } from "@/lib/utils";
 
-export type { OrderShippingAddress };
+export type { OrderShippingAddress, OrderBillingAddress };
 
 export type OrderItemSnapshot = {
   name: string;
@@ -22,6 +24,7 @@ export type OrderCustomer = {
   email: string;
   phone?: string;
   shipping?: OrderShippingAddress;
+  billing?: OrderBillingAddress;
 };
 
 export type PaidOrderInput = {
@@ -78,6 +81,15 @@ function buildTelegramText(order: PaidOrderInput): string {
     }
   }
 
+  if (order.customer.billing) {
+    lines.push("", "Billing address:");
+    if (order.customer.billing.sameAsShipping) {
+      lines.push("Same as shipping address");
+    } else {
+      lines.push(formatBillingAddress(order.customer.billing));
+    }
+  }
+
   if (order.items && order.items.length > 0) {
     lines.push("", "Items:");
     for (const item of order.items) {
@@ -128,6 +140,7 @@ export async function processPaidOrder(
   const payload = {
     items: input.items ?? [],
     shipping: input.customer.shipping ?? null,
+    billing: input.customer.billing ?? null,
     paystack: input.paystackPayload ?? null,
   };
 

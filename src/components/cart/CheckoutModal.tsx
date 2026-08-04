@@ -7,9 +7,12 @@ import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import {
   SHIPPING_REGIONS,
+  NIGERIA_STATES,
   getShippingRegion,
   getShippingZone,
   formatShippingLines,
+  formatBillingLines,
+  billingFromShipping,
   type ShippingRegionId,
 } from "@/lib/shipping";
 import { formatNaira, cn } from "@/lib/utils";
@@ -71,6 +74,20 @@ function hasCompleteShipping(fields: {
   );
 }
 
+function hasCompleteBilling(fields: {
+  line1: string;
+  city: string;
+  state: string;
+  country: string;
+}) {
+  return Boolean(
+    fields.line1.trim() &&
+      fields.city.trim() &&
+      fields.state.trim() &&
+      fields.country.trim(),
+  );
+}
+
 export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const { items, subtotal, clearCart } = useCart();
   const { settings } = useSettings();
@@ -86,6 +103,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [shippingAreaId, setShippingAreaId] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("Nigeria");
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  const [billingLine1, setBillingLine1] = useState("");
+  const [billingLine2, setBillingLine2] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+  const [billingState, setBillingState] = useState("");
+  const [billingPostalCode, setBillingPostalCode] = useState("");
+  const [billingCountry, setBillingCountry] = useState("Nigeria");
   const [submitting, setSubmitting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -145,9 +169,23 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     deliveryFee: shippingZone?.fee,
   });
 
-  const goNext = (e: FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
+  const billingSnapshot = () => {
+    const shipping = shippingSnapshot();
+    if (billingSameAsShipping) {
+      return billingFromShipping(shipping);
+    }
+    return {
+      sameAsShipping: false,
+      line1: billingLine1.trim(),
+      line2: billingLine2.trim() || undefined,
+      city: billingCity.trim(),
+      state: billingState.trim(),
+      postalCode: billingPostalCode.trim() || undefined,
+      country: billingCountry.trim(),
+    };
+  };
+
+  const validateCheckout = () => {
     if (
       !name.trim() ||
       !email.trim() ||
@@ -160,12 +198,31 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       })
     ) {
       setFormError("Please fill all required checkout and shipping fields.");
-      return;
+      return false;
     }
     if (!shippingZone) {
       setFormError("Select a shipping region and area to continue.");
-      return;
+      return false;
     }
+    if (
+      !billingSameAsShipping &&
+      !hasCompleteBilling({
+        line1: billingLine1,
+        city: billingCity,
+        state: billingState,
+        country: billingCountry,
+      })
+    ) {
+      setFormError("Please fill all required billing address fields.");
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = (e: FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!validateCheckout()) return;
     setStep(2);
   };
 
@@ -173,24 +230,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     e.preventDefault();
     setFormError(null);
     if (items.length === 0) return;
-    if (
-      !name.trim() ||
-      !email.trim() ||
-      !phone.trim() ||
-      !hasCompleteShipping({
-        line1,
-        regionId: shippingRegionId,
-        areaId: shippingAreaId,
-        country,
-      })
-    ) {
-      setFormError("Please fill all required checkout and shipping fields.");
-      return;
-    }
-    if (!shippingZone) {
-      setFormError("Select a shipping region and area before paying.");
-      return;
-    }
+    if (!validateCheckout() || !shippingZone) return;
 
     setSubmitting(true);
     const txnRef = `PRNTFL-${Date.now()}`;
@@ -224,11 +264,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         color: item.color,
       }));
       const shipping = shippingSnapshot();
+      const billing = billingSnapshot();
       const customerSnapshot = {
         name: name.trim(),
         email: email.trim(),
         phone: phone.trim(),
         shipping,
+        billing,
       };
 
       const paystack = new window.PaystackPop();
@@ -242,6 +284,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           customer_name: customerSnapshot.name,
           customer_phone: customerSnapshot.phone,
           shipping_address: shipping,
+          billing_address: billing,
           delivery_fee: deliveryFee,
           delivery_zone: shippingZone.label,
           shipping_region: shippingZone.regionLabel,
@@ -273,6 +316,11 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               display_name: "Shipping Fee",
               variable_name: "delivery_fee",
               value: String(deliveryFee),
+            },
+            {
+              display_name: "Billing",
+              variable_name: "billing_same",
+              value: billing.sameAsShipping ? "Same as shipping" : "Different",
             },
           ],
         },
@@ -348,6 +396,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
         : "Confirm Order";
 
   const shippingLines = formatShippingLines(shippingSnapshot());
+  const billing = billingSnapshot();
+  const billingLines = billing.sameAsShipping
+    ? ["Same as shipping address"]
+    : formatBillingLines(billing);
 
   return (
     <AnimatePresence>
@@ -596,6 +648,134 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                       </div>
                     </div>
 
+                    <div className="border-t border-border pt-4">
+                      <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                        Billing address
+                      </p>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setBillingSameAsShipping(true)}
+                          className={cn(
+                            "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                            billingSameAsShipping
+                              ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                              : "border-border bg-surface hover:border-brand-purple/50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                              billingSameAsShipping
+                                ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                : "border-border",
+                            )}
+                          >
+                            {billingSameAsShipping && (
+                              <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                            )}
+                          </span>
+                          <span className="font-ui text-sm font-medium">
+                            Same as shipping address
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBillingSameAsShipping(false)}
+                          className={cn(
+                            "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                            !billingSameAsShipping
+                              ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                              : "border-border bg-surface hover:border-brand-purple/50",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                              !billingSameAsShipping
+                                ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                : "border-border",
+                            )}
+                          >
+                            {!billingSameAsShipping && (
+                              <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                            )}
+                          </span>
+                          <span className="font-ui text-sm font-medium">
+                            Use a different billing address
+                          </span>
+                        </button>
+                      </div>
+
+                      {!billingSameAsShipping && (
+                        <div className="mt-4 space-y-4 border border-border bg-surface-alt p-3">
+                          <Field
+                            label="Street address *"
+                            value={billingLine1}
+                            onChange={setBillingLine1}
+                            placeholder="House number and street"
+                            required
+                            autoComplete="billing street-address"
+                          />
+                          <Field
+                            label="Apartment, suite, landmark, etc."
+                            value={billingLine2}
+                            onChange={setBillingLine2}
+                            placeholder="Optional"
+                            autoComplete="billing address-line2"
+                          />
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <Field
+                              label="City *"
+                              value={billingCity}
+                              onChange={setBillingCity}
+                              placeholder="e.g. Ikeja"
+                              required
+                              autoComplete="billing address-level2"
+                            />
+                            <label className="block space-y-1.5">
+                              <span className="font-ui text-sm font-medium">
+                                State *
+                              </span>
+                              <select
+                                required
+                                value={billingState}
+                                onChange={(e) =>
+                                  setBillingState(e.target.value)
+                                }
+                                autoComplete="billing address-level1"
+                                className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                              >
+                                <option value="">Select state</option>
+                                {NIGERIA_STATES.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <Field
+                              label="Postal / ZIP code"
+                              value={billingPostalCode}
+                              onChange={setBillingPostalCode}
+                              placeholder="Optional"
+                              autoComplete="billing postal-code"
+                            />
+                            <Field
+                              label="Country *"
+                              value={billingCountry}
+                              onChange={setBillingCountry}
+                              placeholder="Nigeria"
+                              required
+                              autoComplete="billing country-name"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex gap-3 pt-2">
                       <button
                         type="button"
@@ -643,6 +823,12 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                             </p>
                           </>
                         )}
+                      </div>
+                      <div className="border-t border-border pt-2">
+                        <p className="text-muted">Billing address:</p>
+                        {billingLines.map((line) => (
+                          <p key={line}>{line}</p>
+                        ))}
                       </div>
                     </div>
                     <div className="flex gap-3 pt-2">
