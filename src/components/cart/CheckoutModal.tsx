@@ -295,13 +295,21 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               });
               const data = await res.json().catch(() => ({}));
               if (!res.ok) {
-                setFormError(
-                  data.error ||
-                    `Paystack has not confirmed this payment yet. Reference: ${reference}`,
-                );
-                setSubmitting(false);
-                setConfirming(false);
-                return;
+                const errText = String(data.error || "");
+                // Payment already succeeded — race with webhook must not block thank-you.
+                const paidAnyway =
+                  /duplicate key|orders_reference_key|unique constraint|already/i.test(
+                    errText,
+                  );
+                if (!paidAnyway) {
+                  setFormError(
+                    errText ||
+                      `Paystack has not confirmed this payment yet. Reference: ${reference}`,
+                  );
+                  setSubmitting(false);
+                  setConfirming(false);
+                  return;
+                }
               }
 
               setPaidRef(reference);
