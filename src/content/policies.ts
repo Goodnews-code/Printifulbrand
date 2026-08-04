@@ -5,12 +5,12 @@ export const shippingPolicy = {
     {
       heading: "Shipping Fees",
       paragraphs: [
-        "Shipping fees are calculated at checkout based on your shipping address. Choose Mainland, Island, or Interstate, then select your area — the fee is added to your order total before payment.",
+                        "Shipping fees are calculated at checkout based on your shipping address. Choose Mainland, Island, or Outside Lagos, then select your area — the fee is added to your order total before payment.",
       ],
       bullets: [
         "Mainland — area rates from ₦2,500 (e.g. Ayobo, Agric) up to ₦10,500 (e.g. Alakija, Caleb University Imota)",
         "Island — area rates from ₦6,000 (Chevron) up to ₦15,500 (Epe)",
-        "Interstate — Ile Ife ₦5,000 · Ibadan ₦4,000 · Ilorin ₦5,000 · Akure ₦5,000 · Osogbo ₦5,000 · Abuja ₦6,000 · Sango Ota ₦5,000 · Ijebu Ode ₦4,000 · Oyo Town ₦4,000 · Ado Ekiti ₦5,000 · Offa ₦5,000",
+        "Outside Lagos — Ile Ife ₦5,000 · Ibadan ₦4,000 · Ilorin ₦5,000 · Akure ₦5,000 · Osogbo ₦5,000 · Abuja ₦6,000 · Sango Ota ₦5,000 · Ijebu Ode ₦4,000 · Oyo Town ₦4,000 · Ado Ekiti ₦5,000 · Offa ₦5,000",
       ],
       afterParagraphs: [
         "Exact area fees are shown in checkout when you select your shipping region and town. For locations not listed, contact shopprintiful@gmail.com for a quote.",
@@ -20,7 +20,7 @@ export const shippingPolicy = {
       heading: "Delivery Time",
       paragraphs: [
         "Mainland & Island: delivery takes place within 2 to 5 working days, depending on the volume of order.",
-        "Interstate: delivery takes 2 to 5 working days depending on the volume of order. Kindly note that interstate orders use park delivery.",
+        "Outside Lagos: delivery takes 2 to 5 working days depending on the volume of order. Kindly note that Outside Lagos orders use park delivery.",
       ],
     },
     {

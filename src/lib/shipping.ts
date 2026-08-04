@@ -1,28 +1,36 @@
 /** Shipping regions and area fees (Naira) for Printiful checkout. */
 
-export type ShippingRegionId = "mainland" | "island" | "interstate";
+export type ShippingRegionId = "mainland" | "island" | "outside-lagos";
 
 export type ShippingArea = {
   id: string;
   name: string;
   fee: number;
+  /** Nigerian state for Outside Lagos towns (optional). */
+  stateName?: string;
 };
 
 export type ShippingRegion = {
   id: ShippingRegionId;
   label: string;
+  /** Value stored on the shipping address `state` field. */
+  addressState: string;
   /** Short timing / service note shown at checkout. */
   note: string;
   areas: ShippingArea[];
 };
 
-function area(name: string, fee: number): ShippingArea {
+function area(
+  name: string,
+  fee: number,
+  stateName?: string,
+): ShippingArea {
   const id = name
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-  return { id, name, fee };
+  return { id, name, fee, ...(stateName ? { stateName } : {}) };
 }
 
 function sortAreas(areas: ShippingArea[]): ShippingArea[] {
@@ -97,38 +105,41 @@ const ISLAND_AREAS = sortAreas([
   area("Ikate", 8500),
 ]);
 
-const INTERSTATE_AREAS = sortAreas([
-  area("Ile Ife", 5000),
-  area("Ibadan", 4000),
-  area("Ilorin", 5000),
-  area("Akure", 5000),
-  area("Osogbo", 5000),
-  area("Abuja", 6000),
-  area("Sango Ota", 5000),
-  area("Ijebu Ode", 4000),
-  area("Oyo Town", 4000),
-  area("Ado Ekiti", 5000),
-  area("Offa", 5000),
+const OUTSIDE_LAGOS_AREAS = sortAreas([
+  area("Ile Ife", 5000, "Osun"),
+  area("Ibadan", 4000, "Oyo"),
+  area("Ilorin", 5000, "Kwara"),
+  area("Akure", 5000, "Ondo"),
+  area("Osogbo", 5000, "Osun"),
+  area("Abuja", 6000, "FCT - Abuja"),
+  area("Sango Ota", 5000, "Ogun"),
+  area("Ijebu Ode", 4000, "Ogun"),
+  area("Oyo Town", 4000, "Oyo"),
+  area("Ado Ekiti", 5000, "Ekiti"),
+  area("Offa", 5000, "Kwara"),
 ]);
 
 export const SHIPPING_REGIONS: ShippingRegion[] = [
   {
     id: "mainland",
     label: "Mainland",
+    addressState: "Lagos Mainland",
     note: "Delivery takes place within 2 to 5 working days, depending on the volume of order.",
     areas: MAINLAND_AREAS,
   },
   {
     id: "island",
     label: "Island",
+    addressState: "Lagos Island",
     note: "Delivery takes place within 2 to 5 working days, depending on the volume of order.",
     areas: ISLAND_AREAS,
   },
   {
-    id: "interstate",
-    label: "Interstate",
+    id: "outside-lagos",
+    label: "Outside Lagos",
+    addressState: "Outside Lagos",
     note: "Delivery takes 2 to 5 working days depending on the volume of order. Kindly note that it is park delivery.",
-    areas: INTERSTATE_AREAS,
+    areas: OUTSIDE_LAGOS_AREAS,
   },
 ];
 
@@ -141,13 +152,20 @@ export type ShippingZoneSelection = {
   /** Display label e.g. "Mainland · Ikeja" */
   label: string;
   note: string;
+  /** Synced city for the shipping address */
+  city: string;
+  /** Synced state / region line for the shipping address */
+  state: string;
 };
 
 export function getShippingRegion(
   regionId?: string | null,
 ): ShippingRegion | null {
   if (!regionId) return null;
-  return SHIPPING_REGIONS.find((r) => r.id === regionId) ?? null;
+  // Legacy checkout id
+  const normalized =
+    regionId === "interstate" ? "outside-lagos" : regionId;
+  return SHIPPING_REGIONS.find((r) => r.id === normalized) ?? null;
 }
 
 export function getShippingZone(
@@ -160,6 +178,12 @@ export function getShippingZone(
     (a) => a.id === areaId || a.name.toLowerCase() === areaId.toLowerCase(),
   );
   if (!found) return null;
+
+  const state =
+    region.id === "outside-lagos"
+      ? found.stateName || region.addressState
+      : region.addressState;
+
   return {
     regionId: region.id,
     regionLabel: region.label,
@@ -168,6 +192,8 @@ export function getShippingZone(
     fee: found.fee,
     label: `${region.label} · ${found.name}`,
     note: region.note,
+    city: found.name,
+    state,
   };
 }
 
@@ -176,13 +202,13 @@ export function getDeliveryZoneForState(state?: string | null) {
   if (!state?.trim()) return null;
   const key = state.trim().toLowerCase();
   for (const region of SHIPPING_REGIONS) {
-    const area = region.areas.find((a) => a.name.toLowerCase() === key);
-    if (area) {
+    const found = region.areas.find((a) => a.name.toLowerCase() === key);
+    if (found) {
       return {
-        id: area.id,
-        label: `${region.label} · ${area.name}`,
-        state: area.name,
-        fee: area.fee,
+        id: found.id,
+        label: `${region.label} · ${found.name}`,
+        state: found.name,
+        fee: found.fee,
       };
     }
   }
@@ -196,7 +222,7 @@ export type OrderShippingAddress = {
   state: string;
   postalCode?: string;
   country: string;
-  /** Region: Mainland | Island | Interstate */
+  /** Region: Mainland | Island | Outside Lagos */
   shippingRegion?: string;
   /** Area / town within the region */
   shippingArea?: string;
@@ -208,24 +234,39 @@ export type OrderShippingAddress = {
 
 export function formatShippingLines(address: OrderShippingAddress): string[] {
   const lines: string[] = [];
-  if (address.deliveryZone?.trim()) {
-    lines.push(address.deliveryZone.trim());
-  } else if (address.shippingRegion || address.shippingArea) {
-    lines.push(
-      [address.shippingRegion, address.shippingArea].filter(Boolean).join(" · "),
-    );
-  }
-  lines.push(address.line1.trim());
+  const zone =
+    address.deliveryZone?.trim() ||
+    [address.shippingRegion, address.shippingArea].filter(Boolean).join(" · ");
+  if (zone) lines.push(zone);
+
+  if (address.line1.trim()) lines.push(address.line1.trim());
   if (address.line2?.trim()) lines.push(address.line2.trim());
-  const cityState = [address.city.trim(), address.state.trim()]
-    .filter(Boolean)
-    .join(", ");
+
+  const city = address.city.trim();
+  const state = address.state.trim();
+  // Avoid repeating area/region already shown in the zone line
+  const cityAlreadyInZone =
+    Boolean(zone) &&
+    city &&
+    zone.toLowerCase().includes(city.toLowerCase());
+  const stateAlreadyInZone =
+    Boolean(zone) &&
+    state &&
+    zone.toLowerCase().includes(state.toLowerCase());
+
+  const locationParts = [
+    cityAlreadyInZone ? null : city || null,
+    stateAlreadyInZone ? null : state || null,
+  ].filter(Boolean);
+
+  const location = locationParts.join(", ");
   const withPostal = address.postalCode?.trim()
-    ? `${cityState} ${address.postalCode.trim()}`
-    : cityState;
-  if (withPostal && withPostal !== address.deliveryZone?.trim()) {
-    lines.push(withPostal);
-  }
+    ? location
+      ? `${location} ${address.postalCode.trim()}`
+      : address.postalCode.trim()
+    : location;
+  if (withPostal) lines.push(withPostal);
+
   if (address.country.trim()) lines.push(address.country.trim());
   return lines.filter(Boolean);
 }
@@ -238,6 +279,8 @@ export function formatShippingAddress(address: OrderShippingAddress): string {
 export function shippingFeeBullets(): string[] {
   return SHIPPING_REGIONS.flatMap((region) => [
     `${region.label}:`,
-    ...region.areas.map((a) => `  ${a.name} — ₦${a.fee.toLocaleString("en-NG")}`),
+    ...region.areas.map(
+      (a) => `  ${a.name} — ₦${a.fee.toLocaleString("en-NG")}`,
+    ),
   ]);
 }
