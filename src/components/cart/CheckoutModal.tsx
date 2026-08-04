@@ -6,9 +6,11 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import {
-  DELIVERY_ZONES,
-  getDeliveryZoneForState,
+  SHIPPING_REGIONS,
+  getShippingRegion,
+  getShippingZone,
   formatShippingLines,
+  type ShippingRegionId,
 } from "@/lib/shipping";
 import { formatNaira, cn } from "@/lib/utils";
 
@@ -57,14 +59,14 @@ function loadPaystackScript(): Promise<boolean> {
 
 function hasCompleteShipping(fields: {
   line1: string;
-  city: string;
-  state: string;
+  regionId: string;
+  areaId: string;
   country: string;
 }) {
   return Boolean(
     fields.line1.trim() &&
-      fields.city.trim() &&
-      fields.state.trim() &&
+      fields.regionId.trim() &&
+      fields.areaId.trim() &&
       fields.country.trim(),
   );
 }
@@ -78,8 +80,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [phone, setPhone] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const [shippingRegionId, setShippingRegionId] = useState<
+    ShippingRegionId | ""
+  >("");
+  const [shippingAreaId, setShippingAreaId] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("Nigeria");
   const [submitting, setSubmitting] = useState(false);
@@ -92,11 +96,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
   const reduce = useReducedMotion();
 
-  const deliveryZone = useMemo(
-    () => getDeliveryZoneForState(state),
-    [state],
+  const selectedRegion = useMemo(
+    () => getShippingRegion(shippingRegionId),
+    [shippingRegionId],
   );
-  const deliveryFee = deliveryZone?.fee ?? 0;
+  const shippingZone = useMemo(
+    () => getShippingZone(shippingRegionId, shippingAreaId),
+    [shippingRegionId, shippingAreaId],
+  );
+  const deliveryFee = shippingZone?.fee ?? 0;
   const orderTotal = subtotal + deliveryFee;
 
   useEffect(() => {
@@ -127,12 +135,14 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const shippingSnapshot = () => ({
     line1: line1.trim(),
     line2: line2.trim() || undefined,
-    city: city.trim(),
-    state: state.trim(),
+    city: shippingZone?.areaName || "",
+    state: shippingZone?.regionLabel || "",
     postalCode: postalCode.trim() || undefined,
     country: country.trim(),
-    deliveryZone: deliveryZone?.label,
-    deliveryFee: deliveryZone?.fee,
+    shippingRegion: shippingZone?.regionLabel,
+    shippingArea: shippingZone?.areaName,
+    deliveryZone: shippingZone?.label,
+    deliveryFee: shippingZone?.fee,
   });
 
   const goNext = (e: FormEvent) => {
@@ -142,15 +152,18 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       !name.trim() ||
       !email.trim() ||
       !phone.trim() ||
-      !hasCompleteShipping({ line1, city, state, country })
+      !hasCompleteShipping({
+        line1,
+        regionId: shippingRegionId,
+        areaId: shippingAreaId,
+        country,
+      })
     ) {
-      setFormError("Please fill all required checkout and delivery fields.");
+      setFormError("Please fill all required checkout and shipping fields.");
       return;
     }
-    if (!deliveryZone) {
-      setFormError(
-        "Select a delivery destination we currently serve (Lagos, Ogun, Ondo, Oyo, Ekiti, Kwara, or Abuja).",
-      );
+    if (!shippingZone) {
+      setFormError("Select a shipping region and area to continue.");
       return;
     }
     setStep(2);
@@ -164,15 +177,18 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
       !name.trim() ||
       !email.trim() ||
       !phone.trim() ||
-      !hasCompleteShipping({ line1, city, state, country })
+      !hasCompleteShipping({
+        line1,
+        regionId: shippingRegionId,
+        areaId: shippingAreaId,
+        country,
+      })
     ) {
-      setFormError("Please fill all required checkout and delivery fields.");
+      setFormError("Please fill all required checkout and shipping fields.");
       return;
     }
-    if (!deliveryZone) {
-      setFormError(
-        "Select a delivery destination we currently serve before paying.",
-      );
+    if (!shippingZone) {
+      setFormError("Select a shipping region and area before paying.");
       return;
     }
 
@@ -227,7 +243,9 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           customer_phone: customerSnapshot.phone,
           shipping_address: shipping,
           delivery_fee: deliveryFee,
-          delivery_zone: deliveryZone.label,
+          delivery_zone: shippingZone.label,
+          shipping_region: shippingZone.regionLabel,
+          shipping_area: shippingZone.areaName,
           cart_subtotal: subtotal,
           cart_items: cartItems,
           custom_fields: [
@@ -242,17 +260,17 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
               value: customerSnapshot.phone,
             },
             {
-              display_name: "Delivery City",
-              variable_name: "city",
-              value: shipping.city,
+              display_name: "Shipping Region",
+              variable_name: "shipping_region",
+              value: shippingZone.regionLabel,
             },
             {
-              display_name: "Delivery State",
-              variable_name: "state",
-              value: shipping.state,
+              display_name: "Shipping Area",
+              variable_name: "shipping_area",
+              value: shippingZone.areaName,
             },
             {
-              display_name: "Delivery Fee",
+              display_name: "Shipping Fee",
               variable_name: "delivery_fee",
               value: String(deliveryFee),
             },
@@ -391,13 +409,13 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                     </div>
                     <div className="flex justify-between gap-3">
                       <span className="text-muted">
-                        Delivery
-                        {deliveryZone ? ` (${deliveryZone.label})` : ""}
+                        Shipping
+                        {shippingZone ? ` (${shippingZone.label})` : ""}
                       </span>
                       <span>
-                        {deliveryZone
+                        {shippingZone
                           ? formatNaira(deliveryFee)
-                          : "Select destination"}
+                          : "Select area"}
                       </span>
                     </div>
                     <div className="flex justify-between gap-3 border-t border-border pt-2 font-bold">
@@ -453,31 +471,64 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
                     <div className="border-t border-border pt-4">
                       <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
-                        Delivery details
+                        Shipping address
                       </p>
                       <div className="space-y-4">
                         <label className="block space-y-1.5">
                           <span className="font-ui text-sm font-medium">
-                            Delivery destination *
+                            Shipping region *
                           </span>
                           <select
                             required
-                            value={state}
-                            onChange={(e) => setState(e.target.value)}
-                            autoComplete="address-level1"
+                            value={shippingRegionId}
+                            onChange={(e) => {
+                              setShippingRegionId(
+                                e.target.value as ShippingRegionId | "",
+                              );
+                              setShippingAreaId("");
+                            }}
                             className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
                           >
-                            <option value="">Select destination</option>
-                            {DELIVERY_ZONES.map((zone) => (
-                              <option key={zone.id} value={zone.state}>
-                                {zone.label} ({formatNaira(zone.fee)})
+                            <option value="">Select region</option>
+                            {SHIPPING_REGIONS.map((region) => (
+                              <option key={region.id} value={region.id}>
+                                {region.label}
                               </option>
                             ))}
                           </select>
-                          <p className="font-ui text-[11px] text-muted">
-                            Fee is added to your order total at checkout.
-                          </p>
                         </label>
+
+                        <label className="block space-y-1.5">
+                          <span className="font-ui text-sm font-medium">
+                            Area / town *
+                          </span>
+                          <select
+                            required
+                            value={shippingAreaId}
+                            disabled={!selectedRegion}
+                            onChange={(e) =>
+                              setShippingAreaId(e.target.value)
+                            }
+                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple disabled:opacity-50 dark:focus:border-brand-yellow"
+                          >
+                            <option value="">
+                              {selectedRegion
+                                ? "Select area"
+                                : "Choose a region first"}
+                            </option>
+                            {selectedRegion?.areas.map((area) => (
+                              <option key={area.id} value={area.id}>
+                                {area.name} ({formatNaira(area.fee)})
+                              </option>
+                            ))}
+                          </select>
+                          {selectedRegion && (
+                            <p className="font-ui text-[11px] leading-relaxed text-muted">
+                              {selectedRegion.note}
+                            </p>
+                          )}
+                        </label>
+
                         <Field
                           label="Street address *"
                           value={line1}
@@ -487,7 +538,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                           autoComplete="street-address"
                         />
                         <Field
-                          label="Apartment, suite, etc."
+                          label="Apartment, suite, landmark, etc."
                           value={line2}
                           onChange={setLine2}
                           placeholder="Optional"
@@ -495,29 +546,21 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         />
                         <div className="grid gap-4 sm:grid-cols-2">
                           <Field
-                            label="City / Area *"
-                            value={city}
-                            onChange={setCity}
-                            placeholder="e.g. Ikeja"
-                            required
-                            autoComplete="address-level2"
-                          />
-                          <Field
                             label="Postal / ZIP code"
                             value={postalCode}
                             onChange={setPostalCode}
                             placeholder="Optional"
                             autoComplete="postal-code"
                           />
+                          <Field
+                            label="Country *"
+                            value={country}
+                            onChange={setCountry}
+                            placeholder="Nigeria"
+                            required
+                            autoComplete="country-name"
+                          />
                         </div>
-                        <Field
-                          label="Country *"
-                          value={country}
-                          onChange={setCountry}
-                          placeholder="Nigeria"
-                          required
-                          autoComplete="country-name"
-                        />
                       </div>
                     </div>
 
@@ -553,15 +596,20 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                         {phone}
                       </p>
                       <div className="border-t border-border pt-2">
-                        <p className="text-muted">Delivery location:</p>
+                        <p className="text-muted">Shipping address:</p>
                         {shippingLines.map((line) => (
                           <p key={line}>{line}</p>
                         ))}
-                        {deliveryZone && (
-                          <p className="mt-2">
-                            <span className="text-muted">Delivery fee: </span>
-                            {deliveryZone.label} — {formatNaira(deliveryFee)}
-                          </p>
+                        {shippingZone && (
+                          <>
+                            <p className="mt-2">
+                              <span className="text-muted">Shipping fee: </span>
+                              {shippingZone.label} — {formatNaira(deliveryFee)}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">
+                              {shippingZone.note}
+                            </p>
+                          </>
                         )}
                       </div>
                     </div>

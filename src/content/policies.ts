@@ -5,35 +5,32 @@ export const shippingPolicy = {
     {
       heading: "Shipping Fees",
       paragraphs: [
-        "Delivery fees are calculated at checkout based on your destination from Lagos and added to your order total before payment.",
+        "Shipping fees are calculated at checkout based on your shipping address. Choose Mainland, Island, or Interstate, then select your area — the fee is added to your order total before payment.",
       ],
       bullets: [
-        "Lagos to Lagos — ₦5,500",
-        "Lagos to Ogun — ₦8,000",
-        "Lagos to Ondo — ₦8,000",
-        "Lagos to Oyo — ₦8,000",
-        "Lagos to Ekiti — ₦8,000",
-        "Lagos to Kwara — ₦8,000",
-        "Lagos to Abuja — ₦9,500",
+        "Mainland — area rates from ₦2,500 (e.g. Ayobo, Agric) up to ₦10,500 (e.g. Alakija, Caleb University Imota)",
+        "Island — area rates from ₦6,000 (Chevron) up to ₦15,500 (Epe)",
+        "Interstate — Ile Ife ₦5,000 · Ibadan ₦4,000 · Ilorin ₦5,000 · Akure ₦5,000 · Osogbo ₦5,000 · Abuja ₦6,000 · Sango Ota ₦5,000 · Ijebu Ode ₦4,000 · Oyo Town ₦4,000 · Ado Ekiti ₦5,000 · Offa ₦5,000",
       ],
       afterParagraphs: [
-        "Online checkout currently supports the destinations listed above. For other locations, contact shopprintiful@gmail.com for a delivery quote.",
+        "Exact area fees are shown in checkout when you select your shipping region and town. For locations not listed, contact shopprintiful@gmail.com for a quote.",
       ],
     },
     {
       heading: "Delivery Time",
       paragraphs: [
-        "Delivery timelines vary depending on your location, the nature of your order, and the delivery service being used. Estimated delivery times will be communicated once your order has been processed.",
+        "Mainland & Island: delivery takes place within 2 to 5 working days, depending on the volume of order.",
+        "Interstate: delivery takes 2 to 5 working days depending on the volume of order. Kindly note that interstate orders use park delivery.",
       ],
     },
     {
       heading: "Delivery Information",
       paragraphs: [
-        "Customers are responsible for providing accurate delivery details, including the correct address and contact information.",
+        "Customers are responsible for providing accurate shipping details, including the correct address and contact information.",
         "We are not responsible for delays or failed deliveries resulting from:",
       ],
       bullets: [
-        "Incorrect or incomplete delivery information",
+        "Incorrect or incomplete shipping information",
         "An unavailable recipient",
         "Circumstances beyond our control",
       ],
