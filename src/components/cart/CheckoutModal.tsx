@@ -135,8 +135,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const shippingSnapshot = () => ({
     line1: line1.trim(),
     line2: line2.trim() || undefined,
-    city: shippingZone?.areaName || "",
-    state: shippingZone?.regionLabel || "",
+    city: shippingZone?.city || "",
+    state: shippingZone?.state || "",
     postalCode: postalCode.trim() || undefined,
     country: country.trim(),
     shippingRegion: shippingZone?.regionLabel,
@@ -529,6 +529,15 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                           )}
                         </label>
 
+                        {shippingZone && (
+                          <div className="border border-border bg-surface-alt px-3 py-2.5 font-ui text-xs leading-relaxed text-muted">
+                            <span className="font-semibold text-foreground">
+                              Location locked to selection:{" "}
+                            </span>
+                            {shippingZone.city}, {shippingZone.state}
+                          </div>
+                        )}
+
                         <Field
                           label="Street address *"
                           value={line1}
@@ -561,6 +570,21 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
                             autoComplete="country-name"
                           />
                         </div>
+
+                        {shippingZone && line1.trim() && (
+                          <div className="border border-border bg-surface px-3 py-3 text-sm">
+                            <p className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+                              Shipping address preview
+                            </p>
+                            <div className="mt-2 space-y-0.5">
+                              {formatShippingLines(shippingSnapshot()).map(
+                                (line) => (
+                                  <p key={line}>{line}</p>
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
