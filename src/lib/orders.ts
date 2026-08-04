@@ -108,6 +108,7 @@ function buildTelegramText(order: PaidOrderInput): string {
  * Upsert a successful payment, notify Telegram, and email the customer receipt once.
  * Call only after Paystack verify API returns status=success.
  * Idempotent on `reference` — skips notify/email if already status=success.
+ * Safe when verify + webhook race: duplicate inserts become updates and skip a second receipt.
  */
 export async function processPaidOrder(
   input: PaidOrderInput,
@@ -122,7 +123,7 @@ export async function processPaidOrder(
     .eq("reference", input.reference)
     .maybeSingle();
 
-  const alreadySuccess = existing?.status === "success";
+  let alreadySuccess = existing?.status === "success";
 
   const payload = {
     items: input.items ?? [],
@@ -153,7 +154,30 @@ export async function processPaidOrder(
       ...row,
       created_at: now,
     });
-    if (error) throw new Error(error.message);
+
+    if (error) {
+      // Verify + webhook often race: the other writer already inserted this reference.
+      if (isUniqueReferenceViolation(error)) {
+        const { error: updateError } = await supabase
+          .from("orders")
+          .update(row)
+          .eq("reference", input.reference);
+        if (updateError) throw new Error(updateError.message);
+
+        const { data: raced } = await supabase
+          .from("orders")
+          .select("id, status")
+          .eq("reference", input.reference)
+          .maybeSingle();
+
+        // Peer likely already sent Telegram/receipt — do not send again.
+        if (raced?.status === "success") {
+          alreadySuccess = true;
+        }
+      } else {
+        throw new Error(error.message);
+      }
+    }
   }
 
   let notified = false;
@@ -178,4 +202,17 @@ export async function processPaidOrder(
     receiptSent,
     notifyError,
   };
+}
+
+function isUniqueReferenceViolation(error: {
+  code?: string;
+  message?: string;
+}): boolean {
+  if (error.code === "23505") return true;
+  const message = (error.message || "").toLowerCase();
+  return (
+    message.includes("orders_reference_key") ||
+    message.includes("duplicate key") ||
+    message.includes("unique constraint")
+  );
 }
