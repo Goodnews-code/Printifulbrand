@@ -118,7 +118,7 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
   }
 
   if (data.customer.shipping) {
-    lines.push("Delivery location:");
+    lines.push("Shipping address:");
     lines.push(...formatShippingLines(data.customer.shipping));
     if (
       typeof data.customer.shipping.deliveryFee === "number" &&
@@ -126,10 +126,11 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
     ) {
       const zone =
         data.customer.shipping.deliveryZone ||
+        data.customer.shipping.shippingArea ||
         data.customer.shipping.state ||
-        "Delivery";
+        "Shipping";
       lines.push(
-        `Delivery fee: ${zone} — ${formatNaira(data.customer.shipping.deliveryFee)}`,
+        `Shipping fee: ${zone} — ${formatNaira(data.customer.shipping.deliveryFee)}`,
       );
     }
     lines.push("");
@@ -299,7 +300,7 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                     ? `
                 <tr>
                   <td style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
-                    Delivery (${escapeHtml(deliveryZoneLabel)})
+                    Shipping (${escapeHtml(deliveryZoneLabel)})
                   </td>
                   <td align="right" style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
                     ${escapeHtml(formatNaira(deliveryFee))}
@@ -337,7 +338,7 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                     ? `
                 <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
                   <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
-                    Delivery location
+                    Shipping address
                   </div>
                   <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                     ${shippingHtml}

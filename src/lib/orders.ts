@@ -61,7 +61,7 @@ function buildTelegramText(order: PaidOrderInput): string {
   }
 
   if (order.customer.shipping) {
-    lines.push("", "Delivery location:");
+    lines.push("", "Shipping address:");
     lines.push(formatShippingAddress(order.customer.shipping));
     if (
       typeof order.customer.shipping.deliveryFee === "number" &&
@@ -69,10 +69,11 @@ function buildTelegramText(order: PaidOrderInput): string {
     ) {
       const zone =
         order.customer.shipping.deliveryZone ||
+        order.customer.shipping.shippingArea ||
         order.customer.shipping.state ||
-        "Delivery";
+        "Shipping";
       lines.push(
-        `Delivery fee: ${zone} — ${formatNaira(order.customer.shipping.deliveryFee)}`,
+        `Shipping fee: ${zone} — ${formatNaira(order.customer.shipping.deliveryFee)}`,
       );
     }
   }
