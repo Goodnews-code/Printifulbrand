@@ -42,8 +42,9 @@ function Avatar({ name, image }: { name: string; image: string }) {
       src={image}
       alt={name}
       fillCover
-      sizes="112px"
-      className="object-cover object-top"
+      sizes="(max-width: 640px) 96px, 128px"
+      quality={90}
+      className="object-cover object-[center_20%]"
       onError={() => setFailed(true)}
     />
   );
@@ -82,8 +83,8 @@ export function Testimonials() {
               key={item.name}
               className="border border-border bg-surface p-6 sm:p-8"
             >
-              <div className="flex items-start gap-4">
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md sm:h-20 sm:w-20">
+              <div className="flex items-start gap-4 sm:gap-5">
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md sm:h-28 sm:w-28">
                   <Avatar name={item.name} image={item.image} />
                 </div>
                 <div className="min-w-0 pt-1">
