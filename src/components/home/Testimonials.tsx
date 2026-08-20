@@ -84,7 +84,7 @@ export function Testimonials() {
               className="border border-border bg-surface p-6 sm:p-8"
             >
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
-                <div className="relative mx-auto aspect-[3/4] w-40 shrink-0 overflow-hidden rounded-lg sm:mx-0 sm:w-44">
+                <div className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full sm:mx-0 sm:w-44">
                   <Portrait name={item.name} image={item.image} />
                 </div>
                 <div className="min-w-0 flex-1 text-center sm:pt-1 sm:text-left">
