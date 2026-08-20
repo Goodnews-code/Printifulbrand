@@ -8,7 +8,7 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
 const HERO_IMAGES = [
   {
-    src: "/assets/Image/Branded Mouse.jpeg",
+    src: "/assets/Image/Mouse.jpeg",
     alt: "Branded Mouse",
     label: "[ PRINTIFUL ARCHIVE // BRANDED MOUSE ]",
     className: "h-[280px] sm:h-[360px] lg:h-[480px]",

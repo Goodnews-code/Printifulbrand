@@ -18,7 +18,7 @@ const TESTIMONIALS: Testimonial[] = [
     role: "Founder, Olaktreats",
     quote:
       "We have been working with Printiful for some years even before she rebranded, we have had nothing short of excellent experience. She is definitely worth every penny spent.\n\nWelldone Printiful",
-    image: "/assets/Image/testimonials/olaide.jpeg",
+    image: "/assets/Image/Olaide - Founder.jpg",
   },
 ];
 
