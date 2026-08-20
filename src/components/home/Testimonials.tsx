@@ -18,18 +18,18 @@ const TESTIMONIALS: Testimonial[] = [
     role: "Founder, Olaktreats",
     quote:
       "We have been working with Printiful for some years even before she rebranded, we have had nothing short of excellent experience. She is definitely worth every penny spent.\n\nWelldone Printiful",
-    image: "/assets/Image/Olaide - Founder avatar.jpg",
+    image: "/assets/Image/Olaide - Founder.jpg",
   },
 ];
 
-function Avatar({ name, image }: { name: string; image: string }) {
+function Portrait({ name, image }: { name: string; image: string }) {
   const [failed, setFailed] = useState(false);
   const initial = name.trim().charAt(0).toUpperCase() || "?";
 
   if (failed) {
     return (
       <div
-        className="flex h-full w-full items-center justify-center bg-brand-purple font-heading text-3xl text-white dark:bg-brand-yellow dark:text-brand-black"
+        className="flex h-full w-full items-center justify-center bg-brand-purple font-heading text-4xl text-white dark:bg-brand-yellow dark:text-brand-black"
         aria-hidden
       >
         {initial}
@@ -43,8 +43,8 @@ function Avatar({ name, image }: { name: string; image: string }) {
       alt={name}
       fillCover
       unoptimized
-      sizes="160px"
-      className="object-cover object-center"
+      sizes="(max-width: 640px) 40vw, 220px"
+      className="object-cover object-top"
       onError={() => setFailed(true)}
     />
   );
@@ -73,7 +73,7 @@ export function Testimonials() {
           className={cn(
             "mt-14 grid gap-6",
             TESTIMONIALS.length === 1
-              ? "mx-auto max-w-2xl"
+              ? "mx-auto max-w-3xl"
               : "md:grid-cols-2 lg:grid-cols-3",
           )}
           stagger={0.14}
@@ -83,25 +83,24 @@ export function Testimonials() {
               key={item.name}
               className="border border-border bg-surface p-6 sm:p-8"
             >
-              <div className="flex items-start gap-4 sm:gap-5">
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md sm:h-32 sm:w-32">
-                  <Avatar name={item.name} image={item.image} />
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+                <div className="relative mx-auto aspect-[3/4] w-40 shrink-0 overflow-hidden rounded-lg sm:mx-0 sm:w-44">
+                  <Portrait name={item.name} image={item.image} />
                 </div>
-                <div className="min-w-0 pt-1">
+                <div className="min-w-0 flex-1 text-center sm:pt-1 sm:text-left">
                   <p className="font-heading text-xl font-semibold leading-tight sm:text-2xl">
                     {item.name}
                   </p>
                   <p className="mt-1 font-ui text-xs font-semibold uppercase tracking-[0.12em] text-brand-purple dark:text-brand-yellow">
                     {item.role}
                   </p>
+                  <blockquote className="mt-4 text-base leading-relaxed text-muted sm:text-[17px]">
+                    <p className="whitespace-pre-line">
+                      &ldquo;{item.quote}&rdquo;
+                    </p>
+                  </blockquote>
                 </div>
               </div>
-
-              <blockquote className="mt-6 text-base leading-relaxed text-muted sm:text-[17px]">
-                <p className="whitespace-pre-line">
-                  &ldquo;{item.quote}&rdquo;
-                </p>
-              </blockquote>
             </StaggerItem>
           ))}
         </Stagger>
