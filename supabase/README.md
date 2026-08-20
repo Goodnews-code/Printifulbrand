@@ -11,6 +11,8 @@
 
 This creates tables, RLS policies, default settings, a `product-images` storage bucket, and a few sample products.
 
+If the project already exists, also run `product-reviews.sql` (or the product_reviews section at the end of `schema.sql`) to enable per-product reviews.
+
 ## 3. Copy API keys
 Project **Settings → API**:
 - Project URL → `NEXT_PUBLIC_SUPABASE_URL`

@@ -45,6 +45,15 @@ export interface CartItem {
   qty: number;
 }
 
+export interface ProductReview {
+  id: number;
+  product_id: number;
+  author_name: string;
+  comment: string;
+  rating: number;
+  created_at: string;
+}
+
 export interface SiteSettings {
   site_title: string;
   site_description: string;

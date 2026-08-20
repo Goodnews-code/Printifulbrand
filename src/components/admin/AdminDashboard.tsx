@@ -6,13 +6,14 @@ import {
   ImagePlus,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Package,
   Plus,
   Settings as SettingsIcon,
   Trash2,
   Upload,
 } from "lucide-react";
-import type { Product, SiteSettings } from "@/types";
+import type { Product, ProductReview, SiteSettings } from "@/types";
 import {
   PRODUCT_CATEGORIES,
   getCategoryAttributes,
@@ -26,7 +27,7 @@ import { SmartImage } from "@/components/ui/SmartImage";
 
 const TOKEN_KEY = "printiful_token";
 
-type Tab = "overview" | "products" | "settings";
+type Tab = "overview" | "products" | "reviews" | "settings";
 
 function CategorySelect({
   value,
@@ -237,6 +238,7 @@ export function AdminDashboard() {
             [
               { id: "overview", label: "Overview", icon: LayoutDashboard },
               { id: "products", label: "Products", icon: Package },
+              { id: "reviews", label: "Reviews", icon: MessageSquare },
               { id: "settings", label: "Settings", icon: SettingsIcon },
             ] as const
           ).map((item) => {
@@ -339,6 +341,10 @@ export function AdminDashboard() {
             onChange={() => loadData(token)}
             setMessage={setMessage}
           />
+        )}
+
+        {tab === "reviews" && (
+          <ReviewsTab token={token} setMessage={setMessage} />
         )}
 
         {tab === "settings" && (
@@ -1345,6 +1351,108 @@ function ProductsTab({
           })
         )}
       </div>
+    </div>
+  );
+}
+
+function ReviewsTab({
+  token,
+  setMessage,
+}: {
+  token: string;
+  setMessage: (m: string) => void;
+}) {
+  const [reviews, setReviews] = useState<
+    Array<ProductReview & { product_title?: string }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        headers: authHeaders(token),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load reviews");
+      setReviews(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Failed to load reviews");
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, setMessage]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function remove(id: number) {
+    if (!window.confirm("Delete this review?")) return;
+    const res = await fetch(`/api/reviews?id=${id}`, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setMessage(data.error || "Could not delete review");
+      return;
+    }
+    setReviews((prev) => prev.filter((r) => r.id !== id));
+    setMessage("Review deleted.");
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-heading text-2xl font-semibold">Product reviews</h2>
+        <p className="mt-1 text-sm text-muted">
+          Customer comments appear on each product page immediately. Delete any
+          that should not stay public.
+        </p>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-muted">Loading reviews…</p>
+      ) : reviews.length === 0 ? (
+        <p className="text-sm text-muted">No reviews yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {reviews.map((review) => (
+            <div
+              key={review.id}
+              className="flex items-start gap-3 border border-border bg-surface p-4"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-ui text-sm font-semibold">
+                  {review.author_name}
+                  <span className="ml-2 font-normal text-muted">
+                    · {review.rating}/5
+                  </span>
+                </p>
+                <p className="mt-0.5 font-ui text-xs text-muted">
+                  {review.product_title || `Product #${review.product_id}`}
+                  {review.created_at
+                    ? ` · ${new Date(review.created_at).toLocaleString()}`
+                    : ""}
+                </p>
+                <p className="mt-2 whitespace-pre-line text-sm text-foreground">
+                  {review.comment}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void remove(review.id)}
+                className="inline-flex shrink-0 items-center border border-border px-2 py-1.5 text-red-600"
+                aria-label={`Delete review by ${review.author_name}`}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

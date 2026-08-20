@@ -74,7 +74,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
         transition={{ duration: 0.3 }}
       >
         <Link
-          href="/store"
+          href={`/store/${product.id}`}
           className="group block overflow-hidden border border-border bg-card transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
         >
           <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
@@ -108,7 +108,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
       whileHover={reduce ? undefined : { y: -6 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
+      <Link href={`/store/${product.id}`} className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
         <SmartImage
           key={`${activeImage.image_url}-${colorIdx}`}
           src={activeImage.image_url}
@@ -117,19 +117,19 @@ export function ProductCard({ product, mode }: ProductCardProps) {
           className="transition-transform duration-500 hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
         />
-      </div>
+      </Link>
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <div>
+        <Link href={`/store/${product.id}`} className="block">
           <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
             {categoryLabel}
           </p>
-          <h3 className="mt-1 font-heading text-xl font-semibold leading-tight">
+          <h3 className="mt-1 font-heading text-xl font-semibold leading-tight hover:text-brand-purple dark:hover:text-brand-yellow">
             {product.title}
           </h3>
           <p className="mt-1 font-ui text-sm font-semibold">
             {formatNaira(price)}
           </p>
-        </div>
+        </Link>
 
         {showColors && (
           <div className="space-y-1.5">
