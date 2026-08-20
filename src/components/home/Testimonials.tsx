@@ -18,7 +18,7 @@ const TESTIMONIALS: Testimonial[] = [
     role: "Founder, Olaktreats",
     quote:
       "We have been working with Printiful for some years even before she rebranded, we have had nothing short of excellent experience. She is definitely worth every penny spent.\n\nWelldone Printiful",
-    image: "/assets/Image/Olaide - Founder.jpg",
+    image: "/assets/Image/Olaide - Founder avatar.jpg",
   },
 ];
 
@@ -42,9 +42,9 @@ function Avatar({ name, image }: { name: string; image: string }) {
       src={image}
       alt={name}
       fillCover
-      sizes="(max-width: 640px) 96px, 128px"
-      quality={90}
-      className="object-cover object-[center_20%]"
+      unoptimized
+      sizes="160px"
+      className="object-cover object-center"
       onError={() => setFailed(true)}
     />
   );
@@ -84,7 +84,7 @@ export function Testimonials() {
               className="border border-border bg-surface p-6 sm:p-8"
             >
               <div className="flex items-start gap-4 sm:gap-5">
-                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md sm:h-28 sm:w-28">
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-md sm:h-32 sm:w-32">
                   <Avatar name={item.name} image={item.image} />
                 </div>
                 <div className="min-w-0 pt-1">
