@@ -33,6 +33,23 @@ export interface Product {
   sizes?: ProductSize[];
 }
 
+export interface ProductReview {
+  id: number;
+  product_id: number;
+  author_name: string;
+  rating: number;
+  comment: string;
+  is_visible: boolean;
+  created_at: string;
+  product_title?: string;
+}
+
+export interface ProductReviewSummary {
+  product_id: number;
+  average: number;
+  count: number;
+}
+
 export interface CartItem {
   id: string;
   productId: number;

@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { MessageSquareText, ShoppingBag } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import type { Product } from "@/types";
+import type { Product, ProductReviewSummary } from "@/types";
 import { useCart } from "@/context/CartContext";
 import {
   parseProductColor,
@@ -13,13 +13,22 @@ import {
 import { getCategoryAttributes } from "@/lib/product-attributes";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
+import { StarRating } from "@/components/catalog/StarRating";
+import { ProductReviews } from "@/components/catalog/ProductReviews";
 
 interface ProductCardProps {
   product: Product;
   mode: "showcase" | "shop";
+  reviewSummary?: ProductReviewSummary;
+  onReviewSummaryChange?: (summary: ProductReviewSummary) => void;
 }
 
-export function ProductCard({ product, mode }: ProductCardProps) {
+export function ProductCard({
+  product,
+  mode,
+  reviewSummary,
+  onReviewSummaryChange,
+}: ProductCardProps) {
   const reduce = useReducedMotion();
   const { addItem } = useCart();
   const showColors = productHasColorOptions(product.images);
@@ -42,6 +51,7 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   const [colorIdx, setColorIdx] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(0);
   const [added, setAdded] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
 
   const activeImage = images[Math.min(colorIdx, images.length - 1)];
   const activeSize = sizes[Math.min(sizeIdx, sizes.length - 1)];
@@ -103,110 +113,140 @@ export function ProductCard({ product, mode }: ProductCardProps) {
   }
 
   return (
-    <motion.article
-      className="flex flex-col overflow-hidden border border-border bg-card"
-      whileHover={reduce ? undefined : { y: -6 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-        <SmartImage
-          key={`${activeImage.image_url}-${colorIdx}`}
-          src={activeImage.image_url}
-          alt={`${product.title}${showColors ? ` — ${activeColor.name}` : ""}`}
-          fillCover
-          className="transition-transform duration-500 hover:scale-105"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-        />
-      </div>
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div>
-          <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            {categoryLabel}
-          </p>
-          <h3 className="mt-1 font-heading text-xl font-semibold leading-tight">
-            {product.title}
-          </h3>
-          <p className="mt-1 font-ui text-sm font-semibold">
-            {formatNaira(price)}
-          </p>
+    <>
+      <motion.article
+        className="flex flex-col overflow-hidden border border-border bg-card"
+        whileHover={reduce ? undefined : { y: -6 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
+          <SmartImage
+            key={`${activeImage.image_url}-${colorIdx}`}
+            src={activeImage.image_url}
+            alt={`${product.title}${showColors ? ` — ${activeColor.name}` : ""}`}
+            fillCover
+            className="transition-transform duration-500 hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+          />
         </div>
-
-        {showColors && (
-          <div className="space-y-1.5">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
-                Color
-              </span>
-              <span className="font-ui text-xs text-foreground">
-                {activeColor.name}
-              </span>
-            </div>
-            <div
-              className="flex flex-wrap gap-2"
-              role="listbox"
-              aria-label="Select color"
-            >
-              {images.map((img, i) => {
-                const color = parseProductColor(img.color_code);
-                const selected = colorIdx === i;
-                return (
-                  <button
-                    key={`${img.image_url}-${i}`}
-                    type="button"
-                    role="option"
-                    aria-selected={selected}
-                    aria-label={color.name}
-                    title={color.name}
-                    onClick={() => setColorIdx(i)}
-                    className={cn(
-                      "size-8 shrink-0 rounded-full border-2 transition-transform",
-                      selected
-                        ? "scale-110 border-brand-purple ring-2 ring-brand-purple/30 dark:border-brand-yellow dark:ring-brand-yellow/30"
-                        : "border-border hover:scale-105",
-                    )}
-                    style={{ backgroundColor: color.hex }}
-                  />
-                );
-              })}
-            </div>
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          <div>
+            <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+              {categoryLabel}
+            </p>
+            <h3 className="mt-1 font-heading text-xl font-semibold leading-tight">
+              {product.title}
+            </h3>
+            <p className="mt-1 font-ui text-sm font-semibold">
+              {formatNaira(price)}
+            </p>
+            {reviewSummary && reviewSummary.count > 0 ? (
+              <div className="mt-1.5 flex items-center gap-2">
+                <StarRating value={reviewSummary.average} />
+                <span className="font-ui text-xs text-muted">
+                  {reviewSummary.average} ({reviewSummary.count})
+                </span>
+              </div>
+            ) : null}
           </div>
-        )}
 
-        {showSizes && (
-          <label className="block space-y-1.5">
-            <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
-              {sizeLabel}
-            </span>
-            <select
-              value={String(sizeIdx)}
-              onChange={(e) => setSizeIdx(Number(e.target.value))}
-              className="w-full border border-border bg-surface px-3 py-2 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
-              aria-label="Select size"
-            >
-              {sizes.map((size, i) => (
-                <option key={size.size_name} value={i}>
-                  {size.size_name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        <motion.button
-          type="button"
-          onClick={handleAdd}
-          whileTap={reduce ? undefined : { scale: 0.97 }}
-          className={cn(
-            "mt-auto inline-flex w-full items-center justify-center gap-2 py-3 font-ui text-sm font-semibold text-white transition-colors",
-            added
-              ? "no-hover bg-brand-purple dark:bg-brand-yellow dark:text-brand-black"
-              : "bg-brand-black hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white",
+          {showColors && (
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  Color
+                </span>
+                <span className="font-ui text-xs text-foreground">
+                  {activeColor.name}
+                </span>
+              </div>
+              <div
+                className="flex flex-wrap gap-2"
+                role="listbox"
+                aria-label="Select color"
+              >
+                {images.map((img, i) => {
+                  const color = parseProductColor(img.color_code);
+                  const selected = colorIdx === i;
+                  return (
+                    <button
+                      key={`${img.image_url}-${i}`}
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      aria-label={color.name}
+                      title={color.name}
+                      onClick={() => setColorIdx(i)}
+                      className={cn(
+                        "size-8 shrink-0 rounded-full border-2 transition-transform",
+                        selected
+                          ? "scale-110 border-brand-purple ring-2 ring-brand-purple/30 dark:border-brand-yellow dark:ring-brand-yellow/30"
+                          : "border-border hover:scale-105",
+                      )}
+                      style={{ backgroundColor: color.hex }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           )}
-        >
-          <ShoppingBag size={16} />
-          {added ? "Added!" : "Add to Cart"}
-        </motion.button>
-      </div>
-    </motion.article>
+
+          {showSizes && (
+            <label className="block space-y-1.5">
+              <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+                {sizeLabel}
+              </span>
+              <select
+                value={String(sizeIdx)}
+                onChange={(e) => setSizeIdx(Number(e.target.value))}
+                className="w-full border border-border bg-surface px-3 py-2 font-ui text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+                aria-label="Select size"
+              >
+                {sizes.map((size, i) => (
+                  <option key={size.size_name} value={i}>
+                    {size.size_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <div className="mt-auto space-y-2">
+            <motion.button
+              type="button"
+              onClick={handleAdd}
+              whileTap={reduce ? undefined : { scale: 0.97 }}
+              className={cn(
+                "inline-flex w-full items-center justify-center gap-2 py-3 font-ui text-sm font-semibold text-white transition-colors",
+                added
+                  ? "no-hover bg-brand-purple dark:bg-brand-yellow dark:text-brand-black"
+                  : "bg-brand-black hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white",
+              )}
+            >
+              <ShoppingBag size={16} />
+              {added ? "Added!" : "Add to Cart"}
+            </motion.button>
+            <button
+              type="button"
+              onClick={() => setReviewsOpen(true)}
+              className="inline-flex w-full items-center justify-center gap-2 border border-border py-2.5 font-ui text-sm font-medium text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
+            >
+              <MessageSquareText size={15} />
+              {reviewSummary && reviewSummary.count > 0
+                ? `Reviews (${reviewSummary.count})`
+                : "Reviews"}
+            </button>
+          </div>
+        </div>
+      </motion.article>
+
+      <ProductReviews
+        productId={product.id}
+        productTitle={product.title}
+        open={reviewsOpen}
+        onClose={() => setReviewsOpen(false)}
+        onSummaryChange={onReviewSummaryChange}
+      />
+    </>
   );
 }

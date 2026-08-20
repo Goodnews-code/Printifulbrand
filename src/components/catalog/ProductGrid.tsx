@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import type { Product } from "@/types";
+import type { Product, ProductReviewSummary } from "@/types";
 import { CATEGORY_FILTERS, normalizeCategory, cn } from "@/lib/utils";
 import { ProductCard } from "@/components/catalog/ProductCard";
 
@@ -15,6 +15,8 @@ interface ProductGridProps {
   emptyMessage?: string;
   /** Hide items beyond this count below the `md` breakpoint */
   mobileLimit?: number;
+  reviewSummaries?: Record<number, ProductReviewSummary>;
+  onReviewSummaryChange?: (summary: ProductReviewSummary) => void;
 }
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "name";
@@ -28,6 +30,8 @@ export function ProductGrid({
   showSort = false,
   emptyMessage = "No products found.",
   mobileLimit,
+  reviewSummaries,
+  onReviewSummaryChange,
 }: ProductGridProps) {
   const reduce = useReducedMotion();
   const [filter, setFilter] = useState<(typeof CATEGORY_FILTERS)[number]["id"]>(
@@ -152,7 +156,12 @@ export function ProductGrid({
                 },
               }}
             >
-              <ProductCard product={product} mode={mode} />
+              <ProductCard
+                product={product}
+                mode={mode}
+                reviewSummary={reviewSummaries?.[product.id]}
+                onReviewSummaryChange={onReviewSummaryChange}
+              />
             </motion.div>
           ))}
         </motion.div>

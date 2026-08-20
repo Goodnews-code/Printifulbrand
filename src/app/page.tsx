@@ -12,6 +12,7 @@ import { CareGuide } from "@/components/home/CareGuide";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { Reveal } from "@/components/motion/Reveal";
 import { MobileHandHint } from "@/components/motion/MobileHandHint";
+import { PackagePromoStrip } from "@/components/home/PackagePromoStrip";
 
 function ShowcaseCatalog() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,6 +84,7 @@ export default function HomePage() {
       <MobileHandHint />
       <Hero />
       <BrandValues />
+      <PackagePromoStrip />
       <ShowcaseCatalog />
       <Testimonials />
       <Timeline />

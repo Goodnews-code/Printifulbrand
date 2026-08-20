@@ -100,6 +100,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/packages/small-business" prefetch>
+                  Small Business Package
+                </Link>
+              </li>
+              <li>
                 <Link href="/#timeline">Step Journey</Link>
               </li>
               <li>

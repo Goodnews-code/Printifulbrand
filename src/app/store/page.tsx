@@ -1,19 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Product } from "@/types";
+import type { Product, ProductReviewSummary } from "@/types";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { FadeIn } from "@/components/motion/Reveal";
 
 export default function StorePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewSummaries, setReviewSummaries] = useState<
+    Record<number, ProductReviewSummary>
+  >({});
 
   useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data: Product[]) => setProducts(Array.isArray(data) ? data : []))
-      .catch(() => setProducts([]))
+    Promise.all([
+      fetch("/api/products").then((r) => r.json()),
+      fetch("/api/reviews").then((r) => r.json()),
+    ])
+      .then(([productData, summaryData]) => {
+        setProducts(Array.isArray(productData) ? productData : []);
+        if (Array.isArray(summaryData)) {
+          const map: Record<number, ProductReviewSummary> = {};
+          for (const item of summaryData as ProductReviewSummary[]) {
+            map[item.product_id] = item;
+          }
+          setReviewSummaries(map);
+        }
+      })
+      .catch(() => {
+        setProducts([]);
+        setReviewSummaries({});
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -41,7 +58,7 @@ export default function StorePage() {
           <FadeIn delay={0.24}>
             <p className="mt-4 max-w-xl text-white/70">
               Search, filter, and add premium custom merch to your cart — priced
-              in ₦ NGN.
+              in ₦ NGN. Leave a live review on any product.
             </p>
           </FadeIn>
         </div>
@@ -72,6 +89,13 @@ export default function StorePage() {
             showSearch
             showSort
             emptyMessage="No products in this category yet."
+            reviewSummaries={reviewSummaries}
+            onReviewSummaryChange={(summary) =>
+              setReviewSummaries((prev) => ({
+                ...prev,
+                [summary.product_id]: summary,
+              }))
+            }
           />
         )}
       </section>

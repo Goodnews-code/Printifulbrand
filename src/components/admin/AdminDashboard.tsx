@@ -3,16 +3,19 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
+  Eye,
+  EyeOff,
   ImagePlus,
   LayoutDashboard,
   LogOut,
+  MessageSquareText,
   Package,
   Plus,
   Settings as SettingsIcon,
   Trash2,
   Upload,
 } from "lucide-react";
-import type { Product, SiteSettings } from "@/types";
+import type { Product, ProductReview, SiteSettings } from "@/types";
 import {
   PRODUCT_CATEGORIES,
   getCategoryAttributes,
@@ -23,10 +26,11 @@ import {
 import { encodeProductColor, hexFromColorName, parseProductColor } from "@/lib/product-color";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
+import { StarRating } from "@/components/catalog/StarRating";
 
 const TOKEN_KEY = "printiful_token";
 
-type Tab = "overview" | "products" | "settings";
+type Tab = "overview" | "products" | "reviews" | "settings";
 
 function CategorySelect({
   value,
@@ -237,6 +241,7 @@ export function AdminDashboard() {
             [
               { id: "overview", label: "Overview", icon: LayoutDashboard },
               { id: "products", label: "Products", icon: Package },
+              { id: "reviews", label: "Reviews", icon: MessageSquareText },
               { id: "settings", label: "Settings", icon: SettingsIcon },
             ] as const
           ).map((item) => {
@@ -341,6 +346,10 @@ export function AdminDashboard() {
           />
         )}
 
+        {tab === "reviews" && (
+          <ReviewsTab token={token} setMessage={setMessage} />
+        )}
+
         {tab === "settings" && (
           <SettingsTab
             settings={settings}
@@ -365,6 +374,145 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="mt-2 truncate font-heading text-2xl font-semibold">
         {value}
       </p>
+    </div>
+  );
+}
+
+function ReviewsTab({
+  token,
+  setMessage,
+}: {
+  token: string;
+  setMessage: (m: string) => void;
+}) {
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/reviews?all=true", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load reviews");
+      setReviews(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Failed to load reviews");
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, setMessage]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function toggleVisible(review: ProductReview) {
+    const res = await fetch(`/api/reviews/${review.id}`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ is_visible: !review.is_visible }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage(data.error || "Could not update review");
+      return;
+    }
+    setReviews((prev) =>
+      prev.map((r) =>
+        r.id === review.id ? { ...r, is_visible: !r.is_visible } : r,
+      ),
+    );
+    setMessage(
+      review.is_visible ? "Review hidden from store." : "Review is live again.",
+    );
+  }
+
+  async function remove(review: ProductReview) {
+    if (!window.confirm(`Delete review by ${review.author_name}?`)) return;
+    const res = await fetch(`/api/reviews/${review.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setMessage(data.error || "Could not delete review");
+      return;
+    }
+    setReviews((prev) => prev.filter((r) => r.id !== review.id));
+    setMessage("Review deleted.");
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-heading text-2xl font-semibold">Customer reviews</h2>
+        <p className="mt-1 text-sm text-muted">
+          Live reviews post immediately. Hide spam or delete permanently.
+        </p>
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted">Loading reviews…</p>
+      ) : reviews.length === 0 ? (
+        <p className="border border-border bg-surface p-6 text-sm text-muted">
+          No reviews yet.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {reviews.map((review) => (
+            <li key={review.id} className="border border-border bg-surface p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-ui text-sm font-semibold">
+                      {review.author_name}
+                    </p>
+                    <StarRating value={review.rating} />
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                        review.is_visible
+                          ? "bg-brand-purple/10 text-brand-purple dark:bg-brand-yellow/15 dark:text-brand-yellow"
+                          : "bg-red-500/10 text-red-600 dark:text-red-300",
+                      )}
+                    >
+                      {review.is_visible ? "Live" : "Hidden"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted">
+                    {review.product_title || `Product #${review.product_id}`} ·{" "}
+                    {new Date(review.created_at).toLocaleString()}
+                  </p>
+                  <p className="text-sm leading-relaxed text-foreground">
+                    {review.comment}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void toggleVisible(review)}
+                    className="inline-flex items-center gap-1.5 border border-border px-3 py-2 text-xs font-medium"
+                    title={review.is_visible ? "Hide" : "Show"}
+                  >
+                    {review.is_visible ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {review.is_visible ? "Hide" : "Show"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void remove(review)}
+                    className="inline-flex items-center gap-1.5 border border-red-500/30 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-300"
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

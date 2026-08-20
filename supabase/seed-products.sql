@@ -22,4 +22,5 @@ insert into public.products (title, description, price, image_url, category, is_
 ('Heavyweight Desk Mouse Pad', 'Extended desk mouse pad with high-fidelity edge-to-edge print.', 14.99, '/assets/Image/Mouse pad.PNG', 'Gadgets', true),
 ('Ergonomic Wireless Mouse', 'Comfort wireless mouse with custom brand inlay options.', 29.99, '/assets/Image/Mouse.jpeg', 'Gadgets', true),
 ('Premium Studio Headset', 'Over-ear studio headset with branded ear-cup plate options.', 79.99, '/assets/Image/Headset.jpeg', 'Gadgets', true),
-('Heat-Activated Magic Mug', 'Ceramic color-reveal mug with high-fidelity wrap print.', 18.99, '/assets/Image/Magic mug.jpeg', 'Corporate Gift', true);
+('Heat-Activated Magic Mug', 'Ceramic color-reveal mug with high-fidelity wrap print.', 18.99, '/assets/Image/Magic mug.jpeg', 'Corporate Gift', true),
+('Small Business Package', '100 medium poly mailer bags, 100 A6 thank you cards, and 2 customized tees in any colors of your choice.', 55000, '/assets/Image/Customized nylon.jpeg', 'Brand Packaging', true);
