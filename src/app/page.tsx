@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Product } from "@/types";
 import { Hero } from "@/components/home/Hero";
 import { BrandValues } from "@/components/home/BrandValues";
+import { Testimonials } from "@/components/home/Testimonials";
 import { Timeline } from "@/components/home/Timeline";
 import { InquiryForm } from "@/components/home/InquiryForm";
 import { CareGuide } from "@/components/home/CareGuide";
@@ -83,6 +84,7 @@ export default function HomePage() {
       <Hero />
       <BrandValues />
       <ShowcaseCatalog />
+      <Testimonials />
       <Timeline />
       <InquiryForm />
       <CareGuide />
