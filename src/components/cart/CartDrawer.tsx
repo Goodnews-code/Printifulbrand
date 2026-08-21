@@ -111,7 +111,7 @@ export function CartDrawer() {
                               <p className="truncate font-ui text-sm font-semibold">
                                 {item.name}
                               </p>
-                              <p className="mt-0.5 text-xs text-muted">
+                              <p className="mt-0.5 whitespace-pre-wrap break-words text-xs text-muted">
                                 {[
                                   item.color !== "—" && item.color !== "Default"
                                     ? item.color
@@ -119,7 +119,7 @@ export function CartDrawer() {
                                   item.size !== "One Size" ? item.size : null,
                                 ]
                                   .filter(Boolean)
-                                  .join(" · ") || "Standard"}
+                                  .join("\n") || "Standard"}
                               </p>
                             </div>
                             <button

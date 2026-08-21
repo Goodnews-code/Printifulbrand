@@ -72,6 +72,7 @@ export interface SiteSettings {
   accent_color: string;
   contact_email: string;
   contact_phone: string;
+  whatsapp_number?: string;
   footer_text: string;
   paystack_public_key: string;
   paystack_secret_key: string;

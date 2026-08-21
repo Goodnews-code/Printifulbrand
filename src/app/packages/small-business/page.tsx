@@ -1,22 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SmallBusinessPackageHero } from "@/components/packages/SmallBusinessPackageHero";
 import { SmallBusinessPackageOffer } from "@/components/packages/SmallBusinessPackageOffer";
 import { Reveal } from "@/components/motion/Reveal";
-import {
-  SMALL_BUSINESS_PACKAGE_INCLUDES,
-  SMALL_BUSINESS_PACKAGE_PRICE,
-  SMALL_BUSINESS_PACKAGE_TITLE,
-} from "@/lib/packages";
-import { formatNaira } from "@/lib/utils";
+import { SMALL_BUSINESS_PACKAGE_INCLUDES } from "@/lib/packages";
 
 export const metadata: Metadata = {
   title: "Small Business Package | Printiful",
   description:
-    "100 medium poly mailers, 100 A6 thank you cards, and 2 customized tees for ₦55,000. Built for growing small businesses.",
+    "100 medium poly mailers, 100 A6 thank you cards, and 2 customized tees. Built for growing small businesses.",
   openGraph: {
     title: "Small Business Package | Printiful",
     description:
-      "Starter brand packaging for small businesses — mailers, thank you cards, and 2 custom tees for ₦55,000.",
+      "Starter brand packaging for small businesses — mailers, thank you cards, and 2 custom tees.",
     url: "/packages/small-business",
     siteName: "Printiful",
     type: "website",
@@ -26,60 +22,8 @@ export const metadata: Metadata = {
 export default function SmallBusinessPackagePage() {
   return (
     <main className="bg-surface text-foreground">
-      {/* Hero — brand first, full-bleed visual plane */}
-      <section className="relative isolate min-h-[min(88vh,760px)] overflow-hidden border-b border-border">
-        <div
-          className="absolute inset-0 bg-cover bg-center motion-safe:animate-float-slow"
-          style={{
-            backgroundImage: "url('/assets/Image/Customized nylon.jpeg')",
-          }}
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(105deg, rgba(26,0,51,0.92) 0%, rgba(83,0,155,0.78) 48%, rgba(26,0,51,0.55) 100%)",
-          }}
-          aria-hidden
-        />
-        <div className="pointer-events-none absolute -left-20 bottom-10 size-64 rounded-full bg-brand-yellow/10 blur-3xl motion-safe:animate-float-slow" aria-hidden />
-        <div className="relative z-10 mx-auto flex min-h-[min(88vh,760px)] max-w-7xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 sm:pb-20 lg:px-8 lg:pb-24">
-          <Reveal direction="up">
-            <p className="font-display text-sm font-bold uppercase tracking-[0.28em] text-brand-yellow">
-              Printiful
-            </p>
-            <h1 className="mt-3 max-w-2xl font-heading text-4xl font-semibold leading-[1.05] text-white sm:text-5xl lg:text-6xl">
-              {SMALL_BUSINESS_PACKAGE_TITLE}
-            </h1>
-            <p className="mt-4 max-w-lg text-lg text-white/85 sm:text-xl">
-              Everything you need to ship and show up as a brand —{" "}
-              <span className="font-semibold text-brand-yellow">
-                {formatNaira(SMALL_BUSINESS_PACKAGE_PRICE)}
-              </span>
-            </p>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70">
-              Poly mailers, thank you cards, and two customized tees. One package, one checkout.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="#order"
-                className="inline-flex rounded-full bg-brand-yellow px-7 py-3.5 text-sm font-bold uppercase tracking-wide text-brand-black transition hover:bg-white"
-              >
-                Get the package
-              </a>
-              <Link
-                href="/store"
-                className="inline-flex rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Browse store
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <SmallBusinessPackageHero />
 
-      {/* What’s included */}
       <section className="border-b border-border bg-surface-alt py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal>
@@ -90,14 +34,26 @@ export default function SmallBusinessPackagePage() {
               One fixed package so you can start packaging and branding without piecing it together.
             </p>
           </Reveal>
-          <ul className="mt-10 space-y-5">
+          <ul className="mt-10 space-y-8">
             {SMALL_BUSINESS_PACKAGE_INCLUDES.map((item, i) => (
-              <Reveal key={item} delay={0.06 * i}>
-                <li className="flex gap-4 border-b border-border pb-5 last:border-0 last:pb-0">
-                  <span className="font-display text-sm font-bold text-brand-purple">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-base text-foreground sm:text-lg">{item}</span>
+              <Reveal key={item.label} delay={0.06 * i}>
+                <li className="flex flex-col gap-0 overflow-hidden border border-border sm:flex-row sm:items-stretch">
+                  <div className="relative aspect-[4/3] w-full bg-surface sm:aspect-auto sm:w-44 sm:shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image}
+                      alt={item.alt}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-1 items-center gap-4 bg-brand-purple/10 px-5 py-5 sm:px-6 dark:bg-brand-purple/25">
+                    <span className="font-display text-sm font-bold text-brand-purple dark:text-brand-yellow">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-base font-semibold leading-snug text-foreground sm:text-lg">
+                      {item.label}
+                    </span>
+                  </div>
                 </li>
               </Reveal>
             ))}
@@ -105,7 +61,6 @@ export default function SmallBusinessPackagePage() {
         </div>
       </section>
 
-      {/* Who it’s for */}
       <section className="border-b border-border py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal>
@@ -121,20 +76,40 @@ export default function SmallBusinessPackagePage() {
         </div>
       </section>
 
-      {/* Order */}
       <section id="order" className="scroll-mt-24 bg-surface-alt py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <h2 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">
-              Choose your tee colors
+              Customize your package
             </h2>
             <p className="mt-3 text-muted">
-              Tell us the two tee colors you want, then add the package to your cart and checkout as usual.
+              Tell us bag artwork vs wording, thank you card content, and each tee&apos;s
+              color plus design — then add the package to your cart.
             </p>
           </Reveal>
           <div className="mt-10">
             <SmallBusinessPackageOffer />
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border py-14 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+          <Reveal>
+            <h2 className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+              Looking for single pieces?
+            </h2>
+            <p className="mt-3 text-muted">
+              Browse the full Printiful catalog for tees, packaging, and more —
+              separate from this package.
+            </p>
+            <Link
+              href="/store"
+              className="mt-6 inline-flex rounded-full border border-brand-purple px-7 py-3.5 text-sm font-semibold text-brand-purple transition hover:bg-brand-purple hover:text-white dark:border-brand-yellow dark:text-brand-yellow dark:hover:bg-brand-yellow dark:hover:text-brand-black"
+            >
+              Browse store
+            </Link>
+          </Reveal>
         </div>
       </section>
     </main>

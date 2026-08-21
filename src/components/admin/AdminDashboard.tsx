@@ -1513,8 +1513,13 @@ function SettingsTab({
     hero_subtext: "",
     contact_email: "",
     contact_phone: "",
+    whatsapp_number: "",
     footer_text: "",
     paystack_public_key: "",
+    package_sb_enabled: "true",
+    package_sb_title: "",
+    package_sb_price: "",
+    package_sb_tagline: "",
   });
 
   useEffect(() => {
@@ -1525,8 +1530,20 @@ function SettingsTab({
       hero_subtext: settings.hero_subtext || "",
       contact_email: settings.contact_email || "",
       contact_phone: settings.contact_phone || "",
+      whatsapp_number: settings.whatsapp_number || "",
       footer_text: settings.footer_text || "",
       paystack_public_key: settings.paystack_public_key || "",
+      package_sb_enabled:
+        settings.package_sb_enabled === "false" ||
+        settings.package_sb_enabled === "0" ||
+        settings.package_sb_enabled === "off"
+          ? "false"
+          : "true",
+      package_sb_title: settings.package_sb_title || "Small Business Package",
+      package_sb_price: settings.package_sb_price || "55000",
+      package_sb_tagline:
+        settings.package_sb_tagline ||
+        "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
     });
   }, [settings]);
 
@@ -1549,6 +1566,10 @@ function SettingsTab({
       { key: "hero_subtext", label: "Hero Subtext", rows: 3 },
       { key: "contact_email", label: "Contact Email" },
       { key: "contact_phone", label: "Contact Phone" },
+      {
+        key: "whatsapp_number",
+        label: "WhatsApp number (e.g. +2348012345678) — floating chat button",
+      },
       { key: "footer_text", label: "Footer Text", rows: 2 },
       {
         key: "paystack_public_key",
@@ -1559,37 +1580,101 @@ function SettingsTab({
   return (
     <form
       onSubmit={save}
-      className="max-w-2xl space-y-4 border border-border bg-surface p-5"
+      className="max-w-2xl space-y-8 border border-border bg-surface p-5"
     >
-      {fields.map((field) => (
-        <label key={field.key} className="block space-y-1.5">
-          <span className="font-ui text-sm font-medium">{field.label}</span>
-          {field.rows ? (
-            <textarea
-              rows={field.rows}
-              value={form[field.key]}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, [field.key]: e.target.value }))
-              }
-              className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
-            />
-          ) : (
-            <input
-              value={form[field.key]}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, [field.key]: e.target.value }))
-              }
-              className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
-            />
-          )}
+      <div className="space-y-4">
+        {fields.map((field) => (
+          <label key={field.key} className="block space-y-1.5">
+            <span className="font-ui text-sm font-medium">{field.label}</span>
+            {field.rows ? (
+              <textarea
+                rows={field.rows}
+                value={form[field.key]}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, [field.key]: e.target.value }))
+                }
+                className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+              />
+            ) : (
+              <input
+                value={form[field.key]}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, [field.key]: e.target.value }))
+                }
+                className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+              />
+            )}
+          </label>
+        ))}
+        <p className="text-sm text-muted">
+          Keep your Paystack <strong>secret key</strong> in{" "}
+          <code className="text-xs">.env</code> as{" "}
+          <code className="text-xs">PAYSTACK_SECRET_KEY</code> — never in the
+          browser.
+        </p>
+      </div>
+
+      <div className="space-y-4 border-t border-border pt-6">
+        <div>
+          <h3 className="font-heading text-xl font-semibold">
+            Small Business Package
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            Standalone offer at{" "}
+            <code className="text-xs">/packages/small-business</code> — not a
+            store product. Change price or turn it off here.
+          </p>
+        </div>
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.package_sb_enabled === "true"}
+            onChange={(e) =>
+              setForm((f) => ({
+                ...f,
+                package_sb_enabled: e.target.checked ? "true" : "false",
+              }))
+            }
+            className="size-4 accent-brand-purple"
+          />
+          <span className="font-medium">Package offer enabled</span>
         </label>
-      ))}
-      <p className="text-sm text-muted">
-        Keep your Paystack <strong>secret key</strong> in{" "}
-        <code className="text-xs">.env</code> as{" "}
-        <code className="text-xs">PAYSTACK_SECRET_KEY</code> — never in the
-        browser.
-      </p>
+        <label className="block space-y-1.5">
+          <span className="font-ui text-sm font-medium">Package title</span>
+          <input
+            value={form.package_sb_title}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, package_sb_title: e.target.value }))
+            }
+            className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          />
+        </label>
+        <label className="block space-y-1.5">
+          <span className="font-ui text-sm font-medium">Price (₦ NGN)</span>
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={form.package_sb_price}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, package_sb_price: e.target.value }))
+            }
+            className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          />
+        </label>
+        <label className="block space-y-1.5">
+          <span className="font-ui text-sm font-medium">Short tagline</span>
+          <textarea
+            rows={2}
+            value={form.package_sb_tagline}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, package_sb_tagline: e.target.value }))
+            }
+            className="w-full border border-border px-3 py-2 text-sm outline-none focus:border-brand-purple"
+          />
+        </label>
+      </div>
+
       <button
         type="submit"
         className="bg-brand-purple px-6 py-3 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"

@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product, ProductReviewSummary } from "@/types";
 import { CATEGORY_FILTERS, normalizeCategory, cn } from "@/lib/utils";
+import { isPackageOnlyProduct } from "@/lib/packages";
 import { ProductCard } from "@/components/catalog/ProductCard";
 
 interface ProductGridProps {
@@ -42,6 +43,7 @@ export function ProductGrid({
 
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
+      if (isPackageOnlyProduct(p.title)) return false;
       const cat = normalizeCategory(p.category);
       const matchesFilter = filter === "all" || cat === filter;
       const q = query.trim().toLowerCase();

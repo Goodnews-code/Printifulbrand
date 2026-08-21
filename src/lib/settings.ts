@@ -13,10 +13,16 @@ const DEFAULTS: SiteSettings = {
   accent_color: "#FFFF00",
   contact_email: "shopprintiful@gmail.com",
   contact_phone: "+234 000 000 0000",
+  whatsapp_number: "",
   footer_text:
     "© 2026 Printiful Custom Printing. All rights reserved. Beautifully printed.",
   paystack_public_key: "",
   paystack_secret_key: "",
+  package_sb_enabled: "true",
+  package_sb_title: "Small Business Package",
+  package_sb_price: "55000",
+  package_sb_tagline:
+    "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
 };
 
 export async function getSettings(): Promise<SiteSettings> {

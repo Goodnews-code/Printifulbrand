@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
 import { Reveal } from "@/components/motion/Reveal";
+import { resolveSmallBusinessPackage } from "@/lib/packages";
 
 const LOGO = "/assets/logo%20with%20printiful.svg";
 
@@ -34,6 +35,7 @@ function XIcon({ className }: { className?: string }) {
 
 export function Footer() {
   const { settings } = useSettings();
+  const pkg = resolveSmallBusinessPackage(settings);
 
   return (
     <footer className="mt-auto border-t border-border bg-surface-alt">
@@ -99,11 +101,13 @@ export function Footer() {
                   Catalog Store
                 </Link>
               </li>
-              <li>
-                <Link href="/packages/small-business" prefetch>
-                  Small Business Package
-                </Link>
-              </li>
+              {pkg.enabled ? (
+                <li>
+                  <Link href="/packages/small-business" prefetch>
+                    {pkg.title}
+                  </Link>
+                </li>
+              ) : null}
               <li>
                 <Link href="/#timeline">Step Journey</Link>
               </li>

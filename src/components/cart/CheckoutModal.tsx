@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
@@ -1110,6 +1111,10 @@ function SuccessPanel({
           receipt will be sent to{" "}
           <span className="font-medium text-ink">{email}</span>.
         </p>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-foreground">
+          Want more for your brand? Browse the store for extra merch, packaging,
+          and gifts.
+        </p>
       </motion.div>
 
       <motion.div
@@ -1134,13 +1139,22 @@ function SuccessPanel({
         Be Bold. Be Seen. Be Known.
       </p>
 
-      <button
-        type="button"
-        onClick={onDone}
-        className="relative mt-6 w-full bg-brand-purple px-4 py-3.5 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
-      >
-        Continue shopping
-      </button>
+      <div className="relative mt-6 space-y-3">
+        <Link
+          href="/store"
+          onClick={onDone}
+          className="block w-full bg-brand-purple px-4 py-3.5 font-ui text-sm font-semibold text-white hover:bg-brand-yellow hover:text-brand-black"
+        >
+          Browse the store
+        </Link>
+        <button
+          type="button"
+          onClick={onDone}
+          className="w-full border border-border px-4 py-3 font-ui text-sm font-medium text-foreground hover:border-brand-purple"
+        >
+          Close
+        </button>
+      </div>
     </div>
   );
 }

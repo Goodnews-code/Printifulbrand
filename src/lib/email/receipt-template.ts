@@ -42,17 +42,16 @@ function itemRows(items: OrderItemSnapshot[]): string {
 
   return items
     .map((item) => {
-      const meta = [
-        item.size && item.size !== "One Size" ? item.size : null,
+      const sizeMeta =
+        item.size && item.size !== "One Size" ? item.size : null;
+      const colorMeta =
         item.color && item.color !== "—" && item.color !== "Default"
           ? item.color
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" · ");
+          : null;
+      const meta = [sizeMeta, colorMeta].filter(Boolean).join("\n");
       const name = escapeHtml(item.name);
       const metaHtml = meta
-        ? `<div style="margin-top:4px;font-size:12px;color:${BRAND.muted};">${escapeHtml(meta)}</div>`
+        ? `<div style="margin-top:4px;font-size:12px;color:${BRAND.muted};white-space:pre-line;">${escapeHtml(meta)}</div>`
         : "";
       return `
         <tr>
@@ -99,18 +98,24 @@ export function renderOrderReceiptText(data: ReceiptEmailData): string {
   if (data.items?.length) {
     lines.push("Items:");
     for (const item of data.items) {
-      const meta = [
-        item.size && item.size !== "One Size" ? item.size : null,
+      const size =
+        item.size && item.size !== "One Size" ? item.size : null;
+      const color =
         item.color && item.color !== "—" && item.color !== "Default"
           ? item.color
-          : null,
-      ]
+          : null;
+      const inlineMeta = [size, color && !color.includes("\n") ? color : null]
         .filter(Boolean)
         .join(" · ");
-      const label = meta ? `${item.name} (${meta})` : item.name;
+      const label = inlineMeta ? `${item.name} (${inlineMeta})` : item.name;
       lines.push(
         `- ${label} × ${item.qty} — ${formatNaira(item.price * item.qty)}`,
       );
+      if (color && color.includes("\n")) {
+        for (const line of color.split("\n")) {
+          if (line.trim()) lines.push(`  ${line.trim()}`);
+        }
+      }
     }
     const itemsSubtotal = data.items.reduce(
       (sum, item) => sum + item.price * item.qty,
