@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useTheme } from "@/context/ThemeContext";
 import { resolveSmallBusinessPackage } from "@/lib/packages";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const LINKS = [
 /** Package landing navbar — lighter, offer-focused, distinct from the main site nav. */
 export function PackageNavbar() {
   const { itemCount, openCart } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const { settings } = useSettings();
   const pkg = resolveSmallBusinessPackage(settings);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -83,6 +85,15 @@ export function PackageNavbar() {
           >
             Store
           </Link>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex size-10 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-brand-yellow hover:text-brand-yellow"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           {pkg.enabled ? (
             <a
