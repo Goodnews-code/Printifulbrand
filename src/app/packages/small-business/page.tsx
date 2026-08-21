@@ -24,7 +24,10 @@ export default function SmallBusinessPackagePage() {
     <main className="bg-surface text-foreground">
       <SmallBusinessPackageHero />
 
-      <section className="border-b border-border bg-surface-alt py-16 sm:py-20">
+      <section
+        id="includes"
+        className="scroll-mt-20 border-b border-border bg-surface-alt py-16 sm:py-20"
+      >
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <h2 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">
@@ -61,7 +64,10 @@ export default function SmallBusinessPackagePage() {
         </div>
       </section>
 
-      <section className="border-b border-border py-16 sm:py-20">
+      <section
+        id="for"
+        className="scroll-mt-20 border-b border-border py-16 sm:py-20"
+      >
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <h2 className="font-heading text-3xl font-semibold text-foreground sm:text-4xl">

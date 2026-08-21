@@ -16,7 +16,7 @@ const DEFAULTS: SiteSettings = {
     "Printiful crafts premium customized merch on heavyweight luxury blanks.",
   hero_headline: "Be Bold! Be Seen!! Be Known!!!",
   hero_subtext:
-    "Heavyweight luxury blanks. High-fidelity Direct-to-Merch prints, industrial embroidery, and curated wear designed to endure.",
+    "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
   primary_color: "#53009B",
   secondary_color: "#0D0015",
   accent_color: "#FFFF00",

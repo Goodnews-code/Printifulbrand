@@ -99,7 +99,7 @@ export function Hero() {
           <FadeIn delay={0.34}>
             <p className="mt-6 max-w-lg font-sans text-base leading-relaxed text-muted sm:text-lg">
               {settings.hero_subtext ||
-                "Printiful helps announce you and your brand even when you don't say a word — premium personalized items and branded merchandise."}
+                "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all."}
             </p>
           </FadeIn>
           <FadeIn delay={0.48} className="mt-8 flex flex-wrap gap-3">
