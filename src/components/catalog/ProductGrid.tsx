@@ -14,6 +14,8 @@ interface ProductGridProps {
   showSearch?: boolean;
   showSort?: boolean;
   emptyMessage?: string;
+  /** Cap how many products render (all breakpoints) */
+  limit?: number;
   /** Hide items beyond this count below the `md` breakpoint */
   mobileLimit?: number;
   reviewSummaries?: Record<number, ProductReviewSummary>;
@@ -30,6 +32,7 @@ export function ProductGrid({
   showSearch = false,
   showSort = false,
   emptyMessage = "No products found.",
+  limit,
   mobileLimit,
   reviewSummaries,
   onReviewSummaryChange,
@@ -65,6 +68,9 @@ export function ProductGrid({
 
     return list;
   }, [products, filter, query, sort]);
+
+  const visible =
+    limit != null ? filtered.slice(0, Math.max(0, limit)) : filtered;
 
   return (
     <div>
@@ -123,11 +129,11 @@ export function ProductGrid({
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {visible.length === 0 ? (
         <p className="py-16 text-center font-ui text-muted">{emptyMessage}</p>
       ) : (
         <motion.div
-          key={`${filter}-${query}-${sort}`}
+          key={`${filter}-${query}-${sort}-${limit ?? "all"}`}
           className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           initial="hidden"
           animate="show"
@@ -138,7 +144,7 @@ export function ProductGrid({
             },
           }}
         >
-          {filtered.map((product, index) => (
+          {visible.map((product, index) => (
             <motion.div
               key={product.id}
               className={cn(
