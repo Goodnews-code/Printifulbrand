@@ -4,8 +4,9 @@ import Link from "next/link";
 import { formatNaira } from "@/lib/utils";
 import { useSettings } from "@/context/SettingsContext";
 import { resolveSmallBusinessPackage } from "@/lib/packages";
+import { Reveal } from "@/components/motion/Reveal";
 
-/** Soft home promo — sits below BrandValues so it never crowds the hero. */
+/** Closing home link into the Small Business Package — mirrors package → store. */
 export function PackagePromoStrip() {
   const { settings } = useSettings();
   const pkg = resolveSmallBusinessPackage(settings);
@@ -13,20 +14,23 @@ export function PackagePromoStrip() {
   if (!pkg.enabled) return null;
 
   return (
-    <section className="border-y border-border bg-surface-alt">
-      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 px-4 py-6 sm:flex-row sm:items-center sm:px-6 lg:px-8">
-        <p className="text-sm text-foreground sm:text-base">
-          <span className="font-semibold text-brand-purple">{pkg.title}</span>
-          {" — "}
-          mailers, thank you cards &amp; 2 custom tees for{" "}
-          <span className="font-semibold">{formatNaira(pkg.price)}</span>
-        </p>
-        <Link
-          href="/packages/small-business"
-          className="shrink-0 text-sm font-semibold text-brand-purple underline-offset-4 hover:underline dark:text-brand-yellow"
-        >
-          View package
-        </Link>
+    <section className="border-t border-border py-14 sm:py-16">
+      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+        <Reveal>
+          <h2 className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            Starting a brand from scratch?
+          </h2>
+          <p className="mt-3 text-muted">
+            The {pkg.title} bundles poly mailers, thank you cards, and 2 custom
+            tees in one checkout at {formatNaira(pkg.price)}.
+          </p>
+          <Link
+            href="/packages/small-business"
+            className="mt-6 inline-flex rounded-full border border-brand-purple px-7 py-3.5 text-sm font-semibold text-brand-purple transition hover:bg-brand-purple hover:text-white dark:border-brand-yellow dark:text-brand-yellow dark:hover:bg-brand-yellow dark:hover:text-brand-black"
+          >
+            View package
+          </Link>
+        </Reveal>
       </div>
     </section>
   );

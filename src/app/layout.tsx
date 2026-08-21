@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shopprintiful.com"),
   title: "Printiful | Premium Custom wear & High-Fidelity Printing",
   description:
-    "Printiful crafts premium customized merch on heavyweight luxury blanks. High-fidelity Direct-to-Merch prints, industrial embroidery, and curated wear designed to endure.",
+    "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
   keywords: [
     "custom wear",
     "DTG printing",
@@ -57,9 +57,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Printiful",
-    title: "Printiful | Premium Custom wear & Printing",
+    title: "Printiful | Be Bold! Be Seen!! Be Known!!!",
     description:
-      "Heavyweight luxury blanks. High-fidelity DTG prints & industrial embroidery. Custom wear designed to endure.",
+      "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
     url: "https://shopprintiful.com/",
     images: [
       {
@@ -73,9 +73,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     site: "@Printiful",
-    title: "Printiful | Premium Custom wear & Printing",
+    title: "Printiful | Be Bold! Be Seen!! Be Known!!!",
     description:
-      "Heavyweight luxury blanks. High-fidelity DTG prints & industrial embroidery.",
+      "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
     images: [
       {
         url: "/assets/logo.svg",

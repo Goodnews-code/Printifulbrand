@@ -84,12 +84,12 @@ export default function HomePage() {
       <MobileHandHint />
       <Hero />
       <BrandValues />
-      <PackagePromoStrip />
       <ShowcaseCatalog />
       <Testimonials />
       <Timeline />
       <InquiryForm />
       <CareGuide />
+      <PackagePromoStrip />
     </>
   );
 }

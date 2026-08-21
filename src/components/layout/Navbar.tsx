@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  Moon,
-  ShoppingBag,
-  Sun,
-  X,
-} from "lucide-react";
+import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -18,22 +12,6 @@ import { cn } from "@/lib/utils";
 const LOGO = "/assets/logo%20with%20printiful.svg";
 
 type NavId = "home" | "store" | "timeline" | "inquiry";
-
-const navLinkClass = (active: boolean) =>
-  cn(
-    "font-ui text-sm font-medium transition-colors",
-    active
-      ? "no-hover bg-brand-purple px-3 py-1.5 text-white dark:bg-brand-yellow dark:text-brand-black"
-      : "px-3 py-1.5 text-foreground/80 hover:-translate-y-0.5",
-  );
-
-const navLinkClassMobile = (active: boolean) =>
-  cn(
-    "inline-flex font-ui text-base font-medium transition-colors",
-    active
-      ? "no-hover bg-brand-purple px-3 py-2 text-white dark:bg-brand-yellow dark:text-brand-black"
-      : "px-3 py-2 text-foreground",
-  );
 
 export function Navbar() {
   const pathname = usePathname();
@@ -46,9 +24,11 @@ export function Navbar() {
 
   const isHome = pathname === "/";
   const isStore = pathname === "/store" || pathname.startsWith("/store/");
+  /** Home uses the package-style chrome (fixed, purple on scroll). */
+  const solidChrome = !isHome || scrolled || mobileOpen;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -65,7 +45,15 @@ export function Navbar() {
     return () => window.removeEventListener("hashchange", syncHash);
   }, [pathname]);
 
-  /** Prefer section hash on home; otherwise mark the current route. */
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
   const activeId: NavId = (() => {
     if (isStore) return "store";
     if (!isHome) return "home";
@@ -89,136 +77,237 @@ export function Navbar() {
     },
   ];
 
+  const lightOnDark = isHome && solidChrome;
+
   return (
-    <motion.header
-      className={cn(
-        "sticky top-0 z-50 border-b border-border backdrop-blur-md transition-shadow",
-        scrolled ? "shadow-sm" : "",
-      )}
-      style={{ backgroundColor: "var(--navbar)" }}
-      initial={reduce ? false : { y: -16, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0" aria-label="Printiful home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={LOGO}
-            alt="Printiful"
-            className="h-9 w-auto dark:brightness-0 dark:invert"
-          />
-        </Link>
-
-        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary">
-          {links.map((link) => {
-            const active = activeId === link.id;
-            return (
-              <Link
-                key={link.id}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={navLinkClass(active)}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
-          <Link
-            href={isHome ? "#inquiry" : "/#inquiry"}
-            className="hidden bg-brand-purple px-4 py-2.5 font-ui text-sm font-semibold text-white sm:inline-flex"
-          >
-            Request Quote
+    <>
+      <motion.header
+        className={cn(
+          "z-50 transition-[background-color,box-shadow,border-color,backdrop-filter] duration-500",
+          isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
+          isHome
+            ? solidChrome
+              ? "border-b border-white/10 bg-brand-purple shadow-md"
+              : "border-b border-transparent bg-transparent"
+            : cn(
+                "border-b border-border backdrop-blur-md",
+                scrolled ? "shadow-sm" : "",
+              ),
+        )}
+        style={isHome ? undefined : { backgroundColor: "var(--navbar)" }}
+        initial={reduce ? false : { y: -16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div
+          className={cn(
+            "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8",
+            isHome ? "h-[94px]" : "h-16",
+          )}
+        >
+          <Link href="/" className="shrink-0" aria-label="Printiful home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={LOGO}
+              alt="Printiful"
+              className={cn(
+                "h-9 w-auto transition",
+                lightOnDark
+                  ? "brightness-0 invert"
+                  : "dark:brightness-0 dark:invert",
+              )}
+            />
           </Link>
 
-          <button
-            type="button"
-            onClick={openCart}
-            className="relative inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground"
-            aria-label="Open cart"
-          >
-            <ShoppingBag size={18} />
-            <AnimatePresence>
-              {itemCount > 0 && (
-                <motion.span
-                  key={itemCount}
-                  initial={reduce ? false : { scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1 font-ui text-[10px] font-bold text-brand-black"
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+            {links.map((link) => {
+              const active = activeId === link.id;
+              return (
+                <Link
+                  key={link.id}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "px-3 py-1.5 font-ui text-sm font-medium transition-colors",
+                    lightOnDark
+                      ? active
+                        ? "text-brand-yellow"
+                        : "text-white/85 hover:text-brand-yellow"
+                      : active
+                        ? "no-hover bg-brand-purple px-3 py-1.5 text-white dark:bg-brand-yellow dark:text-brand-black"
+                        : "text-foreground/80 hover:-translate-y-0.5",
+                  )}
                 >
-                  {itemCount}
-                </motion.span>
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={cn(
+                "inline-flex size-10 items-center justify-center rounded-full border transition",
+                lightOnDark
+                  ? "border-white/30 text-white hover:border-brand-yellow hover:text-brand-yellow"
+                  : "border-border text-foreground",
               )}
-            </AnimatePresence>
-          </button>
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
-          <button
-            type="button"
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
-      </div>
+            <Link
+              href={isHome ? "#inquiry" : "/#inquiry"}
+              className={cn(
+                "hidden px-4 py-2.5 font-ui text-sm font-semibold sm:inline-flex",
+                lightOnDark
+                  ? "rounded-full bg-brand-yellow font-bold uppercase tracking-wide text-brand-black hover:bg-white"
+                  : "bg-brand-purple text-white",
+              )}
+            >
+              {lightOnDark ? "Request quote" : "Request Quote"}
+            </Link>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            key="mobile-nav"
-            initial={reduce ? false : { height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={reduce ? undefined : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-border bg-surface md:hidden"
-          >
-            <nav className="flex flex-col gap-2 px-4 py-4" aria-label="Mobile">
-              {links.map((link, i) => {
-                const active = activeId === link.id;
-                return (
-                  <motion.div
-                    key={link.id}
-                    initial={reduce ? false : { opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.04 * i }}
+            <button
+              type="button"
+              onClick={openCart}
+              className={cn(
+                "relative inline-flex size-10 items-center justify-center rounded-full border transition",
+                lightOnDark
+                  ? "border-white/30 text-white hover:border-brand-yellow hover:text-brand-yellow"
+                  : "border-border text-foreground",
+              )}
+              aria-label="Open cart"
+            >
+              <ShoppingBag size={18} />
+              <AnimatePresence>
+                {itemCount > 0 && (
+                  <motion.span
+                    key={itemCount}
+                    initial={reduce ? false : { scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1 font-ui text-[10px] font-bold text-brand-black"
                   >
-                    <Link
-                      href={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      aria-current={active ? "page" : undefined}
-                      className={navLinkClassMobile(active)}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-              <Link
-                href={isHome ? "#inquiry" : "/#inquiry"}
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 inline-flex justify-center bg-brand-purple px-4 py-3 font-ui text-sm font-semibold text-white"
+                    {itemCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+
+            <button
+              type="button"
+              className={cn(
+                "inline-flex size-10 items-center justify-center rounded-full border md:hidden",
+                lightOnDark
+                  ? "border-white/30 text-white"
+                  : "border-border text-foreground",
+              )}
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+      </motion.header>
+
+      {isHome ? <div className="h-[94px]" aria-hidden /> : null}
+
+      <AnimatePresence mode="wait">
+        {mobileOpen ? (
+          <>
+            <motion.button
+              key="home-menu-backdrop"
+              type="button"
+              aria-label="Close menu"
+              className="fixed inset-0 z-[45] bg-brand-black/45 backdrop-blur-md md:hidden"
+              initial={reduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              key="home-mobile-nav"
+              className={cn(
+                "fixed left-1/2 z-[48] w-[min(100%-1.5rem,325px)] overflow-hidden rounded-bl-[50%] rounded-br-[50%] border border-t-0 border-white/10 bg-brand-purple/95 shadow-xl backdrop-blur-xl md:hidden",
+                isHome ? "top-[94px]" : "top-16",
+              )}
+              style={{ transformOrigin: "top center" }}
+              initial={
+                reduce
+                  ? false
+                  : { x: "-50%", scaleY: 0.35, opacity: 0, y: -12 }
+              }
+              animate={{ x: "-50%", scaleY: 1, opacity: 1, y: 0 }}
+              exit={
+                reduce
+                  ? undefined
+                  : { x: "-50%", scaleY: 0.45, opacity: 0, y: -8 }
+              }
+              transition={{
+                duration: 0.95,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              <nav
+                className="flex min-h-[min(70vh,490px)] flex-col items-center justify-center gap-5 px-5 py-10 text-center"
+                aria-label="Mobile"
               >
-                Request Quote
-              </Link>
-            </nav>
-          </motion.div>
-        )}
+                {links.map((link, i) => {
+                  const active = activeId === link.id;
+                  return (
+                    <motion.div
+                      key={link.id}
+                      initial={reduce ? false : { opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: 0.28 + 0.12 * i,
+                        duration: 0.55,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      <Link
+                        href={link.href}
+                        onClick={() => setMobileOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "px-3 py-2 font-ui text-xl font-medium leading-snug sm:text-2xl",
+                          active ? "text-brand-yellow" : "text-white",
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+                <motion.div
+                  initial={reduce ? false : { opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.7,
+                    duration: 0.55,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <Link
+                    href={isHome ? "#inquiry" : "/#inquiry"}
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-2 inline-flex min-h-14 items-center justify-center rounded-full bg-brand-yellow px-8 py-4 font-ui text-sm font-bold uppercase tracking-wide text-brand-black"
+                  >
+                    Request quote
+                  </Link>
+                </motion.div>
+              </nav>
+            </motion.div>
+          </>
+        ) : null}
       </AnimatePresence>
-    </motion.header>
+    </>
   );
 }
