@@ -8,7 +8,7 @@ export const SMALL_BUSINESS_PACKAGE_PRODUCT_ID = -55000;
 
 export const SMALL_BUSINESS_PACKAGE_PRICE = 55_000;
 
-export const SMALL_BUSINESS_PACKAGE_IMAGE = "/assets/Image/Customized nylon.jpeg";
+export const SMALL_BUSINESS_PACKAGE_IMAGE = "/assets/Image/poly-bag.jpg";
 
 export const SMALL_BUSINESS_PACKAGE_CATEGORY = "Packages";
 
@@ -26,7 +26,7 @@ export const PACKAGE_SETTING_KEYS = {
 export const SMALL_BUSINESS_PACKAGE_INCLUDES = [
   {
     label: "100 pieces of medium poly mailer bags",
-    image: "/assets/Image/Customized nylon.jpeg",
+    image: "/assets/Image/poly-bag.jpg",
     alt: "Medium poly mailer bags",
   },
   {
