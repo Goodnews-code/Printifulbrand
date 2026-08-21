@@ -8,16 +8,20 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
 const HERO_IMAGES = [
   {
-    src: "/assets/Image/Mouse.webp",
+    src: "/assets/Image/Mouse.png",
     alt: "Branded Mouse",
     label: "[ PRINTIFUL ARCHIVE // BRANDED MOUSE ]",
-    className: "h-[280px] sm:h-[360px] lg:h-[480px]",
+    className: "aspect-[17/10] h-auto w-full min-h-[220px] sm:min-h-[280px] lg:min-h-[340px]",
+    imageClassName: "object-cover object-center",
+    sizes: "(max-width: 1024px) 55vw, 640px",
   },
   {
     src: "/assets/Image/Love won tee.jpeg",
     alt: "Love Won Tee",
     label: "[ PRINTIFUL ARCHIVE // LOVE WON PREMIUM TEE ]",
-    className: "mt-8 h-[240px] sm:h-[320px] lg:mt-10 lg:h-[400px]",
+    className: "mt-8 aspect-[3/4] h-auto w-full sm:mt-10",
+    imageClassName: "object-cover object-center",
+    sizes: "(max-width: 1024px) 45vw, 320px",
   },
 ] as const;
 
@@ -73,8 +77,9 @@ export function Hero() {
                     alt={image.alt}
                     fillCover
                     priority
-                    sizes="(max-width: 1024px) 45vw, 320px"
-                    className="grayscale-[15%] transition-[transform,filter] duration-500 group-hover:scale-[1.03] group-hover:grayscale-0"
+                    quality={90}
+                    sizes={image.sizes}
+                    className={`transition-transform duration-500 group-hover:scale-[1.02] ${image.imageClassName}`}
                   />
                   <figcaption className="pointer-events-none absolute bottom-3 left-3 bg-black/75 px-2 py-1 font-ui text-[0.6rem] tracking-wide text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     {image.label}

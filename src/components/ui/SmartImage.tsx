@@ -34,9 +34,10 @@ export function SmartImage({
 }: SmartImageProps) {
   const resolved = normalizeSrc(src);
   const isSvg = resolved.toLowerCase().includes(".svg");
+  const hasObjectFit = Boolean(className && /\bobject-/.test(className));
   const common = {
     alt,
-    className: cn(fillCover ? "object-cover" : "", className),
+    className: cn(fillCover && !hasObjectFit ? "object-cover" : "", className),
     sizes:
       sizes ??
       (fillCover
