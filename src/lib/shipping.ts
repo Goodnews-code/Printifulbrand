@@ -2,6 +2,17 @@
 
 export type ShippingRegionId = "mainland" | "island" | "outside-lagos";
 
+export const PICKUP_LOCATION = {
+  id: "church-bus-stop-ipaja",
+  name: "Church bus stop, Ipaja, Lagos Mainland",
+  addressLine: "Church bus stop, Ipaja, Lagos Mainland",
+  city: "Ipaja",
+  state: "Lagos Mainland",
+  fee: 0,
+} as const;
+
+export type FulfillmentMethod = "delivery" | "pickup";
+
 export type ShippingArea = {
   id: string;
   name: string;
@@ -157,6 +168,20 @@ export type ShippingZoneSelection = {
   /** Synced state / region line for the shipping address */
   state: string;
 };
+
+export function getPickupZone(): ShippingZoneSelection {
+  return {
+    regionId: "mainland",
+    regionLabel: "Pickup",
+    areaId: PICKUP_LOCATION.id,
+    areaName: PICKUP_LOCATION.name,
+    fee: PICKUP_LOCATION.fee,
+    label: `Pickup · ${PICKUP_LOCATION.name}`,
+    note: "Collect your order in person when it is ready. No delivery fee.",
+    city: PICKUP_LOCATION.city,
+    state: PICKUP_LOCATION.state,
+  };
+}
 
 export function getShippingRegion(
   regionId?: string | null,
@@ -391,10 +416,13 @@ export function formatShippingAddress(address: OrderShippingAddress): string {
 
 /** Flat list used by shipping policy page. */
 export function shippingFeeBullets(): string[] {
-  return SHIPPING_REGIONS.flatMap((region) => [
-    `${region.label}:`,
-    ...region.areas.map(
-      (a) => `  ${a.name} — ₦${a.fee.toLocaleString("en-NG")}`,
-    ),
-  ]);
+  return [
+    `Pickup · ${PICKUP_LOCATION.name} — Free`,
+    ...SHIPPING_REGIONS.flatMap((region) => [
+      `${region.label}:`,
+      ...region.areas.map(
+        (a) => `  ${a.name} — ₦${a.fee.toLocaleString("en-NG")}`,
+      ),
+    ]),
+  ];
 }

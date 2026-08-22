@@ -1,6 +1,11 @@
 import { sendOrderReceipt } from "@/lib/email/send-receipt";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import {
+  fetchOrderMilestones,
+  formatTelegramMilestoneBlock,
+  type OrderMilestones,
+} from "@/lib/notify/telegram-milestones";
 import { sendTelegramMessage } from "@/lib/notify/telegram";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   formatShippingAddress,
   formatBillingAddress,
@@ -49,15 +54,27 @@ export type ProcessPaidOptions = {
   forceNotify?: boolean;
 };
 
-function buildTelegramText(order: PaidOrderInput): string {
-  const lines = [
+export function buildTelegramText(
+  order: PaidOrderInput,
+  milestones?: OrderMilestones,
+): string {
+  const lines: string[] = [];
+
+  if (milestones) {
+    const milestoneLines = formatTelegramMilestoneBlock(milestones);
+    if (milestoneLines.length > 0) {
+      lines.push(...milestoneLines, "");
+    }
+  }
+
+  lines.push(
     "New Printiful order",
     "",
     `Ref: ${order.reference}`,
     `Amount: ${formatNaira(order.amountNaira)} ${order.currency}`,
     `Customer: ${order.customer.name}`,
     `Email: ${order.customer.email}`,
-  ];
+  );
 
   if (order.customer.phone) {
     lines.push(`Phone: ${order.customer.phone}`);
@@ -203,8 +220,9 @@ export async function processPaidOrder(
   let receiptSent = false;
   let notifyError: string | undefined;
   if (!alreadySuccess || options.forceNotify) {
+    const milestones = await fetchOrderMilestones(supabase, input.items);
     const [telegram, emailOk] = await Promise.all([
-      sendTelegramMessage(buildTelegramText(input)),
+      sendTelegramMessage(buildTelegramText(input, milestones)),
       sendOrderReceipt(input),
     ]);
     notified = telegram.ok;

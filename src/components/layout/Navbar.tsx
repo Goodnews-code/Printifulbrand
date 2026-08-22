@@ -135,14 +135,14 @@ export function Navbar() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "px-3 py-1.5 font-ui text-sm font-medium transition-colors",
+                    "font-ui text-sm font-medium transition-colors",
                     lightOnDark
                       ? active
-                        ? "text-brand-yellow"
-                        : "text-white/85 hover:text-brand-yellow"
+                        ? "inline-flex items-center justify-center rounded-full bg-white/15 px-4 py-1.5 text-center text-brand-yellow"
+                        : "px-3 py-1.5 text-white/85 hover:text-brand-yellow"
                       : active
-                        ? "no-hover bg-brand-purple px-3 py-1.5 text-white dark:bg-brand-yellow dark:text-brand-black"
-                        : "text-foreground/80 hover:-translate-y-0.5",
+                        ? "no-hover inline-flex items-center justify-center rounded-full bg-brand-purple px-4 py-1.5 text-center text-white dark:bg-brand-yellow dark:text-brand-black"
+                        : "px-3 py-1.5 text-foreground/80 hover:-translate-y-0.5",
                   )}
                 >
                   {link.label}
@@ -271,6 +271,7 @@ export function Navbar() {
                   return (
                     <motion.div
                       key={link.id}
+                      className="flex w-full justify-center"
                       initial={reduce ? false : { opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
@@ -284,8 +285,10 @@ export function Navbar() {
                         onClick={() => setMobileOpen(false)}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "px-3 py-2 font-ui text-xl font-medium leading-snug sm:text-2xl",
-                          active ? "text-brand-yellow" : "text-white",
+                          "inline-flex items-center justify-center px-4 py-2 text-center font-ui text-xl font-medium leading-snug sm:text-2xl",
+                          active
+                            ? "rounded-full bg-white/15 text-brand-yellow"
+                            : "text-white",
                         )}
                       >
                         {link.label}

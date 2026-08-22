@@ -8,12 +8,15 @@ import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import {
   NIGERIA_STATES,
+  getPickupZone,
   getShippingRegion,
   getShippingZone,
   getOutsideLagosAreasForState,
   formatShippingLines,
   formatBillingLines,
   billingFromShipping,
+  PICKUP_LOCATION,
+  type FulfillmentMethod,
   type ShippingRegionId,
 } from "@/lib/shipping";
 import { formatNaira, cn } from "@/lib/utils";
@@ -103,6 +106,8 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
   const [addressState, setAddressState] = useState("");
+  const [fulfillmentMethod, setFulfillmentMethod] =
+    useState<FulfillmentMethod>("delivery");
   const [lagosSide, setLagosSide] = useState<LagosSide>("");
   const [shippingAreaId, setShippingAreaId] = useState("");
   const [postalCode, setPostalCode] = useState("");
@@ -124,13 +129,16 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
   const reduce = useReducedMotion();
 
+  const isPickup = fulfillmentMethod === "pickup";
   const isLagos = addressState === "Lagos";
 
-  const shippingRegionId: ShippingRegionId | "" = isLagos
-    ? lagosSide
-    : addressState
-      ? "outside-lagos"
-      : "";
+  const shippingRegionId: ShippingRegionId | "" = isPickup
+    ? ""
+    : isLagos
+      ? lagosSide
+      : addressState
+        ? "outside-lagos"
+        : "";
 
   const availableAreas = useMemo(() => {
     if (isLagos) {
@@ -146,8 +154,11 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     [shippingRegionId],
   );
   const shippingZone = useMemo(
-    () => getShippingZone(shippingRegionId, shippingAreaId),
-    [shippingRegionId, shippingAreaId],
+    () =>
+      isPickup
+        ? getPickupZone()
+        : getShippingZone(shippingRegionId, shippingAreaId),
+    [isPickup, shippingRegionId, shippingAreaId],
   );
   const deliveryFee = shippingZone?.fee ?? 0;
   const orderTotal = subtotal + deliveryFee;
@@ -157,6 +168,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   useEffect(() => {
     if (!open) {
       setStep(1);
+      setFulfillmentMethod("delivery");
       setSubmitting(false);
       setConfirming(false);
       setFormError(null);
@@ -180,8 +192,10 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   };
 
   const shippingSnapshot = () => ({
-    line1: line1.trim(),
-    line2: line2.trim() || undefined,
+    line1: isPickup
+      ? PICKUP_LOCATION.addressLine
+      : line1.trim(),
+    line2: isPickup ? line2.trim() || undefined : line2.trim() || undefined,
     city: shippingZone?.city || "",
     state: shippingZone?.state || addressState || "",
     postalCode: postalCode.trim() || undefined,
@@ -209,6 +223,11 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   };
 
   const validateContactAddress = () => {
+    if (!name.trim() || !email.trim() || !phone.trim() || !country.trim()) {
+      setFormError("Please fill all required contact fields.");
+      return false;
+    }
+    if (isPickup) return true;
     if (
       !hasCompleteContactAddress({
         name,
@@ -229,6 +248,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   };
 
   const validateShippingMethod = () => {
+    if (isPickup) return true;
     if (outsideLagosUnsupported) {
       setFormError(
         "We don't currently deliver to this state. Please contact shopprintiful@gmail.com.",
@@ -597,68 +617,174 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
 
                     <div className="border-t border-border pt-4">
                       <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
-                        Delivery address
+                        How would you like to receive your order?
                       </p>
-                      <div className="space-y-4">
-                        <Field
-                          label="Street address *"
-                          value={line1}
-                          onChange={setLine1}
-                          placeholder="House number and street"
-                          required
-                          autoComplete="street-address"
-                        />
-                        <Field
-                          label="Apartment, suite, landmark, etc."
-                          value={line2}
-                          onChange={setLine2}
-                          placeholder="Optional"
-                          autoComplete="address-line2"
-                        />
-                        <label className="block space-y-1.5">
-                          <span className="font-ui text-sm font-medium">
-                            State *
-                          </span>
-                          <select
-                            required
-                            value={addressState}
-                            onChange={(e) => {
-                              setAddressState(e.target.value);
-                              setLagosSide("");
-                              setShippingAreaId("");
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {(
+                          [
+                            {
+                              id: "delivery" as const,
+                              label: "Delivery",
+                              hint: "Ship to your address",
+                            },
+                            {
+                              id: "pickup" as const,
+                              label: "Pickup (Free)",
+                              hint: PICKUP_LOCATION.name,
+                            },
+                          ] as const
+                        ).map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              setFulfillmentMethod(option.id);
+                              if (option.id === "pickup") {
+                                setAddressState("");
+                                setLagosSide("");
+                                setShippingAreaId("");
+                              }
                             }}
-                            autoComplete="address-level1"
-                            className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                            className={cn(
+                              "flex w-full items-start gap-3 border px-3 py-3 text-left transition-colors",
+                              fulfillmentMethod === option.id
+                                ? "border-brand-purple bg-brand-purple/5 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                                : "border-border bg-surface hover:border-brand-purple/50",
+                            )}
                           >
-                            <option value="">Select state</option>
-                            {NIGERIA_STATES.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <Field
-                            label="Postal / ZIP code"
-                            value={postalCode}
-                            onChange={setPostalCode}
-                            placeholder="Optional"
-                            autoComplete="postal-code"
-                          />
-                          <Field
-                            label="Country *"
-                            value={country}
-                            onChange={setCountry}
-                            placeholder="Nigeria"
-                            required
-                            autoComplete="country-name"
-                          />
-                        </div>
+                            <span
+                              className={cn(
+                                "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
+                                fulfillmentMethod === option.id
+                                  ? "border-brand-purple bg-brand-purple dark:border-brand-yellow dark:bg-brand-yellow"
+                                  : "border-border",
+                              )}
+                            >
+                              {fulfillmentMethod === option.id && (
+                                <span className="size-1.5 rounded-full bg-white dark:bg-brand-black" />
+                              )}
+                            </span>
+                            <span>
+                              <span className="block font-ui text-sm font-medium">
+                                {option.label}
+                              </span>
+                              <span className="mt-0.5 block font-ui text-xs text-muted">
+                                {option.hint}
+                              </span>
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     </div>
 
-                    {addressState ? (
+                    {isPickup ? (
+                      <div className="border border-border bg-surface-alt px-4 py-4">
+                        <p className="font-ui text-sm font-semibold text-foreground">
+                          Pickup location
+                        </p>
+                        <p className="mt-1 font-ui text-sm text-muted">
+                          {PICKUP_LOCATION.addressLine}
+                        </p>
+                        <p className="mt-2 font-ui text-xs leading-relaxed text-muted">
+                          {shippingZone?.note}
+                        </p>
+                        <Field
+                          label="Order note (optional)"
+                          value={line2}
+                          onChange={setLine2}
+                          placeholder="Any pickup instructions for the team"
+                        />
+                        <Field
+                          label="Country *"
+                          value={country}
+                          onChange={setCountry}
+                          placeholder="Nigeria"
+                          required
+                          autoComplete="country-name"
+                        />
+                      </div>
+                    ) : (
+                      <div className="border-t border-border pt-4">
+                        <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
+                          Delivery address
+                        </p>
+                        <div className="space-y-4">
+                          <Field
+                            label="Street address *"
+                            value={line1}
+                            onChange={setLine1}
+                            placeholder="House number and street"
+                            required
+                            autoComplete="street-address"
+                          />
+                          <Field
+                            label="Apartment, suite, landmark, etc."
+                            value={line2}
+                            onChange={setLine2}
+                            placeholder="Optional"
+                            autoComplete="address-line2"
+                          />
+                          <label className="block space-y-1.5">
+                            <span className="font-ui text-sm font-medium">
+                              State *
+                            </span>
+                            <select
+                              required
+                              value={addressState}
+                              onChange={(e) => {
+                                setAddressState(e.target.value);
+                                setLagosSide("");
+                                setShippingAreaId("");
+                              }}
+                              autoComplete="address-level1"
+                              className="w-full border border-border bg-surface px-3 py-2.5 font-sans text-sm text-foreground outline-none transition-colors focus:border-brand-purple dark:focus:border-brand-yellow"
+                            >
+                              <option value="">Select state</option>
+                              {NIGERIA_STATES.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <Field
+                              label="Postal / ZIP code"
+                              value={postalCode}
+                              onChange={setPostalCode}
+                              placeholder="Optional"
+                              autoComplete="postal-code"
+                            />
+                            <Field
+                              label="Country *"
+                              value={country}
+                              onChange={setCountry}
+                              placeholder="Nigeria"
+                              required
+                              autoComplete="country-name"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {isPickup ? (
+                      <div className="border-t border-border pt-4">
+                        <div className="border border-border bg-surface-alt px-3 py-3 text-sm">
+                          <div className="flex justify-between gap-3 font-ui">
+                            <span className="text-muted">
+                              {shippingZone?.label}
+                            </span>
+                            <span className="font-semibold text-brand-purple dark:text-brand-yellow">
+                              Free
+                            </span>
+                          </div>
+                          <p className="mt-2 font-ui text-xs text-muted">
+                            Order total: {formatNaira(orderTotal)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : addressState ? (
                       <div className="border-t border-border pt-4">
                         <p className="mb-3 font-ui text-xs font-semibold uppercase tracking-wider text-muted">
                           Shipping payment details
