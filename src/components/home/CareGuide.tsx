@@ -52,7 +52,7 @@ export function CareGuide() {
             return (
               <StaggerItem
                 key={item.title}
-                className="group border border-border bg-surface p-5 text-center transition-[transform,border-color] duration-300 hover:-translate-y-1 hover:border-brand-purple dark:hover:border-brand-yellow"
+                className="group border border-border bg-surface p-5 text-center shadow-[0_4px_14px_rgba(13,0,21,0.08)] transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1 hover:border-brand-purple hover:shadow-[0_8px_20px_rgba(13,0,21,0.12)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.35)] dark:hover:border-brand-yellow dark:hover:shadow-[0_8px_22px_rgba(0,0,0,0.45)]"
               >
                 <Icon
                   className="mx-auto text-brand-purple transition-transform duration-300 group-hover:scale-110 dark:text-brand-yellow"

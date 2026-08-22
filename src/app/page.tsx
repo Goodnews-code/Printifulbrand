@@ -58,7 +58,13 @@ function ShowcaseCatalog() {
             ))}
           </div>
         ) : (
-          <ProductGrid products={products} mode="showcase" limit={6} />
+          <ProductGrid
+            products={products}
+            mode="showcase"
+            limit={8}
+            mobileLimit={4}
+            tabletLimit={6}
+          />
         )}
 
         <Reveal className="mt-12 text-center" delay={0.1}>

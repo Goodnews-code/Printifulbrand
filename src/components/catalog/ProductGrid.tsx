@@ -18,6 +18,8 @@ interface ProductGridProps {
   limit?: number;
   /** Hide items beyond this count below the `md` breakpoint */
   mobileLimit?: number;
+  /** Hide items beyond this count below the `xl` breakpoint (keeps 3-col layouts at this count) */
+  tabletLimit?: number;
   reviewSummaries?: Record<number, ProductReviewSummary>;
   onReviewSummaryChange?: (summary: ProductReviewSummary) => void;
 }
@@ -34,6 +36,7 @@ export function ProductGrid({
   emptyMessage = "No products found.",
   limit,
   mobileLimit,
+  tabletLimit,
   reviewSummaries,
   onReviewSummaryChange,
 }: ProductGridProps) {
@@ -133,7 +136,7 @@ export function ProductGrid({
         <p className="py-16 text-center font-ui text-muted">{emptyMessage}</p>
       ) : (
         <motion.div
-          key={`${filter}-${query}-${sort}-${limit ?? "all"}`}
+          key={`${filter}-${query}-${sort}-${limit ?? "all"}-${mobileLimit ?? "m"}-${tabletLimit ?? "t"}`}
           className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           initial="hidden"
           animate="show"
@@ -151,6 +154,9 @@ export function ProductGrid({
                 mobileLimit != null &&
                   index >= mobileLimit &&
                   "max-md:hidden",
+                tabletLimit != null &&
+                  index >= tabletLimit &&
+                  "max-xl:hidden",
               )}
               variants={{
                 hidden: reduce
