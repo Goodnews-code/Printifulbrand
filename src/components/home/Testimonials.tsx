@@ -20,6 +20,13 @@ const TESTIMONIALS: Testimonial[] = [
       "We have been working with Printiful for some years even before she rebranded, we have had nothing short of excellent experience. She is definitely worth every penny spent.\n\nWelldone Printiful",
     image: "/assets/Image/Olaide - Founder.jpg",
   },
+  {
+    name: "Folake Akinwale",
+    role: "Lead Singer & Director, Ogo Oluwa Voices and Songs Ministry Int'l",
+    quote:
+      "Our ministry has worked with Printiful for her annual concert in 2024 for the design, customisation, and printing of the t-shirt every band member wore on that day.\n\nShe gave us a swift and excellent delivery of the tees even with the short notice.\n\nWe will trust the brand a million times again if there's a need for her services.",
+    image: "/assets/Image/Folake-Akinwale.jpg",
+  },
 ];
 
 function Portrait({ name, image }: { name: string; image: string }) {
@@ -44,7 +51,7 @@ function Portrait({ name, image }: { name: string; image: string }) {
       fillCover
       unoptimized
       sizes="(max-width: 640px) 40vw, 220px"
-      className="object-cover object-top"
+      className="object-cover object-center"
       onError={() => setFailed(true)}
     />
   );
@@ -65,7 +72,7 @@ export function Testimonials() {
             What they say
           </h2>
           <p className="mt-4 text-muted">
-            Real words from founders and brands we print for.
+            Real words from founders, ministries, and brands we print for.
           </p>
         </Reveal>
 
@@ -83,11 +90,11 @@ export function Testimonials() {
               key={item.name}
               className="border border-border bg-surface p-6 sm:p-8"
             >
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
                 <div className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full sm:mx-0 sm:w-44">
                   <Portrait name={item.name} image={item.image} />
                 </div>
-                <div className="min-w-0 flex-1 text-center sm:pt-1 sm:text-left">
+                <div className="min-w-0 flex-1 text-center sm:text-left">
                   <p className="font-heading text-xl font-semibold leading-tight sm:text-2xl">
                     {item.name}
                   </p>
