@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { Reveal } from "@/components/motion/Reveal";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,41 @@ const TESTIMONIALS: Testimonial[] = [
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+const CHAR_MS = 22;
+const PAUSE_AFTER_MS = 450;
+
+function useTypewriter(text: string, enabled: boolean, reduce: boolean) {
+  const [displayed, setDisplayed] = useState(reduce ? text : "");
+  const [done, setDone] = useState(reduce);
+
+  useEffect(() => {
+    if (reduce) {
+      setDisplayed(text);
+      setDone(true);
+      return;
+    }
+
+    if (!enabled) {
+      return;
+    }
+
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) {
+        window.clearInterval(id);
+        setDone(true);
+      }
+    }, CHAR_MS);
+
+    return () => window.clearInterval(id);
+  }, [text, enabled, reduce]);
+
+  return { displayed, done };
+}
 
 function Portrait({ name, image }: { name: string; image: string }) {
   const [failed, setFailed] = useState(false);
@@ -52,8 +87,7 @@ function Portrait({ name, image }: { name: string; image: string }) {
     <motion.div
       className="relative h-full w-full"
       initial={reduce ? false : { opacity: 0, scale: 0.82 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.4 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.7, ease: EASE }}
       whileHover={reduce ? undefined : { scale: 1.04 }}
     >
@@ -72,94 +106,94 @@ function Portrait({ name, image }: { name: string; image: string }) {
 
 function TestimonialCard({
   item,
-  index,
+  active,
+  onTyped,
 }: {
   item: Testimonial;
-  index: number;
+  active: boolean;
+  onTyped: () => void;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotion() ?? false;
+  const { displayed, done } = useTypewriter(item.quote, active, reduce);
+
+  useEffect(() => {
+    if (!done || !active) return;
+    const id = window.setTimeout(onTyped, reduce ? 0 : PAUSE_AFTER_MS);
+    return () => window.clearTimeout(id);
+  }, [done, active, onTyped, reduce]);
 
   return (
-    <StaggerItem className="h-full">
-      <motion.article
-        className="h-full bg-surface p-6 shadow-[0_8px_28px_rgba(13,0,21,0.12)] sm:p-8 dark:shadow-[0_10px_32px_rgba(0,0,0,0.45)]"
-        whileHover={
-          reduce
-            ? undefined
-            : {
-                y: -6,
-                transition: { duration: 0.35, ease: EASE },
-              }
-        }
-      >
-        <div className="flex flex-col items-center gap-5 text-center">
-          <motion.div
-            className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-brand-purple/15 sm:w-44 dark:ring-brand-yellow/20"
-            initial={reduce ? false : { opacity: 0, y: 18, scale: 0.9 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{
-              duration: 0.7,
-              ease: EASE,
-              delay: reduce ? 0 : 0.08 + index * 0.1,
-            }}
-            whileHover={reduce ? undefined : { scale: 1.03 }}
-          >
-            <Portrait name={item.name} image={item.image} />
-          </motion.div>
-
-          <div className="min-w-0 flex-1 text-center">
-            <motion.p
-              className="font-heading text-xl font-semibold leading-tight sm:text-2xl"
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{
-                duration: 0.55,
-                ease: EASE,
-                delay: reduce ? 0 : 0.16 + index * 0.1,
-              }}
-            >
-              {item.name}
-            </motion.p>
-            <motion.p
-              className="mt-1 font-ui text-xs font-semibold uppercase tracking-[0.12em] text-brand-purple dark:text-brand-yellow"
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{
-                duration: 0.55,
-                ease: EASE,
-                delay: reduce ? 0 : 0.24 + index * 0.1,
-              }}
-            >
-              {item.role}
-            </motion.p>
-            <motion.blockquote
-              className="mt-4 text-base leading-relaxed text-muted sm:text-[17px]"
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{
-                duration: 0.65,
-                ease: EASE,
-                delay: reduce ? 0 : 0.32 + index * 0.1,
-              }}
-            >
-              <p className="whitespace-pre-line">
-                &ldquo;{item.quote}&rdquo;
-              </p>
-            </motion.blockquote>
-          </div>
+    <motion.article
+      className="h-full bg-surface p-6 shadow-[0_8px_28px_rgba(13,0,21,0.12)] sm:p-8 dark:shadow-[0_10px_32px_rgba(0,0,0,0.45)]"
+      initial={reduce ? false : { opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: EASE }}
+      whileHover={
+        reduce
+          ? undefined
+          : {
+              y: -6,
+              transition: { duration: 0.35, ease: EASE },
+            }
+      }
+    >
+      <div className="flex flex-col items-center gap-5 text-center">
+        <div className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-brand-purple/15 sm:w-44 dark:ring-brand-yellow/20">
+          <Portrait name={item.name} image={item.image} />
         </div>
-      </motion.article>
-    </StaggerItem>
+
+        <div className="min-w-0 flex-1 text-center">
+          <p className="font-heading text-xl font-semibold leading-tight sm:text-2xl">
+            {item.name}
+          </p>
+          <p className="mt-1 font-ui text-xs font-semibold uppercase tracking-[0.12em] text-brand-purple dark:text-brand-yellow">
+            {item.role}
+          </p>
+          <blockquote className="mt-4 text-base leading-relaxed text-muted sm:text-[17px]">
+            <p className="whitespace-pre-line" aria-label={item.quote}>
+              &ldquo;{displayed}
+              {active && !done && !reduce ? (
+                <span
+                  className="ml-0.5 inline-block h-[1.05em] w-[0.08em] translate-y-[0.12em] animate-pulse bg-brand-purple align-baseline dark:bg-brand-yellow"
+                  aria-hidden
+                />
+              ) : null}
+              &rdquo;
+            </p>
+          </blockquote>
+        </div>
+      </div>
+    </motion.article>
   );
 }
 
 export function Testimonials() {
+  const reduce = useReducedMotion() ?? false;
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, amount: 0.28 });
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [typingIndex, setTypingIndex] = useState(-1);
+
+  useEffect(() => {
+    if (!inView) return;
+    if (reduce) {
+      setVisibleCount(TESTIMONIALS.length);
+      setTypingIndex(TESTIMONIALS.length);
+      return;
+    }
+    setVisibleCount(1);
+    setTypingIndex(0);
+  }, [inView, reduce]);
+
+  const handleTyped = useCallback((index: number) => {
+    if (index >= TESTIMONIALS.length - 1) return;
+    setVisibleCount((count) => Math.max(count, index + 2));
+    setTypingIndex(index + 1);
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
       id="testimonials"
       className="scroll-mt-20 bg-surface-alt py-20 sm:py-24"
     >
@@ -176,19 +210,23 @@ export function Testimonials() {
           </p>
         </Reveal>
 
-        <Stagger
+        <div
           className={cn(
             "mt-14 grid gap-6",
             TESTIMONIALS.length === 1
               ? "mx-auto max-w-3xl"
               : "md:grid-cols-2",
           )}
-          stagger={0.18}
         >
-          {TESTIMONIALS.map((item, index) => (
-            <TestimonialCard key={item.name} item={item} index={index} />
+          {TESTIMONIALS.slice(0, visibleCount).map((item, index) => (
+            <TestimonialCard
+              key={item.name}
+              item={item}
+              active={typingIndex === index}
+              onTyped={() => handleTyped(index)}
+            />
           ))}
-        </Stagger>
+        </div>
       </div>
     </section>
   );
