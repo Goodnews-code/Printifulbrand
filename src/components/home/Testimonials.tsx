@@ -25,7 +25,7 @@ const TESTIMONIALS: Testimonial[] = [
     name: "Folake Akinwale",
     role: "Lead Singer & Director, Ogo Oluwa Voices and Songs Ministry Int'l",
     quote:
-      "Our ministry has worked with Printiful for her annual concert in 2024 for the design, customisation, and printing of the t-shirt every band member wore on that day.\n\nShe gave us a swift and excellent delivery of the tees even with the short notice.\n\nWe will trust the brand a million times again if there's a need for her services.",
+      "Our ministry has worked with Printiful for her annual concert in 2024 for the design, customisation, and printing of the t-shirt every band member wore on that day.\n\nShe gave us a swift and excellent delivery of the tees even with the short notice. We will trust the brand a million times again if there's a need for her services.",
     image: "/assets/Image/Folake-Akinwale.jpg",
   },
 ];
@@ -82,20 +82,19 @@ function TestimonialCard({
   return (
     <StaggerItem className="h-full">
       <motion.article
-        className="h-full border border-border bg-surface p-6 sm:p-8"
+        className="h-full bg-surface p-6 shadow-[0_8px_28px_rgba(13,0,21,0.12)] sm:p-8 dark:shadow-[0_10px_32px_rgba(0,0,0,0.45)]"
         whileHover={
           reduce
             ? undefined
             : {
                 y: -6,
-                borderColor: "rgba(83, 0, 155, 0.45)",
                 transition: { duration: 0.35, ease: EASE },
               }
         }
       >
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
+        <div className="flex flex-col items-center gap-5 text-center">
           <motion.div
-            className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-brand-purple/15 sm:mx-0 sm:w-44 dark:ring-brand-yellow/20"
+            className="relative mx-auto aspect-square w-40 shrink-0 overflow-hidden rounded-full ring-2 ring-brand-purple/15 sm:w-44 dark:ring-brand-yellow/20"
             initial={reduce ? false : { opacity: 0, y: 18, scale: 0.9 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
@@ -109,11 +108,11 @@ function TestimonialCard({
             <Portrait name={item.name} image={item.image} />
           </motion.div>
 
-          <div className="min-w-0 flex-1 text-center sm:text-left">
+          <div className="min-w-0 flex-1 text-center">
             <motion.p
               className="font-heading text-xl font-semibold leading-tight sm:text-2xl"
-              initial={reduce ? false : { opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={reduce ? false : { opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{
                 duration: 0.55,
@@ -125,8 +124,8 @@ function TestimonialCard({
             </motion.p>
             <motion.p
               className="mt-1 font-ui text-xs font-semibold uppercase tracking-[0.12em] text-brand-purple dark:text-brand-yellow"
-              initial={reduce ? false : { opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={reduce ? false : { opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{
                 duration: 0.55,
