@@ -48,10 +48,12 @@ export function PackageNavbar() {
     <>
       <motion.header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,border-color] duration-300",
-          scrolled || mobileOpen
-            ? "border-b border-white/10 bg-brand-purple shadow-md"
-            : "border-b border-transparent bg-transparent",
+          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300",
+          mobileOpen
+            ? "border-b border-transparent bg-brand-purple shadow-none"
+            : scrolled
+              ? "border-b border-white/10 bg-brand-purple/45 shadow-sm backdrop-blur-md"
+              : "border-b border-transparent bg-transparent",
         )}
         initial={reduce ? false : { y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -158,7 +160,7 @@ export function PackageNavbar() {
             />
             <motion.div
               key="package-mobile-nav"
-              className="fixed left-1/2 top-16 z-[48] w-[min(100%-1.5rem,20rem)] overflow-hidden rounded-bl-[50%] rounded-br-[50%] border border-t-0 border-white/10 bg-brand-purple/95 shadow-xl backdrop-blur-xl lg:hidden"
+              className="fixed left-1/2 top-16 z-[48] w-[min(100%-1.5rem,20rem)] overflow-hidden rounded-bl-[50%] rounded-br-[50%] border border-t-0 border-white/10 bg-brand-purple shadow-xl backdrop-blur-xl lg:hidden"
               style={{ transformOrigin: "top center" }}
               initial={
                 reduce

@@ -87,11 +87,18 @@ export function Navbar() {
           isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
           isHome
             ? solidChrome
-              ? "border-b border-white/10 bg-brand-purple shadow-md"
+              ? cn(
+                  mobileOpen
+                    ? "border-b border-transparent bg-brand-purple shadow-none"
+                    : "border-b border-white/10 bg-brand-purple/45 shadow-sm backdrop-blur-md",
+                )
               : "border-b border-transparent bg-transparent"
             : cn(
-                "border-b border-border backdrop-blur-md",
-                scrolled ? "shadow-sm" : "",
+                "backdrop-blur-md",
+                mobileOpen
+                  ? "border-b border-transparent"
+                  : "border-b border-border",
+                scrolled && !mobileOpen ? "shadow-sm" : "",
               ),
         )}
         style={isHome ? undefined : { backgroundColor: "var(--navbar)" }}
@@ -235,7 +242,7 @@ export function Navbar() {
             <motion.div
               key="home-mobile-nav"
               className={cn(
-                "fixed left-1/2 z-[48] w-[min(100%-1.5rem,325px)] overflow-hidden rounded-bl-[50%] rounded-br-[50%] border border-t-0 border-white/10 bg-brand-purple/95 shadow-xl backdrop-blur-xl md:hidden",
+                "fixed left-1/2 z-[48] w-[min(100%-1.5rem,325px)] overflow-hidden rounded-bl-[50%] rounded-br-[50%] border border-t-0 border-white/10 bg-brand-purple shadow-xl backdrop-blur-xl md:hidden",
                 isHome ? "top-[94px]" : "top-16",
               )}
               style={{ transformOrigin: "top center" }}
