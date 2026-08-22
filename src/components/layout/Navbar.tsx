@@ -90,7 +90,7 @@ export function Navbar() {
               ? cn(
                   mobileOpen
                     ? "border-b border-transparent bg-brand-purple shadow-none"
-                    : "border-b border-white/10 bg-brand-purple/45 shadow-sm backdrop-blur-md",
+                    : "border-b border-white/10 bg-brand-purple/60 shadow-sm backdrop-blur-md",
                 )
               : "border-b border-transparent bg-transparent"
             : cn(
