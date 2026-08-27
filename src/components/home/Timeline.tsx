@@ -43,7 +43,7 @@ export function Timeline() {
           <span className="inline-block bg-brand-yellow px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-brand-black">
             How We Print
           </span>
-          <h2 className="mt-4 font-heading text-4xl italic sm:text-5xl">
+          <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight sm:text-5xl">
             Step-By-Step Print Journey
           </h2>
           <p className="mt-4 text-muted">

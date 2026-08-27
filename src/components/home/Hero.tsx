@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { useSettings } from "@/context/SettingsContext";
+import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
@@ -29,6 +31,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   const { settings } = useSettings();
+  const { theme } = useTheme();
   const reduce = useReducedMotion();
 
   return (
@@ -43,13 +46,12 @@ export function Hero() {
             "radial-gradient(ellipse 50% 55% at 22% 40%, rgba(83,0,155,0.12), transparent 65%), linear-gradient(180deg, var(--surface-alt) 0%, var(--surface) 55%)",
         }}
       />
-      {/* Brand mark in the hero background */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/logo.svg"
+      <BrandLogo
+        variant="mark"
+        surface={theme === "dark" ? "dark" : "light"}
         alt=""
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(92vw,520px)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.08] animate-float-slow dark:invert sm:w-[min(70vw,640px)] lg:left-[22%] lg:w-[42%] lg:max-w-xl lg:translate-x-0"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[min(92vw,520px)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.08] animate-float-slow sm:w-[min(70vw,640px)] lg:left-[22%] lg:w-[42%] lg:max-w-xl lg:translate-x-0"
       />
       {!reduce && (
         <div

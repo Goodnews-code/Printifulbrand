@@ -7,10 +7,9 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { resolveSmallBusinessPackage } from "@/lib/packages";
 import { cn } from "@/lib/utils";
-
-const LOGO = "/assets/logo%20with%20printiful.svg";
 
 const LINKS = [
   { href: "#includes", label: "What’s included" },
@@ -62,12 +61,7 @@ export function PackageNavbar() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <Link href="/" className="shrink-0" aria-label="Printiful home">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={LOGO}
-                alt="Printiful"
-                className="h-8 w-auto brightness-0 invert sm:h-9"
-              />
+              <BrandLogo surface="dark" className="h-8 w-auto sm:h-9" />
             </Link>
             <span className="hidden h-5 w-px bg-white/25 sm:block" aria-hidden />
             <p className="hidden max-w-[14rem] truncate font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-yellow sm:block">

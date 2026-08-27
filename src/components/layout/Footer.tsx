@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
+import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Reveal } from "@/components/motion/Reveal";
 import { resolveSmallBusinessPackage } from "@/lib/packages";
-
-const LOGO = "/assets/logo%20with%20printiful.svg";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -35,6 +35,7 @@ function XIcon({ className }: { className?: string }) {
 
 export function Footer() {
   const { settings } = useSettings();
+  const { theme } = useTheme();
   const pkg = resolveSmallBusinessPackage(settings);
 
   return (
@@ -42,11 +43,9 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.2fr_2fr] lg:px-8">
         <Reveal className="space-y-4">
           <Link href="/" aria-label="Printiful home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={LOGO}
-              alt="Printiful"
-              className="h-10 w-auto dark:brightness-0 dark:invert"
+            <BrandLogo
+              surface={theme === "dark" ? "dark" : "light"}
+              className="h-10 w-auto"
             />
           </Link>
           <p className="max-w-sm text-sm leading-relaxed text-muted">
@@ -92,7 +91,7 @@ export function Footer() {
 
         <Reveal delay={0.08} className="grid gap-8 sm:grid-cols-3">
           <div>
-            <h4 className="mb-4 font-heading text-lg font-semibold italic">
+            <h4 className="mb-4 font-heading text-lg font-bold uppercase tracking-wide">
               Studio Rooms
             </h4>
             <ul className="space-y-2 text-sm text-muted">
@@ -120,7 +119,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="mb-4 font-heading text-lg font-semibold italic">
+            <h4 className="mb-4 font-heading text-lg font-bold uppercase tracking-wide">
               Support
             </h4>
             <ul className="space-y-2 text-sm text-muted">
@@ -141,7 +140,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="mb-4 font-heading text-lg font-semibold italic">
+            <h4 className="mb-4 font-heading text-lg font-bold uppercase tracking-wide">
               Legal
             </h4>
             <ul className="space-y-2 text-sm text-muted">

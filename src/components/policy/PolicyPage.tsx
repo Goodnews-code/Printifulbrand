@@ -44,7 +44,7 @@ export function PolicyPage({ title, intro, sections }: PolicyPageProps) {
         {sections.map((section, index) => (
           <Reveal key={section.heading} delay={Math.min(index * 0.04, 0.2)}>
             <section>
-              <h2 className="font-heading text-2xl font-semibold italic">
+              <h2 className="font-heading text-2xl font-bold">
                 {section.heading}
               </h2>
               {section.paragraphs?.map((p) => (

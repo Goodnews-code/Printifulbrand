@@ -7,9 +7,8 @@ import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
-
-const LOGO = "/assets/logo%20with%20printiful.svg";
 
 type NavId = "home" | "store" | "timeline" | "inquiry";
 
@@ -78,6 +77,8 @@ export function Navbar() {
   ];
 
   const lightOnDark = isHome && solidChrome;
+  const logoSurface: "light" | "dark" =
+    lightOnDark || mobileOpen || theme === "dark" ? "dark" : "light";
 
   return (
     <>
@@ -113,17 +114,7 @@ export function Navbar() {
           )}
         >
           <Link href="/" className="shrink-0" aria-label="Printiful home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={LOGO}
-              alt="Printiful"
-              className={cn(
-                "h-9 w-auto transition",
-                lightOnDark
-                  ? "brightness-0 invert"
-                  : "dark:brightness-0 dark:invert",
-              )}
-            />
+            <BrandLogo surface={logoSurface} className="h-9 w-auto transition" />
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">

@@ -51,7 +51,7 @@ export function CartDrawer() {
             aria-label="Shopping cart"
           >
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h3 className="font-heading text-2xl italic">Shopping Cart</h3>
+              <h3 className="font-heading text-xl font-bold">Shopping Cart</h3>
               <button
                 type="button"
                 onClick={closeCart}

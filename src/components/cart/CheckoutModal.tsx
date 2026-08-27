@@ -508,7 +508,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
             transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h3 id="checkout-title" className="font-heading text-xl italic">
+              <h3 id="checkout-title" className="font-heading text-xl font-bold">
                 {title}
               </h3>
               <button
@@ -1229,7 +1229,7 @@ function SuccessPanel({
         <p className="font-ui text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-purple dark:text-brand-yellow">
           Payment successful
         </p>
-        <h4 className="mt-2 font-heading text-3xl italic leading-tight text-ink">
+        <h4 className="mt-2 font-heading text-3xl font-black leading-tight text-ink">
           Thank you for shopping with us
         </h4>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted">
@@ -1261,7 +1261,7 @@ function SuccessPanel({
         </div>
       </motion.div>
 
-      <p className="relative mt-5 font-heading text-sm italic text-brand-purple dark:text-brand-yellow">
+      <p className="relative mt-5 font-heading text-sm font-medium text-brand-purple dark:text-brand-yellow">
         Be Bold. Be Seen. Be Known.
       </p>
 

@@ -34,7 +34,7 @@ function itemRows(items: OrderItemSnapshot[]): string {
   if (!items.length) {
     return `
       <tr>
-        <td colspan="3" style="padding:14px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+        <td colspan="3" style="padding:14px 0;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.muted};">
           Order details will appear in your Printiful admin records.
         </td>
       </tr>`;
@@ -56,13 +56,13 @@ function itemRows(items: OrderItemSnapshot[]): string {
       return `
         <tr>
           <td style="padding:14px 0;border-bottom:1px solid ${BRAND.border};vertical-align:top;">
-            <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:${BRAND.ink};">${name}</div>
+            <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;font-weight:700;color:${BRAND.ink};">${name}</div>
             ${metaHtml}
           </td>
-          <td style="padding:14px 8px;border-bottom:1px solid ${BRAND.border};vertical-align:top;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};white-space:nowrap;">
+          <td style="padding:14px 8px;border-bottom:1px solid ${BRAND.border};vertical-align:top;text-align:center;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.ink};white-space:nowrap;">
             × ${item.qty}
           </td>
-          <td style="padding:14px 0;border-bottom:1px solid ${BRAND.border};vertical-align:top;text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:${BRAND.ink};white-space:nowrap;">
+          <td style="padding:14px 0;border-bottom:1px solid ${BRAND.border};vertical-align:top;text-align:right;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;font-weight:700;color:${BRAND.ink};white-space:nowrap;">
             ${escapeHtml(formatNaira(item.price * item.qty))}
           </td>
         </tr>`;
@@ -239,10 +239,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                           <img src="${LOGO_MARK_URL}" alt="Printiful" width="52" height="52" style="display:block;border:0;border-radius:50%;width:52px;height:52px;" />
                         </td>
                         <td style="vertical-align:middle;">
-                          <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;letter-spacing:0.04em;color:${BRAND.yellow};">
+                          <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:22px;font-weight:900;letter-spacing:0.04em;color:${BRAND.yellow};">
                             PRINTIFUL
                           </div>
-                          <div style="margin-top:4px;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);">
+                          <div style="margin-top:4px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);">
                             Custom Studio
                           </div>
                         </td>
@@ -250,19 +250,19 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                     </table>
                   </td>
                   <td align="right" style="vertical-align:middle;">
-                    <span style="display:inline-block;background:${BRAND.yellow};color:${BRAND.black};font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:6px 10px;">
+                    <span style="display:inline-block;background:${BRAND.yellow};color:${BRAND.black};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:6px 10px;">
                       Receipt
                     </span>
                   </td>
                 </tr>
               </table>
-              <div style="margin-top:22px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:${BRAND.yellow};">
+              <div style="margin-top:22px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:${BRAND.yellow};">
                 Payment confirmed
               </div>
-              <div style="margin-top:8px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.15;color:#FFFFFF;font-style:italic;">
+              <div style="margin-top:8px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:28px;font-weight:900;line-height:1.15;color:#FFFFFF;">
                 Thank you, ${safeName}.
               </div>
-              <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:rgba(255,255,255,0.72);">
+              <div style="margin-top:10px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;line-height:1.5;color:rgba(255,255,255,0.72);">
                 Your order is paid and queued for production. Keep this receipt for your records.
               </div>
             </td>
@@ -273,10 +273,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
             <td style="padding:0;background:${BRAND.purple};">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#FFFFFF;">
+                  <td style="padding:14px 28px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:12px;color:#FFFFFF;">
                     <strong style="opacity:0.7;">Ref</strong>&nbsp;&nbsp;${safeRef}
                   </td>
-                  <td align="right" style="padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#FFFFFF;">
+                  <td align="right" style="padding:14px 28px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:12px;color:#FFFFFF;">
                     <strong style="opacity:0.7;">Paid</strong>&nbsp;&nbsp;${escapeHtml(dateLabel)}
                   </td>
                 </tr>
@@ -287,19 +287,19 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
           <!-- Body -->
           <tr>
             <td style="padding:28px;">
-              <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+              <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
                 Order summary
               </div>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
                 <tr>
-                  <td style="padding:0 0 8px;border-bottom:2px solid ${BRAND.ink};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};">
+                  <td style="padding:0 0 8px;border-bottom:2px solid ${BRAND.ink};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};">
                     Item
                   </td>
-                  <td style="padding:0 8px 8px;border-bottom:2px solid ${BRAND.ink};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};text-align:center;">
+                  <td style="padding:0 8px 8px;border-bottom:2px solid ${BRAND.ink};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};text-align:center;">
                     Qty
                   </td>
-                  <td style="padding:0 0 8px;border-bottom:2px solid ${BRAND.ink};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};text-align:right;">
+                  <td style="padding:0 0 8px;border-bottom:2px solid ${BRAND.ink};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.muted};text-align:right;">
                     Amount
                   </td>
                 </tr>
@@ -311,10 +311,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   items.length
                     ? `
                 <tr>
-                  <td style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                  <td style="padding:0 0 6px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.muted};">
                     Items subtotal
                   </td>
-                  <td align="right" style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
+                  <td align="right" style="padding:0 0 6px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.ink};">
                     ${escapeHtml(formatNaira(itemsSubtotal))}
                   </td>
                 </tr>`
@@ -324,25 +324,25 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   deliveryFee > 0
                     ? `
                 <tr>
-                  <td style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                  <td style="padding:0 0 6px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.muted};">
                     Shipping (${escapeHtml(deliveryZoneLabel)})
                   </td>
-                  <td align="right" style="padding:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.ink};">
+                  <td align="right" style="padding:0 0 6px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.ink};">
                     ${escapeHtml(formatNaira(deliveryFee))}
                   </td>
                 </tr>`
                     : ""
                 }
                 <tr>
-                  <td style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${BRAND.muted};">
+                  <td style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;color:${BRAND.muted};">
                     Grand total
                   </td>
-                  <td align="right" style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:${BRAND.purple};">
+                  <td align="right" style="padding-top:8px;border-top:1px solid ${BRAND.border};font-family:Roboto, Arial, Helvetica, sans-serif;font-size:22px;font-weight:900;color:${BRAND.purple};">
                     ${escapeHtml(formatNaira(data.amountNaira))}
                   </td>
                 </tr>
                 <tr>
-                  <td colspan="2" style="padding-top:4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${BRAND.muted};text-align:right;">
+                  <td colspan="2" style="padding-top:4px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:12px;color:${BRAND.muted};text-align:right;">
                     ${escapeHtml(data.currency || "NGN")} · Paid via Paystack
                   </td>
                 </tr>
@@ -350,10 +350,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
 
               <!-- Customer -->
               <div style="margin-top:28px;padding:18px;background:${BRAND.surfaceAlt};border:1px solid ${BRAND.border};">
-                <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+                <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
                   Billed to
                 </div>
-                <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
+                <div style="margin-top:10px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                   <strong>${safeName}</strong><br />
                   ${safeEmail}
                   ${safePhone ? `<br />${safePhone}` : ""}
@@ -362,10 +362,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   shippingHtml
                     ? `
                 <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
-                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+                  <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
                     Shipping address
                   </div>
-                  <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
+                  <div style="margin-top:10px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                     ${shippingHtml}
                   </div>
                 </div>`
@@ -375,10 +375,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
                   billingHtml
                     ? `
                 <div style="margin-top:16px;padding-top:14px;border-top:1px solid ${BRAND.border};">
-                  <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
+                  <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${BRAND.purple};">
                     Billing address
                   </div>
-                  <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
+                  <div style="margin-top:10px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:14px;line-height:1.6;color:${BRAND.ink};">
                     ${billingHtml}
                   </div>
                 </div>`
@@ -387,7 +387,7 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
               </div>
 
               <div style="margin-top:28px;text-align:center;">
-                <a href="${SITE_URL}/store" style="display:inline-block;background:${BRAND.purple};color:#FFFFFF;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:14px 22px;">
+                <a href="${SITE_URL}/store" style="display:inline-block;background:${BRAND.purple};color:#FFFFFF;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;padding:14px 22px;">
                   Continue shopping
                 </a>
               </div>
@@ -397,10 +397,10 @@ export function renderOrderReceiptHtml(data: ReceiptEmailData): string {
           <!-- Footer -->
           <tr>
             <td style="padding:22px 28px;border-top:1px solid ${BRAND.border};background:${BRAND.surfaceAlt};">
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-style:italic;color:${BRAND.ink};">
+              <div style="font-family:Roboto, Arial, Helvetica, sans-serif;font-size:16px;font-weight:500;color:${BRAND.ink};">
                 Be Bold. Be Seen. Be Known.
               </div>
-              <div style="margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${BRAND.muted};">
+              <div style="margin-top:10px;font-family:Roboto, Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;color:${BRAND.muted};">
                 Questions about this order? Write us at
                 <a href="mailto:${CONTACT_EMAIL}" style="color:${BRAND.purple};text-decoration:none;">${CONTACT_EMAIL}</a>
                 <br />

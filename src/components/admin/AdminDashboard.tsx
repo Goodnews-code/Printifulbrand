@@ -187,7 +187,7 @@ export function AdminDashboard() {
           <p className="font-ui text-[11px] font-bold uppercase tracking-[0.18em] text-brand-purple dark:text-brand-yellow">
             Admin Access
           </p>
-          <h1 className="mt-2 font-heading text-3xl italic">
+          <h1 className="mt-2 font-heading text-3xl font-black">
             Dashboard Gate
           </h1>
           <p className="mt-2 text-sm text-muted">
@@ -226,7 +226,7 @@ export function AdminDashboard() {
             <p className="font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
               Printiful Admin
             </p>
-            <h1 className="font-heading text-2xl italic">Studio Dashboard</h1>
+            <h1 className="font-heading text-2xl font-black">Studio Dashboard</h1>
           </div>
           <button
             type="button"
@@ -864,7 +864,7 @@ function ProductsTab({
         onSubmit={save}
         className="space-y-3 border border-border bg-surface p-5"
       >
-        <h2 className="font-heading text-xl italic">
+        <h2 className="font-heading text-xl font-bold">
           {editingId != null ? "Edit Product" : "Add Product"}
         </h2>
 

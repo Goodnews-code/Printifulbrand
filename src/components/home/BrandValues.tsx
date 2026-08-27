@@ -25,7 +25,7 @@ export function BrandValues() {
     <section className="bg-surface-alt py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-heading text-4xl italic sm:text-5xl">
+          <h2 className="font-heading text-4xl font-black uppercase tracking-tight sm:text-5xl">
             Beautiful designs, always.
           </h2>
           <p className="mt-4 text-muted leading-relaxed">

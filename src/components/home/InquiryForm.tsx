@@ -38,7 +38,7 @@ export function InquiryForm() {
           <span className="inline-block border border-brand-purple px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-brand-purple dark:border-brand-yellow dark:text-brand-yellow">
             Bulk Workspace
           </span>
-          <h2 className="mt-4 font-heading text-4xl italic sm:text-5xl">
+          <h2 className="mt-4 font-heading text-4xl font-black uppercase tracking-tight sm:text-5xl">
             Request a Custom Quote
           </h2>
           <p className="mt-4 text-muted">

@@ -6,8 +6,8 @@
   --color-brand-purple: #53009b;
   --color-brand-purple-deep: #3a006e;
   --color-brand-yellow: #ffff00;
-  --color-brand-black: #111111;
-  --color-brand-ink: #1a0033;
+  --color-brand-black: #000000;
+  --color-brand-ink: #000000;
   --color-surface: var(--surface);
   --color-surface-alt: var(--surface-alt);
   --color-foreground: var(--foreground);
@@ -15,15 +15,15 @@
   --color-border: var(--border);
   --color-card: var(--card);
   --font-display: var(--font-roboto);
-  --font-heading: var(--font-cormorant);
-  --font-ui: var(--font-outfit);
-  --font-sans: var(--font-inter);
+  --font-heading: var(--font-roboto);
+  --font-ui: var(--font-roboto);
+  --font-sans: var(--font-roboto);
 }
 
 :root {
   --surface: #ffffff;
   --surface-alt: #f7f5ff;
-  --foreground: #1a0033;
+  --foreground: #000000;
   --muted: #7a6895;
   --border: #ede8fa;
   --card: #ffffff;
@@ -59,9 +59,17 @@ html {
 body {
   background: var(--surface);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-roboto), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Brand typography — Roboto per guidelines */
+.font-display,
+.font-heading,
+.font-ui,
+.font-sans {
+  font-family: var(--font-roboto), system-ui, sans-serif;
 }
 
 /* Native <option> often inherits light text in dark mode → invisible on OS white menus */
