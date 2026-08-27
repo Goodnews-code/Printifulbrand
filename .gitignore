@@ -24,6 +24,9 @@
 *.pem
 Thumbs.db
 
+# brand / design PDFs — keep local only, never commit
+*.pdf
+
 # debug
 npm-debug.log*
 yarn-debug.log*
