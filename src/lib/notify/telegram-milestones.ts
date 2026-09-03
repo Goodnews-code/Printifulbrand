@@ -185,21 +185,8 @@ export async function fetchOrderMilestones(
   };
 }
 
-/** Emotional milestone block for the top of Telegram order alerts. */
-export function formatTelegramMilestoneBlock(milestones: OrderMilestones): string[] {
-  const lines: string[] = ["✨ Order milestones"];
-
-  const overallLine = overallMilestoneLine(milestones.overall);
-  if (overallLine) lines.push(overallLine);
-
-  for (const product of milestones.products) {
-    const line = productMilestoneLine(
-      product.name,
-      product.count,
-      product.isPackage,
-    );
-    if (line) lines.push(line);
-  }
-
-  return lines.length > 1 ? lines : [];
+/** Emotional milestone block for the top of Telegram order alerts. Disabled until sales DB tracking is fully active. */
+export function formatTelegramMilestoneBlock(_milestones: OrderMilestones): string[] {
+  // Milestone order counts disabled until persistent sales database is ready.
+  return [];
 }
