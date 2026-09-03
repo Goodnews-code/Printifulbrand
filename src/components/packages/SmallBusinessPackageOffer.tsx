@@ -23,11 +23,15 @@ export function SmallBusinessPackageOffer() {
   const { settings } = useSettings();
   const pkg = resolveSmallBusinessPackage(settings);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const cardDesignInputRef = useRef<HTMLInputElement>(null);
 
   const [bagDesign, setBagDesign] = useState("");
   const [bagLogoUrl, setBagLogoUrl] = useState("");
   const [bagLogoName, setBagLogoName] = useState("");
   const [logoUploading, setLogoUploading] = useState(false);
+  const [cardDesignUrl, setCardDesignUrl] = useState("");
+  const [cardDesignName, setCardDesignName] = useState("");
+  const [cardDesignUploading, setCardDesignUploading] = useState(false);
   const [bagText, setBagText] = useState("");
   const [cardContent, setCardContent] = useState("");
   const [tee1Color, setTee1Color] = useState("");
@@ -74,6 +78,42 @@ export function SmallBusinessPackageOffer() {
     if (logoInputRef.current) logoInputRef.current.value = "";
   }
 
+  async function handleCardDesignChange(file: File | null) {
+    setError("");
+    if (!file) {
+      setCardDesignUrl("");
+      setCardDesignName("");
+      return;
+    }
+
+    setCardDesignUploading(true);
+    try {
+      const body = new FormData();
+      body.append("image", file);
+      const res = await fetch("/api/packages/upload-logo", {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Card design upload failed");
+      setCardDesignUrl(data.image_url as string);
+      setCardDesignName(file.name);
+    } catch (err) {
+      setCardDesignUrl("");
+      setCardDesignName("");
+      if (cardDesignInputRef.current) cardDesignInputRef.current.value = "";
+      setError(err instanceof Error ? err.message : "Card design upload failed");
+    } finally {
+      setCardDesignUploading(false);
+    }
+  }
+
+  function clearCardDesign() {
+    setCardDesignUrl("");
+    setCardDesignName("");
+    if (cardDesignInputRef.current) cardDesignInputRef.current.value = "";
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -83,8 +123,8 @@ export function SmallBusinessPackageOffer() {
       setError("This package is currently unavailable.");
       return;
     }
-    if (logoUploading) {
-      setError("Please wait for the logo upload to finish.");
+    if (logoUploading || cardDesignUploading) {
+      setError("Please wait for file uploads to finish.");
       return;
     }
 
@@ -104,8 +144,10 @@ export function SmallBusinessPackageOffer() {
       setError("Please enter the exact words to print on the poly bags.");
       return;
     }
-    if (!card) {
-      setError("Please tell us what you want on the thank you cards.");
+    if (!card && !cardDesignUrl) {
+      setError(
+        "Please enter card message/notes or upload a thank you card design file.",
+      );
       return;
     }
     if (!c1 || !c2) {
@@ -121,7 +163,8 @@ export function SmallBusinessPackageOffer() {
       `Poly bag artwork/layout: ${design}`,
       `Poly bag printed wording: ${text}`,
       `Poly bag logo file: ${bagLogoUrl || "None"}`,
-      `Thank you card: ${card}`,
+      `Thank you card message/notes: ${card || "None"}`,
+      `Thank you card design file: ${cardDesignUrl || "None"}`,
       `Tee 1 color: ${c1}`,
       `Tee 1 design: ${d1}`,
       `Tee 2 color: ${c2}`,
@@ -242,16 +285,71 @@ export function SmallBusinessPackageOffer() {
           <legend className="font-heading text-xl font-semibold text-foreground">
             Thank you cards
           </legend>
+
+          <div className="space-y-1.5">
+            <span className={labelClass}>
+              Card design file{" "}
+              <span className="normal-case tracking-normal text-muted/80">
+                (optional)
+              </span>
+            </span>
+            <input
+              ref={cardDesignInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+              onChange={(e) => void handleCardDesignChange(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-brand-purple file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-purple-deep"
+            />
+            <span className={helpClass}>
+              Upload JPEG, PNG, WebP, or GIF (max 5MB) if you already have card artwork ready.
+            </span>
+            {cardDesignUploading ? (
+              <p className="text-xs text-muted">Uploading card design…</p>
+            ) : null}
+            {cardDesignUrl ? (
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cardDesignUrl}
+                  alt="Uploaded thank you card design preview"
+                  className="size-14 rounded object-contain bg-surface-alt"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {cardDesignName || "Card design uploaded"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearCardDesign}
+                    className="mt-1 text-xs font-semibold text-brand-purple underline-offset-2 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
           <label className="block space-y-1.5">
-            <span className={labelClass}>Card message &amp; design notes</span>
+            <span className={labelClass}>
+              Card message &amp; design notes{" "}
+              {cardDesignUrl ? (
+                <span className="normal-case tracking-normal text-muted/80">
+                  (optional)
+                </span>
+              ) : null}
+            </span>
             <textarea
               value={cardContent}
               onChange={(e) => setCardContent(e.target.value)}
               placeholder="Message, branding, or layout notes for the A6 thank you cards"
-              required
+              required={!cardDesignUrl}
               rows={3}
               className={fieldClass}
             />
+            <span className={helpClass}>
+              Write the text to print on the card or additional instructions for our design team.
+            </span>
           </label>
         </fieldset>
 
@@ -333,7 +431,7 @@ export function SmallBusinessPackageOffer() {
 
         <button
           type="submit"
-          disabled={logoUploading}
+          disabled={logoUploading || cardDesignUploading}
           className="w-full rounded-full bg-brand-yellow px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-brand-black transition hover:bg-[color:var(--hover-on-white)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Get the package — {formatNaira(pkg.price)}
