@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
+import Script from "next/script";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { ConditionalShell } from "@/components/layout/ConditionalShell";
 import "./globals.css";
@@ -73,6 +74,20 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${roboto.variable} h-full antialiased`}
     >
+      {/* Google Analytics GA4 */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-GS4WVH7SM6"
+        strategy="afterInteractive"
+      />
+      <Script id="ga-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-GS4WVH7SM6');
+        `}
+      </Script>
+
       <body className="min-h-full flex flex-col bg-surface text-foreground font-sans">
         <AppProviders>
           <ConditionalShell>{children}</ConditionalShell>
