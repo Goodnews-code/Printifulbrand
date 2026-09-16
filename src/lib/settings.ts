@@ -1,5 +1,6 @@
 import type { SiteSettings } from "@/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { PRODUCT_CATEGORIES } from "@/lib/product-attributes";
 
 const HERO_HEADLINE = "Be Bold! Be Seen!! Be Known!!!";
 const HERO_SUBTEXT =
@@ -26,6 +27,7 @@ const DEFAULTS: SiteSettings = {
   package_sb_price: "55000",
   package_sb_tagline:
     "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
+  product_categories: JSON.stringify([...PRODUCT_CATEGORIES]),
 };
 
 export async function getSettings(): Promise<SiteSettings> {
