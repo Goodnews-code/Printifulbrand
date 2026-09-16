@@ -41,17 +41,33 @@ export function ProductGrid({
   onReviewSummaryChange,
 }: ProductGridProps) {
   const reduce = useReducedMotion();
-  const [filter, setFilter] = useState<(typeof CATEGORY_FILTERS)[number]["id"]>(
-    "all",
-  );
+  const [filter, setFilter] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("featured");
+
+  const categoryFilters = useMemo(() => {
+    const list: { id: string; label: string }[] = [...CATEGORY_FILTERS];
+    const existing = new Set(list.map((c) => c.label.toLowerCase()));
+    for (const p of products) {
+      if (!p.category || isPackageOnlyProduct(p.title)) continue;
+      const clean = p.category.trim();
+      if (!existing.has(clean.toLowerCase())) {
+        existing.add(clean.toLowerCase());
+        list.push({ id: clean, label: clean });
+      }
+    }
+    return list;
+  }, [products]);
 
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
       if (isPackageOnlyProduct(p.title)) return false;
       const cat = normalizeCategory(p.category);
-      const matchesFilter = filter === "all" || cat === filter;
+      const rawCat = (p.category || "").trim().toLowerCase();
+      const matchesFilter =
+        filter === "all" ||
+        cat === filter ||
+        rawCat === filter.toLowerCase();
       const q = query.trim().toLowerCase();
       const matchesQuery =
         !q ||
@@ -83,7 +99,7 @@ export function ProductGrid({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: EASE }}
       >
-        {CATEGORY_FILTERS.map((item) => (
+        {categoryFilters.map((item) => (
           <button
             key={item.id}
             type="button"

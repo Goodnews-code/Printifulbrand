@@ -3,12 +3,18 @@ import { isAuthorized, unauthorized } from "@/lib/auth";
 import { getSettings, updateSettings } from "@/lib/settings";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const settings = await getSettings();
     const { paystack_secret_key: _secret, ...publicSettings } = settings;
-    return Response.json(publicSettings);
+    return Response.json(publicSettings, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to load settings";
     return Response.json({ error: message }, { status: 500 });

@@ -79,7 +79,7 @@ function CategorySelect({
         <ul
           role="listbox"
           aria-label="Product category"
-          className="absolute z-30 mt-1 max-h-60 w-full overflow-auto border border-border bg-white py-1 text-sm text-brand-black shadow-lg dark:border-[#281a3d] dark:bg-[#1a0a2e] dark:text-[#f0e8ff]"
+          className="absolute z-30 mt-1 max-h-96 w-full overflow-auto border border-border bg-white py-1 text-sm text-brand-black shadow-xl dark:border-[#281a3d] dark:bg-[#1a0a2e] dark:text-[#f0e8ff]"
         >
           {categories.map((category) => {
             const selected = category === value;
@@ -92,13 +92,14 @@ function CategorySelect({
                     setOpen(false);
                   }}
                   className={cn(
-                    "no-hover w-full px-3 py-2.5 text-left transition-colors",
+                    "no-hover flex w-full items-center justify-between px-3 py-2 text-left transition-colors",
                     selected
                       ? "bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
                       : "text-brand-black hover:bg-[#f7f5ff] dark:text-[#f0e8ff] dark:hover:bg-[#150025]",
                   )}
                 >
-                  {category}
+                  <span>{category}</span>
+                  {selected && <span className="font-ui text-xs font-semibold">✓</span>}
                 </button>
               </li>
             );
