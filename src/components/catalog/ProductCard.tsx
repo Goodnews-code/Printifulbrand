@@ -59,8 +59,7 @@ export function ProductCard({
   const activeColor = parseProductColor(activeImage.color_code);
 
   const categoryLabel = useMemo(() => {
-    const slug = normalizeCategory(product.category);
-    return slug === "all" ? product.category || "Merch" : slug;
+    return product.category?.trim() || "Merch";
   }, [product.category]);
 
   const handleAdd = () => {

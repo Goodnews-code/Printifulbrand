@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product, ProductReviewSummary } from "@/types";
-import { CATEGORY_FILTERS, normalizeCategory, cn } from "@/lib/utils";
+import { normalizeCategory, cn } from "@/lib/utils";
+import { PRODUCT_CATEGORIES } from "@/lib/product-attributes";
+import { useSettings } from "@/context/SettingsContext";
 import { isPackageOnlyProduct } from "@/lib/packages";
 import { ProductCard } from "@/components/catalog/ProductCard";
 
@@ -41,33 +43,63 @@ export function ProductGrid({
   onReviewSummaryChange,
 }: ProductGridProps) {
   const reduce = useReducedMotion();
+  const { settings } = useSettings();
   const [filter, setFilter] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("featured");
 
+  const configuredCategories = useMemo(() => {
+    const raw = settings?.product_categories;
+    if (!raw) return [...PRODUCT_CATEGORIES];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter(
+          (c): c is string => typeof c === "string" && Boolean(c.trim()),
+        );
+      }
+    } catch {
+      // fallback
+    }
+    return [...PRODUCT_CATEGORIES];
+  }, [settings?.product_categories]);
+
   const categoryFilters = useMemo(() => {
-    const list: { id: string; label: string }[] = [...CATEGORY_FILTERS];
-    const existing = new Set(list.map((c) => c.label.toLowerCase()));
+    const list: { id: string; label: string }[] = [
+      { id: "all", label: "All Items" },
+    ];
+    const seen = new Set<string>(["all"]);
+
+    for (const cat of configuredCategories) {
+      const clean = cat.trim();
+      const lower = clean.toLowerCase();
+      if (!clean || seen.has(lower)) continue;
+      seen.add(lower);
+      list.push({ id: clean, label: clean });
+    }
+
     for (const p of products) {
       if (!p.category || isPackageOnlyProduct(p.title)) continue;
       const clean = p.category.trim();
-      if (!existing.has(clean.toLowerCase())) {
-        existing.add(clean.toLowerCase());
-        list.push({ id: clean, label: clean });
-      }
+      const lower = clean.toLowerCase();
+      if (!clean || seen.has(lower)) continue;
+      seen.add(lower);
+      list.push({ id: clean, label: clean });
     }
+
     return list;
-  }, [products]);
+  }, [configuredCategories, products]);
 
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
       if (isPackageOnlyProduct(p.title)) return false;
-      const cat = normalizeCategory(p.category);
       const rawCat = (p.category || "").trim().toLowerCase();
+      const filterLower = filter.trim().toLowerCase();
       const matchesFilter =
         filter === "all" ||
-        cat === filter ||
-        rawCat === filter.toLowerCase();
+        rawCat === filterLower ||
+        (normalizeCategory(p.category) !== "all" &&
+          normalizeCategory(p.category) === normalizeCategory(filter));
       const q = query.trim().toLowerCase();
       const matchesQuery =
         !q ||

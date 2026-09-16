@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { SiteSettings } from "@/types";
+import { PRODUCT_CATEGORIES } from "@/lib/product-attributes";
 
 const DEFAULTS: SiteSettings = {
   site_title: "Printiful | Premium Custom wear & High-Fidelity Printing",
@@ -32,6 +33,7 @@ const DEFAULTS: SiteSettings = {
   package_sb_price: "55000",
   package_sb_tagline:
     "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
+  product_categories: JSON.stringify([...PRODUCT_CATEGORIES]),
 };
 
 interface SettingsContextValue {
