@@ -35,9 +35,11 @@ type Tab = "overview" | "products" | "reviews" | "settings";
 function CategorySelect({
   value,
   onChange,
+  categories,
 }: {
   value: string;
   onChange: (value: string) => void;
+  categories: string[];
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -79,7 +81,7 @@ function CategorySelect({
           aria-label="Product category"
           className="absolute z-30 mt-1 max-h-60 w-full overflow-auto border border-border bg-white py-1 text-sm text-brand-black shadow-lg dark:border-[#281a3d] dark:bg-[#1a0a2e] dark:text-[#f0e8ff]"
         >
-          {PRODUCT_CATEGORIES.map((category) => {
+          {categories.map((category) => {
             const selected = category === value;
             return (
               <li key={category} role="option" aria-selected={selected}>
@@ -123,6 +125,18 @@ export function AdminDashboard() {
   const [settings, setSettings] = useState<Partial<SiteSettings>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  /** Live list of product categories parsed from settings. */
+  const productCategories: string[] = (() => {
+    const raw = settings.product_categories;
+    if (!raw) return [...PRODUCT_CATEGORIES];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : [...PRODUCT_CATEGORIES];
+    } catch {
+      return [...PRODUCT_CATEGORIES];
+    }
+  })();
 
   useEffect(() => {
     const saved = localStorage.getItem(TOKEN_KEY);
@@ -343,6 +357,7 @@ export function AdminDashboard() {
             token={token}
             onChange={() => loadData(token)}
             setMessage={setMessage}
+            categories={productCategories}
           />
         )}
 
@@ -522,11 +537,13 @@ function ProductsTab({
   token,
   onChange,
   setMessage,
+  categories,
 }: {
   products: Product[];
   token: string;
   onChange: () => void;
   setMessage: (m: string) => void;
+  categories: string[];
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const colorFileRef = useRef<HTMLInputElement>(null);
@@ -538,7 +555,7 @@ function ProductsTab({
     title: "",
     description: "",
     price: "",
-    category: "Apparels",
+    category: categories[0] ?? "Apparels",
     image_url: "",
     is_active: true,
   });
@@ -579,12 +596,12 @@ function ProductsTab({
   };
 
   const reset = () => {
-    const cfg = getCategoryAttributes("Apparels");
+    const cfg = getCategoryAttributes(categories[0] ?? "Apparels");
     setForm({
       title: "",
       description: "",
       price: "",
-      category: "Apparels",
+      category: categories[0] ?? "Apparels",
       image_url: "",
       is_active: true,
     });
@@ -891,6 +908,7 @@ function ProductsTab({
               setForm((f) => ({ ...f, category }));
               applyCategoryDefaults(category, editingId != null);
             }}
+            categories={categories}
           />
           <p className="font-ui text-[11px] text-muted">
             Attributes below update for {form.category}. Turn color or size off
@@ -1522,6 +1540,11 @@ function SettingsTab({
     package_sb_tagline: "",
   });
 
+  // ── Category manager state ────────────────────────────────────────────────
+  const [categories, setCategories] = useState<string[]>([...PRODUCT_CATEGORIES]);
+  const [newCategory, setNewCategory] = useState("");
+  const [catSaving, setCatSaving] = useState(false);
+
   useEffect(() => {
     setForm({
       site_title: settings.site_title || "",
@@ -1545,7 +1568,51 @@ function SettingsTab({
         settings.package_sb_tagline ||
         "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
     });
+
+    // Load persisted categories, fall back to code defaults
+    const raw = settings.product_categories;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCategories(parsed as string[]);
+          return;
+        }
+      } catch { /* ignore */ }
+    }
+    setCategories([...PRODUCT_CATEGORIES]);
   }, [settings]);
+
+  /** Persist the category list immediately (no full-form submit needed). */
+  const saveCategories = async (list: string[]) => {
+    setCatSaving(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: authHeaders(token),
+        body: JSON.stringify({ product_categories: JSON.stringify(list) }),
+      });
+      if (res.ok) onSaved(await res.json());
+    } finally {
+      setCatSaving(false);
+    }
+  };
+
+  const addCategory = () => {
+    const name = newCategory.trim();
+    if (!name || categories.includes(name)) return;
+    const next = [...categories, name];
+    setCategories(next);
+    setNewCategory("");
+    void saveCategories(next);
+  };
+
+  const removeCategory = (cat: string) => {
+    if (categories.length <= 1) return;
+    const next = categories.filter((c) => c !== cat);
+    setCategories(next);
+    void saveCategories(next);
+  };
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
@@ -1578,10 +1645,77 @@ function SettingsTab({
     ];
 
   return (
-    <form
-      onSubmit={save}
-      className="max-w-2xl space-y-8 border border-border bg-surface p-5"
-    >
+    <div className="max-w-2xl space-y-8">
+      {/* ── Product Categories ──────────────────────────────────────────── */}
+      <section className="space-y-4 border border-border bg-surface p-5">
+        <div>
+          <h3 className="font-heading text-xl font-semibold">
+            Product Categories
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            Add or remove categories. Changes are saved immediately and appear
+            in the product form and store filters.
+          </p>
+        </div>
+
+        <ul className="space-y-2">
+          {categories.map((cat) => (
+            <li
+              key={cat}
+              className="flex items-center justify-between gap-3 border border-border bg-surface-alt px-3 py-2"
+            >
+              <span className="font-ui text-sm">{cat}</span>
+              <button
+                type="button"
+                disabled={categories.length <= 1 || catSaving}
+                onClick={() => removeCategory(cat)}
+                title={
+                  categories.length <= 1
+                    ? "Must keep at least one category"
+                    : `Remove "${cat}"`
+                }
+                className="inline-flex items-center gap-1 border border-red-500/30 px-2.5 py-1 font-ui text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/20"
+              >
+                <Trash2 size={12} />
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex gap-2">
+          <input
+            placeholder="New category name…"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addCategory();
+              }
+            }}
+            className="min-w-0 flex-1 border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+          />
+          <button
+            type="button"
+            disabled={!newCategory.trim() || catSaving}
+            onClick={addCategory}
+            className="inline-flex items-center gap-1.5 bg-brand-purple px-4 py-2 font-ui text-sm font-semibold text-white disabled:opacity-50 hover:bg-brand-yellow hover:text-brand-black"
+          >
+            <Plus size={14} />
+            Add
+          </button>
+        </div>
+        {catSaving && (
+          <p className="font-ui text-xs text-muted">Saving categories…</p>
+        )}
+      </section>
+
+      {/* ── Site / Store Settings ───────────────────────────────────────── */}
+      <form
+        onSubmit={save}
+        className="space-y-8 border border-border bg-surface p-5"
+      >
       <div className="space-y-4">
         {fields.map((field) => (
           <label key={field.key} className="block space-y-1.5">
@@ -1682,5 +1816,6 @@ function SettingsTab({
         Save Settings
       </button>
     </form>
+  </div>
   );
 }
