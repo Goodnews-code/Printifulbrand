@@ -1120,11 +1120,15 @@ function ProductsTab({
           className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
         />
         <input
-          required
+          required={form.category !== "Custom Order"}
           type="number"
           min={0}
           step="0.01"
-          placeholder="Price (₦)"
+          placeholder={
+            form.category === "Custom Order"
+              ? "Price (₦) — Optional for Custom Order"
+              : "Price (₦)"
+          }
           value={form.price}
           onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           className="w-full border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
@@ -1993,7 +1997,10 @@ function ProductsTab({
                     {p.title}
                   </p>
                   <p className="text-xs text-muted">
-                    {p.category || "—"} · {formatNaira(p.price)}
+                    {p.category || "—"} ·{" "}
+                    {p.category === "Custom Order"
+                      ? "Custom Quote"
+                      : formatNaira(p.price)}
                     {p.images && p.images.length > 0
                       ? ` · ${p.images
                           .map((img) => parseProductColor(img.color_code).name)

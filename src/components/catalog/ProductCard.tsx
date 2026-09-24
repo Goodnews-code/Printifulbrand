@@ -6,6 +6,7 @@ import { MessageSquareText, ShoppingBag } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product, ProductReviewSummary } from "@/types";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
 import {
   parseProductColor,
   productHasColorOptions,
@@ -33,12 +34,26 @@ export function ProductCard({
 }: ProductCardProps) {
   const reduce = useReducedMotion();
   const { addItem } = useCart();
+  const { settings } = useSettings();
   const isCustomOrder = product.category === "Custom Order";
   const isGallery = isCustomOrder || productIsGalleryMode(product.images);
   const showColors = !isGallery && productHasColorOptions(product.images);
   const configuredSizes = product.sizes?.length ? product.sizes : [];
-  const showSizes = configuredSizes.length > 0;
+  const showSizes = !isCustomOrder && configuredSizes.length > 0;
   const sizeLabel = getCategoryAttributes(product.category).sizeLabel;
+
+  const rawPhone = settings?.whatsapp_number || settings?.contact_phone || "";
+  const digits = rawPhone.replace(/\D/g, "");
+  const waPhone =
+    digits.startsWith("0") && digits.length === 11
+      ? `234${digits.slice(1)}`
+      : digits;
+  const waMessage = encodeURIComponent(
+    `Hi Printiful, I'm interested in this custom order: "${product.title}". Could you provide more details and a quote?`,
+  );
+  const customOrderHref = waPhone
+    ? `https://wa.me/${waPhone}?text=${waMessage}`
+    : `mailto:${settings?.contact_email || "hello@printifulbrand.com"}?subject=${encodeURIComponent(`Custom Order Inquiry: ${product.title}`)}`;
 
   let images = (showColors || isGallery) && product.images?.length
     ? product.images
@@ -117,9 +132,15 @@ export function ProductCard({
             <h3 className="font-heading text-xl font-semibold leading-tight">
               {product.title}
             </h3>
-            <p className="font-ui text-sm font-semibold text-brand-purple dark:text-brand-yellow">
-              {formatNaira(product.price)}
-            </p>
+            {isCustomOrder ? (
+              <p className="font-ui text-xs font-semibold text-brand-purple dark:text-brand-yellow">
+                Custom Order • Portfolio
+              </p>
+            ) : (
+              <p className="font-ui text-sm font-semibold text-brand-purple dark:text-brand-yellow">
+                {formatNaira(product.price)}
+              </p>
+            )}
           </div>
         </Link>
       </motion.div>
@@ -161,9 +182,15 @@ export function ProductCard({
             <h3 className="mt-1 font-heading text-xl font-semibold leading-tight">
               {product.title}
             </h3>
-            <p className="mt-1 font-ui text-sm font-semibold">
-              {formatNaira(price)}
-            </p>
+            {isCustomOrder ? (
+              <p className="mt-1 font-ui text-xs font-semibold uppercase tracking-wider text-brand-purple dark:text-brand-yellow">
+                Custom Order • Portfolio
+              </p>
+            ) : (
+              <p className="mt-1 font-ui text-sm font-semibold">
+                {formatNaira(price)}
+              </p>
+            )}
             {reviewSummary && reviewSummary.count > 0 ? (
               <div className="mt-1.5 flex items-center gap-2">
                 <StarRating value={reviewSummary.average} />
@@ -236,20 +263,33 @@ export function ProductCard({
           )}
 
           <div className="mt-auto space-y-2">
-            <motion.button
-              type="button"
-              onClick={handleAdd}
-              whileTap={reduce ? undefined : { scale: 0.97 }}
-              className={cn(
-                "inline-flex w-full items-center justify-center gap-2 py-3 font-ui text-sm font-semibold text-white transition-colors",
-                added
-                  ? "no-hover bg-brand-purple dark:bg-brand-yellow dark:text-brand-black"
-                  : "bg-brand-black hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white",
-              )}
-            >
-              <ShoppingBag size={16} />
-              {added ? "Added!" : "Add to Cart"}
-            </motion.button>
+            {isCustomOrder ? (
+              <motion.a
+                href={customOrderHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileTap={reduce ? undefined : { scale: 0.97 }}
+                className="inline-flex w-full items-center justify-center gap-2 bg-brand-purple py-3 font-ui text-sm font-semibold text-white transition-opacity hover:opacity-90 dark:bg-brand-yellow dark:text-brand-black"
+              >
+                <MessageSquareText size={16} />
+                Request Custom Order
+              </motion.a>
+            ) : (
+              <motion.button
+                type="button"
+                onClick={handleAdd}
+                whileTap={reduce ? undefined : { scale: 0.97 }}
+                className={cn(
+                  "inline-flex w-full items-center justify-center gap-2 py-3 font-ui text-sm font-semibold text-white transition-colors",
+                  added
+                    ? "no-hover bg-brand-purple dark:bg-brand-yellow dark:text-brand-black"
+                    : "bg-brand-black hover:bg-brand-purple dark:bg-brand-yellow dark:text-brand-black dark:hover:bg-brand-purple dark:hover:text-white",
+                )}
+              >
+                <ShoppingBag size={16} />
+                {added ? "Added!" : "Add to Cart"}
+              </motion.button>
+            )}
             <button
               type="button"
               onClick={() => setReviewsOpen(true)}
