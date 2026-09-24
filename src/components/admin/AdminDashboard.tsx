@@ -604,7 +604,17 @@ function ProductsTab({
         cfg.sizesDefaultOn ? [...cfg.defaultSelectedSizes] : [],
       );
       setColors([]);
-      setGalleryImages([]);
+      if (category === "Custom Order" && form.image_url) {
+        setGalleryImages([{ image_url: form.image_url }]);
+      } else {
+        setGalleryImages([]);
+      }
+    } else if (
+      category === "Custom Order" &&
+      galleryImages.length === 0 &&
+      form.image_url
+    ) {
+      setGalleryImages([{ image_url: form.image_url }]);
     }
   };
 
@@ -685,6 +695,12 @@ function ProductsTab({
       const url = data.image_url as string;
       if (target === "main") {
         setForm((f) => ({ ...f, image_url: url }));
+        if (form.category === "Custom Order") {
+          setGalleryImages((prev) => {
+            if (prev.length === 0) return [{ image_url: url }];
+            return prev.map((g, i) => (i === 0 ? { ...g, image_url: url } : g));
+          });
+        }
       } else {
         setColors((prev) =>
           prev.map((c, i) => (i === target ? { ...c, image_url: url } : c)),
@@ -800,23 +816,30 @@ function ProductsTab({
         .map((g) => ({ image_url: g.image_url.trim() }))
         .filter((g) => g.image_url);
 
-      const primaryUrl = validGallery[0]?.image_url || coverUrl;
+      const coverUrl = form.image_url.trim();
+
+      const allUrls: string[] = [];
+      if (validGallery.length > 0) {
+        validGallery.forEach((item) => {
+          if (!allUrls.includes(item.image_url)) {
+            allUrls.push(item.image_url);
+          }
+        });
+      }
+      if (coverUrl && !allUrls.includes(coverUrl)) {
+        allUrls.unshift(coverUrl);
+      }
+
+      const primaryUrl = allUrls[0] || "";
+
       const galleryPayloadImages =
-        validGallery.length > 0
-          ? validGallery.map((g, index) => ({
-              image_url: g.image_url,
+        allUrls.length > 0
+          ? allUrls.map((url, index) => ({
+              image_url: url,
               color_code: GALLERY_SENTINEL,
               is_primary: index === 0,
             }))
-          : primaryUrl
-            ? [
-                {
-                  image_url: primaryUrl,
-                  color_code: GALLERY_SENTINEL,
-                  is_primary: true,
-                },
-              ]
-            : undefined;
+          : undefined;
 
       const payload = {
         title: form.title,
@@ -1004,7 +1027,22 @@ function ProductsTab({
       image_url: p.image_url || "",
       is_active: p.is_active === 1 || p.is_active === true,
     });
-    if (p.images?.length) {
+    if (p.category === "Custom Order") {
+      setEnableColors(false);
+      setColors([]);
+      const urls: string[] = [];
+      if (p.images?.length) {
+        p.images.forEach((img) => {
+          if (img.image_url && !urls.includes(img.image_url)) {
+            urls.push(img.image_url);
+          }
+        });
+      }
+      if (p.image_url && !urls.includes(p.image_url)) {
+        urls.unshift(p.image_url);
+      }
+      setGalleryImages(urls.map((image_url) => ({ image_url })));
+    } else if (p.images?.length) {
       if (productIsGalleryMode(p.images)) {
         setGalleryImages(
           p.images.map((img) => ({ image_url: img.image_url || "" })),

@@ -33,19 +33,31 @@ export function ProductCard({
 }: ProductCardProps) {
   const reduce = useReducedMotion();
   const { addItem } = useCart();
-  const isGallery = productIsGalleryMode(product.images);
-  const showColors = productHasColorOptions(product.images);
+  const isCustomOrder = product.category === "Custom Order";
+  const isGallery = isCustomOrder || productIsGalleryMode(product.images);
+  const showColors = !isGallery && productHasColorOptions(product.images);
   const configuredSizes = product.sizes?.length ? product.sizes : [];
   const showSizes = configuredSizes.length > 0;
   const sizeLabel = getCategoryAttributes(product.category).sizeLabel;
 
-  const images = (showColors || isGallery)
-    ? product.images!
+  let images = (showColors || isGallery) && product.images?.length
+    ? product.images
     : product.image_url
-      ? [{ image_url: product.image_url, color_code: "Default|#111111" }]
+      ? [{ image_url: product.image_url, color_code: "Gallery|#000000" }]
       : product.images?.length
         ? product.images
-        : [{ image_url: "/assets/tshirt_base.svg", color_code: "Default|#111111" }];
+        : [{ image_url: "/assets/tshirt_base.svg", color_code: "Gallery|#000000" }];
+
+  if (
+    isCustomOrder &&
+    product.image_url &&
+    !images.some((img) => img.image_url === product.image_url)
+  ) {
+    images = [
+      { image_url: product.image_url, color_code: "Gallery|#000000" },
+      ...images,
+    ];
+  }
 
   const sizes = showSizes
     ? configuredSizes
