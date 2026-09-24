@@ -811,7 +811,7 @@ function ProductsTab({
       return;
     }
 
-    if (form.category === "Custom Order") {
+    if (!enableColors) {
       const validGallery = galleryImages
         .map((g) => ({ image_url: g.image_url.trim() }))
         .filter((g) => g.image_url);
@@ -1640,84 +1640,275 @@ function ProductsTab({
           </div>
         </div>
 
-        {/* Image: cover / fallback when no per-color images */}
-        <div className="space-y-2 border border-border bg-surface-alt p-3">
-          <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
-            {enableColors && colors.length > 0
-              ? "Cover image (fallback)"
-              : "Product image"}
-          </p>
-          <p className="font-ui text-[11px] text-muted">
-            {enableColors && colors.length > 0
-              ? "Used as fallback if a color has no photo, and as the listing thumbnail."
-              : "Main photo shown on the storefront."}
-          </p>
-          <p className="rounded-sm border border-brand-purple/25 bg-brand-purple/5 px-3 py-2 font-ui text-xs leading-relaxed text-foreground dark:border-brand-yellow/30 dark:bg-brand-yellow/10">
-            <span className="font-semibold text-brand-purple dark:text-brand-yellow">
-              Max file size: 5MB.
-            </span>{" "}
-            Larger files are rejected. Allowed formats: JPEG, PNG, WebP, GIF.
-          </p>
-          {form.image_url ? (
-            <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
-              <SmartImage
-                src={form.image_url}
-                alt="Preview"
-                fillCover
-                sizes="180px"
-              />
+        {/* Image: multi-image gallery (when colors off) OR single cover/fallback image (when colors on) */}
+        {!enableColors ? (
+          <div className="space-y-3 border border-border bg-surface-alt p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
+                  Product Images (Swipe Gallery)
+                </p>
+                <p className="font-ui text-[11px] text-muted">
+                  Add one or multiple photos. If 2+ images are uploaded, shoppers swipe left/right between them on the store.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => {
+                  galleryTargetRef.current = "new";
+                  galleryFileRef.current?.click();
+                }}
+                className="inline-flex shrink-0 items-center gap-1.5 border border-border bg-brand-purple px-3 py-1.5 font-ui text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 dark:bg-brand-yellow dark:text-brand-black"
+              >
+                <Plus size={14} /> Add image
+              </button>
             </div>
-          ) : (
-            <div className="flex h-28 items-center justify-center border border-dashed border-border text-muted">
-              <ImagePlus size={28} strokeWidth={1.25} />
-            </div>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void uploadImage(file, "main");
-            }}
-          />
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => {
-              setTarget("main");
-              fileRef.current?.click();
-            }}
-            className="inline-flex w-full items-center justify-center gap-2 border border-border bg-surface px-3 py-2 font-ui text-sm font-medium disabled:opacity-60"
-          >
-            <Upload size={16} />
-            {uploading && uploadTarget === "main"
-              ? "Optimizing & uploading…"
-              : "Import image from device"}
-          </button>
-          {uploadError ? (
-            <p
-              role="alert"
-              className="border border-red-500/30 bg-red-500/10 px-3 py-2 font-ui text-xs leading-relaxed text-red-700 dark:text-red-300"
-            >
-              {uploadError}
+
+            <p className="rounded-sm border border-brand-purple/25 bg-brand-purple/5 px-3 py-2 font-ui text-xs leading-relaxed text-foreground dark:border-brand-yellow/30 dark:bg-brand-yellow/10">
+              <span className="font-semibold text-brand-purple dark:text-brand-yellow">
+                Max file size: 5MB.
+              </span>{" "}
+              Allowed formats: JPEG, PNG, WebP, GIF.
             </p>
-          ) : (
+
+            <input
+              ref={galleryFileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  void uploadGalleryImage(file, galleryTargetRef.current);
+                }
+              }}
+            />
+
+            {uploadError && (
+              <p
+                role="alert"
+                className="border border-red-500/30 bg-red-500/10 px-3 py-2 font-ui text-xs leading-relaxed text-red-700 dark:text-red-300"
+              >
+                {uploadError}
+              </p>
+            )}
+
+            {galleryImages.length === 0 && !form.image_url ? (
+              <div className="border border-dashed border-border bg-surface p-5 text-center">
+                <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-surface-alt text-muted">
+                  <ImagePlus size={24} strokeWidth={1.5} />
+                </div>
+                <p className="font-ui text-xs text-muted">
+                  No images uploaded yet.
+                </p>
+                <div className="mt-3 flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    disabled={uploading}
+                    onClick={() => {
+                      galleryTargetRef.current = "new";
+                      galleryFileRef.current?.click();
+                    }}
+                    className="inline-flex items-center gap-1.5 border border-border bg-surface px-3 py-1.5 font-ui text-xs font-semibold text-foreground hover:border-brand-purple dark:hover:border-brand-yellow"
+                  >
+                    <Upload size={14} /> Import image from device
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGalleryImages([{ image_url: "" }])}
+                    className="inline-flex items-center gap-1 border border-border bg-surface px-3 py-1.5 font-ui text-xs font-medium text-foreground hover:border-brand-purple dark:hover:border-brand-yellow"
+                  >
+                    <Plus size={14} /> Enter image URL
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {(galleryImages.length > 0
+                  ? galleryImages
+                  : form.image_url
+                    ? [{ image_url: form.image_url }]
+                    : []
+                ).map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 border border-border bg-surface p-2.5"
+                  >
+                    <div className="relative size-16 shrink-0 overflow-hidden border border-border bg-surface-alt">
+                      {item.image_url ? (
+                        <SmartImage
+                          src={item.image_url}
+                          alt={`Slide ${index + 1}`}
+                          fillCover
+                          sizes="64px"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-muted">
+                          <ImagePlus size={20} strokeWidth={1.25} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-ui text-xs font-bold text-foreground">
+                          Image {index + 1}{" "}
+                          {index === 0 && (
+                            <span className="font-semibold text-brand-purple dark:text-brand-yellow">
+                              (Cover slide)
+                            </span>
+                          )}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={uploading}
+                          onClick={() => {
+                            galleryTargetRef.current = index;
+                            galleryFileRef.current?.click();
+                          }}
+                          className="font-ui text-xs font-medium text-brand-purple hover:underline dark:text-brand-yellow"
+                        >
+                          Replace photo
+                        </button>
+                      </div>
+                      <input
+                        placeholder="Or paste image URL"
+                        value={item.image_url}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setGalleryImages((prev) => {
+                            const arr = prev.length > 0 ? [...prev] : [{ image_url: form.image_url }];
+                            arr[index] = { image_url: val };
+                            return arr;
+                          });
+                          if (index === 0) setForm((f) => ({ ...f, image_url: val }));
+                        }}
+                        className="w-full border border-border bg-surface-alt px-2.5 py-1 font-ui text-xs outline-none focus:border-brand-purple"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGalleryImages((prev) => {
+                          const updated = prev.filter((_, i) => i !== index);
+                          if (index === 0) {
+                            setForm((f) => ({ ...f, image_url: updated[0]?.image_url || "" }));
+                          }
+                          return updated;
+                        });
+                      }}
+                      className="inline-flex size-8 shrink-0 items-center justify-center text-muted transition-colors hover:text-red-500"
+                      aria-label={`Remove image ${index + 1}`}
+                      title="Remove image"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={uploading}
+                    onClick={() => {
+                      galleryTargetRef.current = "new";
+                      galleryFileRef.current?.click();
+                    }}
+                    className="inline-flex items-center gap-1.5 border border-brand-purple bg-brand-purple/10 px-3 py-1.5 font-ui text-xs font-bold text-brand-purple transition-colors hover:bg-brand-purple hover:text-white dark:border-brand-yellow dark:bg-brand-yellow/10 dark:text-brand-yellow dark:hover:bg-brand-yellow dark:hover:text-brand-black"
+                  >
+                    <Upload size={13} /> Import next image (Slide {(galleryImages.length || (form.image_url ? 1 : 0)) + 1})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setGalleryImages((prev) => [
+                        ...(prev.length > 0 ? prev : form.image_url ? [{ image_url: form.image_url }] : []),
+                        { image_url: "" },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 font-ui text-xs text-muted hover:text-foreground"
+                  >
+                    <Plus size={13} /> Add URL slot
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2 border border-border bg-surface-alt p-3">
+            <p className="font-ui text-xs font-semibold uppercase tracking-wide text-muted">
+              Cover image (fallback)
+            </p>
             <p className="font-ui text-[11px] text-muted">
-              Does not accept files over 5MB.
+              Used as fallback if a color has no photo, and as the listing thumbnail.
             </p>
-          )}
-          <input
-            placeholder="Or paste image URL"
-            value={form.image_url}
-            onChange={(e) => {
-              setUploadError("");
-              setForm((f) => ({ ...f, image_url: e.target.value }));
-            }}
-            className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple"
-          />
-        </div>
+            <p className="rounded-sm border border-brand-purple/25 bg-brand-purple/5 px-3 py-2 font-ui text-xs leading-relaxed text-foreground dark:border-brand-yellow/30 dark:bg-brand-yellow/10">
+              <span className="font-semibold text-brand-purple dark:text-brand-yellow">
+                Max file size: 5MB.
+              </span>{" "}
+              Larger files are rejected. Allowed formats: JPEG, PNG, WebP, GIF.
+            </p>
+            {form.image_url ? (
+              <div className="relative mx-auto h-36 w-full max-w-[180px] overflow-hidden border border-border bg-surface">
+                <SmartImage
+                  src={form.image_url}
+                  alt="Preview"
+                  fillCover
+                  sizes="180px"
+                />
+              </div>
+            ) : (
+              <div className="flex h-28 items-center justify-center border border-dashed border-border text-muted">
+                <ImagePlus size={28} strokeWidth={1.25} />
+              </div>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadImage(file, "main");
+              }}
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => {
+                setTarget("main");
+                fileRef.current?.click();
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 border border-border bg-surface px-3 py-2 font-ui text-sm font-medium disabled:opacity-60"
+            >
+              <Upload size={16} />
+              {uploading && uploadTarget === "main"
+                ? "Optimizing & uploading…"
+                : "Import image from device"}
+            </button>
+            {uploadError ? (
+              <p
+                role="alert"
+                className="border border-red-500/30 bg-red-500/10 px-3 py-2 font-ui text-xs leading-relaxed text-red-700 dark:text-red-300"
+              >
+                {uploadError}
+              </p>
+            ) : (
+              <p className="font-ui text-[11px] text-muted">
+                Does not accept files over 5MB.
+              </p>
+            )}
+            <input
+              placeholder="Or paste image URL"
+              value={form.image_url}
+              onChange={(e) => {
+                setUploadError("");
+                setForm((f) => ({ ...f, image_url: e.target.value }));
+              }}
+              className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple"
+            />
+          </div>
+        )}
 
         {/* Live / Hidden toggle */}
         <label className="flex cursor-pointer items-center justify-between border border-border bg-surface-alt px-4 py-3">
