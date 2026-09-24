@@ -23,7 +23,13 @@ import {
   productUsesSizes,
   sizeOptionsForProduct,
 } from "@/lib/product-attributes";
-import { encodeProductColor, hexFromColorName, parseProductColor } from "@/lib/product-color";
+import {
+  GALLERY_SENTINEL,
+  encodeProductColor,
+  hexFromColorName,
+  parseProductColor,
+  productIsGalleryMode,
+} from "@/lib/product-color";
 import { formatNaira, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { StarRating } from "@/components/catalog/StarRating";
@@ -548,7 +554,9 @@ function ProductsTab({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const colorFileRef = useRef<HTMLInputElement>(null);
+  const galleryFileRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<"main" | number>("main");
+  const galleryTargetRef = useRef<"new" | number>("new");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadTarget, setUploadTarget] = useState<"main" | number>("main");
@@ -562,6 +570,9 @@ function ProductsTab({
   });
   const [colors, setColors] = useState<
     Array<{ name: string; hex: string; image_url: string }>
+  >([]);
+  const [galleryImages, setGalleryImages] = useState<
+    Array<{ image_url: string }>
   >([]);
   const apparelDefaults = getCategoryAttributes("Apparels");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([
@@ -593,6 +604,7 @@ function ProductsTab({
         cfg.sizesDefaultOn ? [...cfg.defaultSelectedSizes] : [],
       );
       setColors([]);
+      setGalleryImages([]);
     }
   };
 
@@ -607,6 +619,7 @@ function ProductsTab({
       is_active: true,
     });
     setColors([]);
+    setGalleryImages([]);
     setSelectedSizes([...cfg.defaultSelectedSizes]);
     setEnableColors(cfg.colorsDefaultOn);
     setEnableSizes(cfg.sizesDefaultOn);
@@ -620,6 +633,7 @@ function ProductsTab({
   const clearFileInputs = () => {
     if (fileRef.current) fileRef.current.value = "";
     if (colorFileRef.current) colorFileRef.current.value = "";
+    if (galleryFileRef.current) galleryFileRef.current.value = "";
   };
 
   const uploadImage = async (file: File, target: "main" | number = "main") => {
@@ -692,8 +706,150 @@ function ProductsTab({
     }
   };
 
+  const uploadGalleryImage = async (
+    file: File,
+    target: "new" | number = "new",
+  ) => {
+    const maxBytes = 5 * 1024 * 1024;
+    const allowed = new Set([
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]);
+
+    setUploadError("");
+
+    if (!file.type.startsWith("image/") || !allowed.has(file.type)) {
+      const reason = `Upload rejected: “${file.name}” is not an allowed image type (${file.type || "unknown"}). Use JPEG, PNG, WebP, or GIF. Max size: 5MB.`;
+      setUploadError(reason);
+      setMessage(reason);
+      clearFileInputs();
+      return;
+    }
+
+    if (file.size > maxBytes) {
+      const reason = `Upload rejected: “${file.name}” is ${formatMb(file.size)}MB. Maximum allowed is 5MB. Please choose a smaller image.`;
+      setUploadError(reason);
+      setMessage(reason);
+      clearFileInputs();
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("image", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const reason =
+          (data.error as string) ||
+          "Upload rejected: the server could not accept this image.";
+        setUploadError(reason);
+        setMessage(reason);
+        return;
+      }
+      const url = data.image_url as string;
+      if (target === "new") {
+        setGalleryImages((prev) => [...prev, { image_url: url }]);
+        setForm((f) => (f.image_url ? f : { ...f, image_url: url }));
+      } else {
+        setGalleryImages((prev) =>
+          prev.map((g, i) => (i === target ? { ...g, image_url: url } : g)),
+        );
+        if (target === 0 || !form.image_url) {
+          setForm((f) => ({ ...f, image_url: url }));
+        }
+      }
+      setUploadError("");
+      const original = Number(data.originalBytes) || file.size;
+      const optimized = Number(data.optimizedBytes) || file.size;
+      const savedKb = Math.max(0, Math.round((original - optimized) / 1024));
+      setMessage(
+        savedKb > 0
+          ? `Gallery image uploaded and optimized (−${savedKb}KB).`
+          : "Gallery image uploaded.",
+      );
+    } finally {
+      setUploading(false);
+      clearFileInputs();
+    }
+  };
+
   const save = async (e: FormEvent) => {
     e.preventDefault();
+    const basePrice = Number(form.price) || 0;
+    const sizesToSave = enableSizes ? selectedSizes : [];
+    const coverUrl = form.image_url || "";
+
+    if (enableSizes && sizesToSave.length === 0) {
+      setMessage(
+        "Size options are on — select at least one size, or turn sizes off for this product.",
+      );
+      return;
+    }
+
+    if (form.category === "Custom Order") {
+      const validGallery = galleryImages
+        .map((g) => ({ image_url: g.image_url.trim() }))
+        .filter((g) => g.image_url);
+
+      const primaryUrl = validGallery[0]?.image_url || coverUrl;
+      const galleryPayloadImages =
+        validGallery.length > 0
+          ? validGallery.map((g, index) => ({
+              image_url: g.image_url,
+              color_code: GALLERY_SENTINEL,
+              is_primary: index === 0,
+            }))
+          : primaryUrl
+            ? [
+                {
+                  image_url: primaryUrl,
+                  color_code: GALLERY_SENTINEL,
+                  is_primary: true,
+                },
+              ]
+            : undefined;
+
+      const payload = {
+        title: form.title,
+        description: form.description,
+        price: basePrice,
+        category: form.category,
+        image_url: primaryUrl || undefined,
+        is_active: form.is_active,
+        images: galleryPayloadImages,
+        sizes: sizesToSave.map((size_name) => ({
+          size_name,
+          price: basePrice,
+        })),
+      };
+
+      const url =
+        editingId != null ? `/api/products/${editingId}` : "/api/products";
+      const method = editingId != null ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: authHeaders(token),
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        setMessage("Failed to save product.");
+        return;
+      }
+      setMessage(editingId != null ? "Product updated." : "Product created.");
+      reset();
+      onChange();
+      return;
+    }
+
     const cleanedColors = enableColors
       ? colors
           .map((c) => {
@@ -708,10 +864,6 @@ function ProductsTab({
           .filter((c) => c.name)
       : [];
 
-    const basePrice = Number(form.price) || 0;
-    const sizesToSave = enableSizes ? selectedSizes : [];
-
-    const coverUrl = form.image_url || "";
     const colorImages =
       cleanedColors.length > 0
         ? cleanedColors.map((c, index) => ({
@@ -734,13 +886,6 @@ function ProductsTab({
     if (enableColors && cleanedColors.length === 0) {
       setMessage(
         "Color options are on — add at least one color, or turn colors off for this product.",
-      );
-      return;
-    }
-
-    if (enableSizes && sizesToSave.length === 0) {
-      setMessage(
-        "Size options are on — select at least one size, or turn sizes off for this product.",
       );
       return;
     }
@@ -860,18 +1005,28 @@ function ProductsTab({
       is_active: p.is_active === 1 || p.is_active === true,
     });
     if (p.images?.length) {
-      const loaded = p.images
-        .map((img) => {
-          const parsed = parseProductColor(img.color_code);
-          return {
-            name: parsed.name,
-            hex: parsed.hex,
-            image_url: img.image_url || "",
-          };
-        })
-        .filter((c) => c.name && c.name !== "Default");
-      setColors(loaded);
+      if (productIsGalleryMode(p.images)) {
+        setGalleryImages(
+          p.images.map((img) => ({ image_url: img.image_url || "" })),
+        );
+        setColors([]);
+        setEnableColors(false);
+      } else {
+        setGalleryImages([]);
+        const loaded = p.images
+          .map((img) => {
+            const parsed = parseProductColor(img.color_code);
+            return {
+              name: parsed.name,
+              hex: parsed.hex,
+              image_url: img.image_url || "",
+            };
+          })
+          .filter((c) => c.name && c.name !== "Default");
+        setColors(loaded);
+      }
     } else {
+      setGalleryImages([]);
       setColors([]);
     }
   };
@@ -948,217 +1103,380 @@ function ProductsTab({
             </p>
           </div>
 
-          {/* Colors toggle + editor */}
-          <div className="space-y-2 border border-border bg-surface p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="font-ui text-sm font-semibold">Color options</p>
-                <p className="font-ui text-[11px] text-muted">
-                  {categoryAttrs.colorHelp}
-                </p>
+          {/* Gallery Images (Custom Order) OR Colors toggle + editor */}
+          {form.category === "Custom Order" ? (
+            <div className="space-y-3 border border-border bg-surface p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="font-ui text-sm font-semibold">
+                    Gallery Images (Swipe Carousel)
+                  </p>
+                  <p className="font-ui text-[11px] text-muted">
+                    Upload multiple product photos. Customers will swipe left and right across these images on the store card.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    galleryTargetRef.current = "new";
+                    galleryFileRef.current?.click();
+                  }}
+                  disabled={uploading}
+                  className="inline-flex shrink-0 items-center gap-1 border border-border bg-brand-purple px-2.5 py-1.5 font-ui text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 dark:bg-brand-yellow dark:text-brand-black"
+                >
+                  <Plus size={14} /> Add photo
+                </button>
               </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={enableColors}
-                onClick={() => {
-                  const next = !enableColors;
-                  setEnableColors(next);
-                  if (!next) setColors([]);
-                  else if (colors.length === 0) {
-                    setColors([{ name: "", hex: "#888888", image_url: "" }]);
+
+              <input
+                ref={galleryFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    void uploadGalleryImage(file, galleryTargetRef.current);
                   }
                 }}
-                className={cn(
-                  "relative h-7 w-12 shrink-0 rounded-full transition-colors",
-                  enableColors ? "bg-emerald-500" : "bg-border",
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
-                    enableColors && "translate-x-5",
-                  )}
-                />
-              </button>
-            </div>
+              />
 
-            {enableColors && (
-              <>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-ui text-[11px] text-muted">
-                    Upload a photo per color — storefront image swaps on click.
+              {galleryImages.length === 0 ? (
+                <div className="border border-dashed border-border bg-surface-alt p-4 text-center">
+                  <p className="font-ui text-xs text-muted">
+                    No gallery images added yet.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setColors((prev) => [
-                        ...prev,
-                        { name: "", hex: "#888888", image_url: "" },
-                      ])
-                    }
-                    className="inline-flex items-center gap-1 border border-border bg-surface-alt px-2 py-1 font-ui text-xs font-medium"
-                  >
-                    <Plus size={14} /> Add color
-                  </button>
+                  <div className="mt-2 flex flex-wrap justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        galleryTargetRef.current = "new";
+                        galleryFileRef.current?.click();
+                      }}
+                      className="inline-flex items-center gap-1 border border-border bg-surface px-2.5 py-1 font-ui text-xs font-medium text-foreground hover:border-brand-purple dark:hover:border-brand-yellow"
+                    >
+                      <Upload size={12} /> Upload from device
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGalleryImages([{ image_url: "" }])}
+                      className="inline-flex items-center gap-1 border border-border bg-surface px-2.5 py-1 font-ui text-xs font-medium text-foreground hover:border-brand-purple dark:hover:border-brand-yellow"
+                    >
+                      <Plus size={12} /> Enter image URL
+                    </button>
+                  </div>
                 </div>
-                <input
-                  ref={colorFileRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    const target = uploadTargetRef.current;
-                    if (file && typeof target === "number") {
-                      void uploadImage(file, target);
-                    }
-                  }}
-                />
-                {colors.length === 0 ? (
-                  <p className="border border-dashed border-border bg-surface-alt px-3 py-3 font-ui text-xs text-muted">
-                    No colors yet — add one, or turn color options off.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {colors.map((color, index) => (
-                      <div
-                        key={index}
-                        className="space-y-2 border border-border bg-surface-alt p-2"
-                      >
-                        <div className="flex flex-wrap items-center gap-2">
-                          <input
-                            type="color"
-                            value={
-                              /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(
-                                color.hex,
-                              )
-                                ? color.hex.length === 4
-                                  ? `#${color.hex[1]}${color.hex[1]}${color.hex[2]}${color.hex[2]}${color.hex[3]}${color.hex[3]}`
-                                  : color.hex
-                                : "#888888"
-                            }
-                            onChange={(e) =>
-                              setColors((prev) =>
-                                prev.map((c, i) =>
-                                  i === index
-                                    ? { ...c, hex: e.target.value }
-                                    : c,
-                                ),
-                              )
-                            }
-                            className="size-9 cursor-pointer border border-border bg-transparent p-0"
-                            aria-label={`Color swatch ${index + 1}`}
+              ) : (
+                <div className="space-y-2.5">
+                  {galleryImages.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2.5 border border-border bg-surface-alt p-2"
+                    >
+                      <div className="relative size-14 shrink-0 overflow-hidden border border-border bg-surface">
+                        {item.image_url ? (
+                          <SmartImage
+                            src={item.image_url}
+                            alt={`Slide ${index + 1}`}
+                            fillCover
+                            sizes="56px"
                           />
-                          <input
-                            placeholder="Color name (e.g. Black)"
-                            value={color.name}
-                            onChange={(e) => {
-                              const name = e.target.value;
-                              const matched = hexFromColorName(name);
-                              setColors((prev) =>
-                                prev.map((c, i) =>
-                                  i === index
-                                    ? {
-                                        ...c,
-                                        name,
-                                        hex: matched || c.hex,
-                                      }
-                                    : c,
-                                ),
-                              );
-                            }}
-                            className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
-                          />
-                          <input
-                            placeholder="#000000"
-                            value={color.hex}
-                            onChange={(e) =>
-                              setColors((prev) =>
-                                prev.map((c, i) =>
-                                  i === index
-                                    ? { ...c, hex: e.target.value }
-                                    : c,
-                                ),
-                              )
-                            }
-                            className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
-                          />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-muted">
+                            <ImagePlus size={18} strokeWidth={1.25} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-ui text-[11px] font-semibold text-muted">
+                            Slide {index + 1}{" "}
+                            {index === 0 && (
+                              <span className="text-brand-purple dark:text-brand-yellow">
+                                • Cover slide
+                              </span>
+                            )}
+                          </span>
                           <button
                             type="button"
-                            onClick={() =>
-                              setColors((prev) =>
-                                prev.filter((_, i) => i !== index),
-                              )
-                            }
-                            className="inline-flex size-9 items-center justify-center border border-border text-muted"
-                            aria-label={`Remove color ${color.name || index + 1}`}
+                            onClick={() => {
+                              galleryTargetRef.current = index;
+                              galleryFileRef.current?.click();
+                            }}
+                            disabled={uploading}
+                            className="font-ui text-[11px] font-medium text-brand-purple hover:underline dark:text-brand-yellow"
                           >
-                            <Trash2 size={14} />
+                            Replace
                           </button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {color.image_url ? (
-                            <div className="relative size-14 shrink-0 overflow-hidden border border-border bg-surface">
-                              <SmartImage
-                                src={color.image_url}
-                                alt={color.name || `Color ${index + 1}`}
-                                fillCover
-                                sizes="56px"
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex size-14 shrink-0 items-center justify-center border border-dashed border-border text-muted">
-                              <ImagePlus size={18} strokeWidth={1.25} />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <button
-                              type="button"
-                              disabled={uploading}
-                              onClick={() => {
-                                setTarget(index);
-                                colorFileRef.current?.click();
-                              }}
-                              className="inline-flex w-full items-center justify-center gap-1.5 border border-border bg-surface px-2 py-1.5 font-ui text-xs font-medium disabled:opacity-60"
-                            >
-                              <Upload size={14} />
-                              {uploading && uploadTarget === index
-                                ? "Uploading…"
-                                : color.image_url
-                                  ? "Replace color image"
-                                  : "Upload color image"}
-                            </button>
+                        <input
+                          placeholder="Or paste image URL"
+                          value={item.image_url}
+                          onChange={(e) =>
+                            setGalleryImages((prev) =>
+                              prev.map((g, i) =>
+                                i === index
+                                  ? { ...g, image_url: e.target.value }
+                                  : g,
+                              ),
+                            )
+                          }
+                          className="w-full border border-border bg-surface px-2 py-1 font-ui text-[11px] outline-none focus:border-brand-purple"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGalleryImages((prev) =>
+                            prev.filter((_, i) => i !== index),
+                          )
+                        }
+                        className="inline-flex size-8 items-center justify-center text-muted transition-colors hover:text-red-500"
+                        aria-label={`Remove slide ${index + 1}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setGalleryImages((prev) => [
+                          ...prev,
+                          { image_url: "" },
+                        ])
+                      }
+                      className="inline-flex items-center gap-1 font-ui text-xs font-medium text-muted hover:text-foreground"
+                    >
+                      <Plus size={12} /> Add another URL slot
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        galleryTargetRef.current = "new";
+                        galleryFileRef.current?.click();
+                      }}
+                      className="inline-flex items-center gap-1 font-ui text-xs font-medium text-brand-purple hover:underline dark:text-brand-yellow"
+                    >
+                      <Upload size={12} /> Upload another image
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2 border border-border bg-surface p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-ui text-sm font-semibold">Color options</p>
+                  <p className="font-ui text-[11px] text-muted">
+                    {categoryAttrs.colorHelp}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={enableColors}
+                  onClick={() => {
+                    const next = !enableColors;
+                    setEnableColors(next);
+                    if (!next) setColors([]);
+                    else if (colors.length === 0) {
+                      setColors([{ name: "", hex: "#888888", image_url: "" }]);
+                    }
+                  }}
+                  className={cn(
+                    "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+                    enableColors ? "bg-emerald-500" : "bg-border",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition-transform",
+                      enableColors && "translate-x-5",
+                    )}
+                  />
+                </button>
+              </div>
+
+              {enableColors && (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-ui text-[11px] text-muted">
+                      Upload a photo per color — storefront image swaps on click.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setColors((prev) => [
+                          ...prev,
+                          { name: "", hex: "#888888", image_url: "" },
+                        ])
+                      }
+                      className="inline-flex items-center gap-1 border border-border bg-surface-alt px-2 py-1 font-ui text-xs font-medium"
+                    >
+                      <Plus size={14} /> Add color
+                    </button>
+                  </div>
+                  <input
+                    ref={colorFileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      const target = uploadTargetRef.current;
+                      if (file && typeof target === "number") {
+                        void uploadImage(file, target);
+                      }
+                    }}
+                  />
+                  {colors.length === 0 ? (
+                    <p className="border border-dashed border-border bg-surface-alt px-3 py-3 font-ui text-xs text-muted">
+                      No colors yet — add one, or turn color options off.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {colors.map((color, index) => (
+                        <div
+                          key={index}
+                          className="space-y-2 border border-border bg-surface-alt p-2"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
                             <input
-                              placeholder="Or paste image URL for this color"
-                              value={color.image_url}
+                              type="color"
+                              value={
+                                /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(
+                                  color.hex,
+                                )
+                                  ? color.hex.length === 4
+                                    ? `#${color.hex[1]}${color.hex[1]}${color.hex[2]}${color.hex[2]}${color.hex[3]}${color.hex[3]}`
+                                    : color.hex
+                                  : "#888888"
+                              }
                               onChange={(e) =>
                                 setColors((prev) =>
                                   prev.map((c, i) =>
                                     i === index
-                                      ? { ...c, image_url: e.target.value }
+                                      ? { ...c, hex: e.target.value }
                                       : c,
                                   ),
                                 )
                               }
-                              className="w-full border border-border bg-surface px-2 py-1 font-ui text-[11px] outline-none focus:border-brand-purple"
+                              className="size-9 cursor-pointer border border-border bg-transparent p-0"
+                              aria-label={`Color swatch ${index + 1}`}
                             />
+                            <input
+                              placeholder="Color name (e.g. Black)"
+                              value={color.name}
+                              onChange={(e) => {
+                                const name = e.target.value;
+                                const matched = hexFromColorName(name);
+                                setColors((prev) =>
+                                  prev.map((c, i) =>
+                                    i === index
+                                      ? {
+                                          ...c,
+                                          name,
+                                          hex: matched || c.hex,
+                                        }
+                                      : c,
+                                  ),
+                                );
+                              }}
+                              className="min-w-[8rem] flex-1 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-brand-purple"
+                            />
+                            <input
+                              placeholder="#000000"
+                              value={color.hex}
+                              onChange={(e) =>
+                                setColors((prev) =>
+                                  prev.map((c, i) =>
+                                    i === index
+                                      ? { ...c, hex: e.target.value }
+                                      : c,
+                                  ),
+                                )
+                              }
+                              className="w-24 border border-border bg-surface px-2 py-1.5 font-mono text-xs outline-none focus:border-brand-purple"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setColors((prev) =>
+                                  prev.filter((_, i) => i !== index),
+                                )
+                              }
+                              className="inline-flex size-9 items-center justify-center border border-border text-muted"
+                              aria-label={`Remove color ${color.name || index + 1}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {color.image_url ? (
+                              <div className="relative size-14 shrink-0 overflow-hidden border border-border bg-surface">
+                                <SmartImage
+                                  src={color.image_url}
+                                  alt={color.name || `Color ${index + 1}`}
+                                  fillCover
+                                  sizes="56px"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex size-14 shrink-0 items-center justify-center border border-dashed border-border text-muted">
+                                <ImagePlus size={18} strokeWidth={1.25} />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={() => {
+                                  setTarget(index);
+                                  colorFileRef.current?.click();
+                                }}
+                                className="inline-flex w-full items-center justify-center gap-1.5 border border-border bg-surface px-2 py-1.5 font-ui text-xs font-medium disabled:opacity-60"
+                              >
+                                <Upload size={14} />
+                                {uploading && uploadTarget === index
+                                  ? "Uploading…"
+                                  : color.image_url
+                                    ? "Replace color image"
+                                    : "Upload color image"}
+                              </button>
+                              <input
+                                placeholder="Or paste image URL for this color"
+                                value={color.image_url}
+                                onChange={(e) =>
+                                  setColors((prev) =>
+                                    prev.map((c, i) =>
+                                      i === index
+                                        ? { ...c, image_url: e.target.value }
+                                        : c,
+                                    ),
+                                  )
+                                }
+                                className="w-full border border-border bg-surface px-2 py-1 font-ui text-[11px] outline-none focus:border-brand-purple"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
 
-            {!enableColors && (
-              <p className="font-ui text-xs text-muted">
-                Colors off — shoppers won&apos;t see a color picker for this
-                product.
-              </p>
-            )}
-          </div>
+              {!enableColors && (
+                <p className="font-ui text-xs text-muted">
+                  Colors off — shoppers won&apos;t see a color picker for this
+                  product.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Sizes toggle + editor */}
           <div className="space-y-2 border border-border bg-surface p-3">

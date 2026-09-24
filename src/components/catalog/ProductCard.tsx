@@ -9,10 +9,12 @@ import { useCart } from "@/context/CartContext";
 import {
   parseProductColor,
   productHasColorOptions,
+  productIsGalleryMode,
 } from "@/lib/product-color";
 import { getCategoryAttributes } from "@/lib/product-attributes";
 import { formatNaira, normalizeCategory, cn } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/SmartImage";
+import { ImageCarousel } from "@/components/catalog/ImageCarousel";
 import { StarRating } from "@/components/catalog/StarRating";
 import { ProductReviews } from "@/components/catalog/ProductReviews";
 
@@ -31,12 +33,13 @@ export function ProductCard({
 }: ProductCardProps) {
   const reduce = useReducedMotion();
   const { addItem } = useCart();
+  const isGallery = productIsGalleryMode(product.images);
   const showColors = productHasColorOptions(product.images);
   const configuredSizes = product.sizes?.length ? product.sizes : [];
   const showSizes = configuredSizes.length > 0;
   const sizeLabel = getCategoryAttributes(product.category).sizeLabel;
 
-  const images = showColors
+  const images = (showColors || isGallery)
     ? product.images!
     : product.image_url
       ? [{ image_url: product.image_url, color_code: "Default|#111111" }]
@@ -119,14 +122,24 @@ export function ProductCard({
         transition={{ duration: 0.3 }}
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-          <SmartImage
-            key={`${activeImage.image_url}-${colorIdx}`}
-            src={activeImage.image_url}
-            alt={`${product.title}${showColors ? ` — ${activeColor.name}` : ""}`}
-            fillCover
-            className="transition-transform duration-500 hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-          />
+          {isGallery && images.length > 1 ? (
+            <ImageCarousel
+              images={images}
+              alt={product.title}
+              index={colorIdx}
+              onIndexChange={setColorIdx}
+              className="size-full"
+            />
+          ) : (
+            <SmartImage
+              key={`${activeImage.image_url}-${colorIdx}`}
+              src={activeImage.image_url}
+              alt={`${product.title}${showColors ? ` — ${activeColor.name}` : ""}`}
+              fillCover
+              className="transition-transform duration-500 hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            />
+          )}
         </div>
         <div className="flex flex-1 flex-col gap-3 p-4">
           <div>

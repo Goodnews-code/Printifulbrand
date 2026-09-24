@@ -9,6 +9,7 @@ export const PRODUCT_CATEGORIES = [
   "Gadgets",
   "Corporate Gift",
   "Lifestyle",
+  "Custom Order",
 ] as const;
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
@@ -139,6 +140,17 @@ export const CATEGORY_ATTRIBUTES: Record<
       "One Size",
       "Free Size",
     ],
+    defaultSelectedSizes: [],
+  },
+  "Custom Order": {
+    attributesTitle: "Custom Order attributes",
+    colorHelp:
+      "Upload multiple product images — shoppers swipe through them as a gallery. No color labels needed.",
+    colorsDefaultOn: false,
+    sizeLabel: "Sizes",
+    sizeHelp: "Add sizes if this custom order comes in variants, otherwise leave off.",
+    sizesDefaultOn: false,
+    sizePresets: ["One Size", "Small", "Medium", "Large", "XL", "XXL"],
     defaultSelectedSizes: [],
   },
 };

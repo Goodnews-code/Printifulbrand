@@ -1,3 +1,10 @@
+/**
+ * Sentinel color_code value written to product_images rows that are
+ * gallery slides (Custom Order category). Not a real color — just a
+ * stable marker that survives the existing DB schema unchanged.
+ */
+export const GALLERY_SENTINEL = "Gallery|#000000";
+
 /** Encode display name + hex into product_images.color_code (no DB migration). */
 export function encodeProductColor(name: string, hex: string): string {
   const cleanName = name.trim() || "Default";
@@ -99,11 +106,24 @@ export function productColorLabel(raw?: string | null): string {
   return parseProductColor(raw).name;
 }
 
+/**
+ * True when ALL images for this product are gallery slides (Custom Order).
+ * Gallery mode uses swipe navigation instead of color swatches.
+ */
+export function productIsGalleryMode(
+  images?: Array<{ color_code: string }> | null,
+): boolean {
+  if (!images?.length) return false;
+  return images.every((img) => img.color_code === GALLERY_SENTINEL);
+}
+
 /** True when the product has real customer-facing color choices. */
 export function productHasColorOptions(
   images?: Array<{ color_code: string }> | null,
 ): boolean {
   if (!images?.length) return false;
+  // Gallery-mode products are NOT color products — they use a swipe carousel.
+  if (productIsGalleryMode(images)) return false;
   if (images.length > 1) return true;
   const name = parseProductColor(images[0]?.color_code).name;
   return Boolean(name && name !== "Default");
