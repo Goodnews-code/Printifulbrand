@@ -14,7 +14,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shopprintiful.com"),
-  title: "Printiful | Premium Custom wear & High-Fidelity Printing",
+  title: "Printiful | Premium Custom wear & Printing",
   description:
     "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.",
   keywords: [
