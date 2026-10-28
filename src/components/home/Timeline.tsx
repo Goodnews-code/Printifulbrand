@@ -20,7 +20,7 @@ const STEPS = [
   {
     icon: Printer,
     step: "03 // Precision Production",
-    title: "High-Fidelity Curation",
+    title: "Precision Printing & Production",
     body: "Items are customized using Direct-to-Merch printing or dense, multi-thread industrial embroidery machine setups.",
   },
   {

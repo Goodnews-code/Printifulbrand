@@ -12,7 +12,7 @@ import type { SiteSettings } from "@/types";
 import { PRODUCT_CATEGORIES } from "@/lib/product-attributes";
 
 const DEFAULTS: SiteSettings = {
-  site_title: "Printiful | Premium Custom wear & High-Fidelity Printing",
+  site_title: "Printiful | Premium Custom Wear & Printing",
   site_description:
     "Printiful crafts premium customized merch on heavyweight luxury blanks.",
   hero_headline: "Be Bold! Be Seen!! Be Known!!!",

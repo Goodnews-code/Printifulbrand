@@ -7,7 +7,7 @@ const HERO_SUBTEXT =
   "Printiful help announce you and your brand even when you don't say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.";
 
 const DEFAULTS: SiteSettings = {
-  site_title: "Printiful | Premium Custom wear & High-Fidelity Printing",
+  site_title: "Printiful | Premium Custom Wear & Printing",
   site_description:
     "Printiful crafts premium customized merch on heavyweight luxury blanks.",
   hero_headline: HERO_HEADLINE,

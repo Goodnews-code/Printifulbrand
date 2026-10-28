@@ -95,7 +95,7 @@ export function Hero() {
         <div className="order-1 flex flex-col items-start text-left lg:order-2">
           <FadeIn delay={0.08}>
             <p className="mb-4 font-ui text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-purple dark:text-brand-yellow">
-              00 / Curated wear & high-fidelity printing
+              00 / Premium Custom Wear & Printing
             </p>
           </FadeIn>
           <FadeIn delay={0.2}>

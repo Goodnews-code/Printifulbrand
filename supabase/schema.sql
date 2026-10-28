@@ -83,7 +83,7 @@ create table if not exists public.orders (
 
 -- Default settings
 insert into public.settings (key, value) values
-  ('site_title', 'Printiful | Premium Custom wear & High-Fidelity Printing'),
+  ('site_title', 'Printiful | Premium Custom Wear & Printing'),
   ('site_description', 'Printiful crafts premium customized merch on heavyweight luxury blanks.'),
   ('hero_headline', 'Be Bold! Be Seen!! Be Known!!!'),
   ('hero_subtext', 'Printiful help announce you and your brand even when you don''t say a word with our quality and premium products, from personalized items to brand merchandise, we do it all.'),
@@ -178,7 +178,7 @@ select * from (values
   ),
   (
     'Heat-Activated Magic Mug',
-    'Ceramic color-reveal mug with high-fidelity wrap print.',
+    'Ceramic color-reveal mug with vibrant wrap print.',
     18.99,
     '/assets/Image/Magic mug.jpeg',
     'Gadgets',
