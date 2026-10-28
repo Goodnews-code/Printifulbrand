@@ -111,7 +111,7 @@ export function Footer() {
                 <Link href="/#timeline">Step Journey</Link>
               </li>
               <li>
-                <Link href="/#inquiry">Bulk Orders</Link>
+                <Link href="/store?tab=custom">Custom Orders</Link>
               </li>
               <li>
                 <Link href="/admin">Admin Access</Link>
@@ -124,7 +124,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-muted">
               <li>
-                <Link href="/#inquiry">Contact Designer</Link>
+                <Link href="/store?tab=custom">Contact Designer</Link>
               </li>
               <li>
                 <Link href="/store" prefetch>
@@ -135,7 +135,7 @@ export function Footer() {
                 <Link href="/#timeline">Eco Commitments</Link>
               </li>
               <li>
-                <Link href="/#inquiry">Wholesale</Link>
+                <Link href="/store?tab=custom">Wholesale</Link>
               </li>
             </ul>
           </div>

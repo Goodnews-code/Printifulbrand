@@ -120,7 +120,7 @@ export function Hero() {
             </motion.div>
             <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={reduce ? undefined : { scale: 0.98 }}>
               <Link
-                href="#inquiry"
+                href="/store?tab=custom"
                 className="inline-block border border-border px-6 py-3.5 font-ui text-sm font-semibold uppercase tracking-wide text-foreground"
               >
                 Custom Quote

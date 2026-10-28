@@ -10,7 +10,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
-type NavId = "home" | "store" | "timeline" | "inquiry";
+type NavId = "home" | "store" | "timeline" | "custom";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -57,7 +57,6 @@ export function Navbar() {
     if (isStore) return "store";
     if (!isHome) return "home";
     if (hash === "timeline") return "timeline";
-    if (hash === "inquiry") return "inquiry";
     return "home";
   })();
 
@@ -70,9 +69,9 @@ export function Navbar() {
       label: "How We Print",
     },
     {
-      id: "inquiry",
-      href: isHome ? "#inquiry" : "/#inquiry",
-      label: "Bulk Inquiry",
+      id: "custom",
+      href: "/store?tab=custom",
+      label: "Custom Design",
     },
   ];
 
@@ -158,7 +157,7 @@ export function Navbar() {
             </button>
 
             <Link
-              href={isHome ? "#inquiry" : "/#inquiry"}
+              href="/store?tab=custom"
               className={cn(
                 "hidden px-4 py-2.5 font-ui text-sm font-semibold sm:inline-flex",
                 lightOnDark
@@ -297,7 +296,7 @@ export function Navbar() {
                   }}
                 >
                   <Link
-                    href={isHome ? "#inquiry" : "/#inquiry"}
+                    href="/store?tab=custom"
                     onClick={() => setMobileOpen(false)}
                     className="mt-2 inline-flex min-h-14 items-center justify-center rounded-full bg-brand-yellow px-8 py-4 font-ui text-sm font-bold uppercase tracking-wide text-brand-black"
                   >

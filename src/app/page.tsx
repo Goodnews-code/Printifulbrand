@@ -8,7 +8,6 @@ import { Hero } from "@/components/home/Hero";
 import { BrandValues } from "@/components/home/BrandValues";
 import { Testimonials } from "@/components/home/Testimonials";
 import { Timeline } from "@/components/home/Timeline";
-import { InquiryForm } from "@/components/home/InquiryForm";
 import { CareGuide } from "@/components/home/CareGuide";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { PastProjectsGallery } from "@/components/gallery/PastProjectsGallery";
@@ -245,7 +244,6 @@ export default function HomePage() {
       <PastProjectsSection />
       <Testimonials />
       <Timeline />
-      <InquiryForm />
       <CareGuide />
       <PackagePromoStrip />
     </>

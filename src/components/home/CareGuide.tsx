@@ -28,7 +28,7 @@ const CARE = [
 
 export function CareGuide() {
   return (
-    <section className="py-20 sm:py-24">
+    <section className="border-t border-border bg-surface-alt py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
           <span className="inline-block bg-brand-purple px-3 py-1 font-ui text-[10px] font-bold uppercase tracking-[0.16em] text-white">
