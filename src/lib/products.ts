@@ -8,6 +8,7 @@ type ProductRow = {
   price: number;
   image_url: string | null;
   category: string | null;
+  section: string | null;
   is_active: boolean;
   created_at?: string;
   product_images?: Array<{
@@ -43,6 +44,7 @@ function mapProduct(row: ProductRow): Product {
     price: row.price,
     image_url: row.image_url,
     category: row.category,
+    section: (row.section === "ready" ? "ready" : "showcase") as "showcase" | "ready",
     is_active: row.is_active ? 1 : 0,
     created_at: row.created_at,
     images,
@@ -51,7 +53,7 @@ function mapProduct(row: ProductRow): Product {
 }
 
 const productSelect = `
-  id, title, description, price, image_url, category, is_active, created_at,
+  id, title, description, price, image_url, category, section, is_active, created_at,
   product_images ( id, image_url, color_code, is_primary ),
   product_sizes ( id, size_name, price )
 `;
@@ -91,6 +93,7 @@ type ProductInput = {
   price: number;
   image_url?: string;
   category?: string;
+  section?: string;
   is_active?: boolean;
   images?: ProductImage[];
   sizes?: ProductSize[];
@@ -106,6 +109,7 @@ export async function createProduct(input: ProductInput) {
       price: input.price,
       image_url: input.image_url ?? input.images?.[0]?.image_url ?? "",
       category: input.category ?? "Apparels",
+      section: input.section ?? "showcase",
       is_active: input.is_active !== false,
     })
     .select("id")
@@ -127,6 +131,7 @@ export async function updateProduct(id: number, input: ProductInput) {
       price: input.price,
       image_url: input.image_url ?? input.images?.[0]?.image_url ?? "",
       category: input.category ?? "Apparels",
+      section: input.section ?? "showcase",
       is_active: input.is_active !== false,
     })
     .eq("id", id);

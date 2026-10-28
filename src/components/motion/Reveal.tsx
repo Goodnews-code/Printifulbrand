@@ -5,7 +5,7 @@ import {
   useReducedMotion,
   type HTMLMotionProps,
 } from "motion/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -14,13 +14,13 @@ type Direction = "up" | "down" | "left" | "right" | "none";
 function offset(direction: Direction) {
   switch (direction) {
     case "up":
-      return { y: 32 };
+      return { y: 24 };
     case "down":
-      return { y: -24 };
+      return { y: -20 };
     case "left":
-      return { x: 36 };
+      return { x: 24 };
     case "right":
-      return { x: -36 };
+      return { x: -24 };
     default:
       return {};
   }
@@ -34,7 +34,7 @@ interface RevealProps {
   once?: boolean;
 }
 
-/** Scroll-triggered fade + slide. Respects prefers-reduced-motion. */
+/** Scroll-triggered fade + slide. Respects prefers-reduced-motion and ensures immediate visibility before mount. */
 export function Reveal({
   children,
   className,
@@ -43,18 +43,23 @@ export function Reveal({
   once = true,
 }: RevealProps) {
   const reduce = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
 
-  if (reduce) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (reduce || !mounted) {
     return <div className={className}>{children}</div>;
   }
 
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, ...offset(direction) }}
+      initial={{ opacity: 0.7, ...offset(direction) }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once, amount: 0.2, margin: "0px 0px -40px 0px" }}
-      transition={{ duration: 0.75, ease: EASE, delay }}
+      viewport={{ once, amount: 0.05, margin: "0px 0px 50px 0px" }}
+      transition={{ duration: 0.55, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -73,13 +78,18 @@ interface StaggerProps {
 export function Stagger({
   children,
   className,
-  stagger = 0.12,
+  stagger = 0.1,
   delay = 0,
   once = true,
 }: StaggerProps) {
   const reduce = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
 
-  if (reduce) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (reduce || !mounted) {
     return <div className={className}>{children}</div>;
   }
 
@@ -88,7 +98,7 @@ export function Stagger({
       className={className}
       initial="hidden"
       whileInView="show"
-      viewport={{ once, amount: 0.15, margin: "0px 0px -40px 0px" }}
+      viewport={{ once, amount: 0.05, margin: "0px 0px 50px 0px" }}
       variants={{
         hidden: {},
         show: {
@@ -114,9 +124,14 @@ export function StaggerItem({
   ...rest
 }: StaggerItemProps) {
   const reduce = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
   const from = offset(direction);
 
-  if (reduce) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (reduce || !mounted) {
     return <div className={className}>{children}</div>;
   }
 
@@ -124,12 +139,12 @@ export function StaggerItem({
     <motion.div
       className={className}
       variants={{
-        hidden: { opacity: 0, ...from },
+        hidden: { opacity: 0.7, ...from },
         show: {
           opacity: 1,
           x: 0,
           y: 0,
-          transition: { duration: 0.7, ease: EASE },
+          transition: { duration: 0.5, ease: EASE },
         },
       }}
       {...rest}
@@ -147,24 +162,29 @@ interface FadeInProps {
   duration?: number;
 }
 
-/** Mount-only entrance (hero, page headers). */
+/** Mount-only entrance (hero, page headers). Immediately visible before mount. */
 export function FadeIn({
   children,
   className,
   delay = 0,
   direction = "up",
-  duration = 0.85,
+  duration = 0.6,
 }: FadeInProps) {
   const reduce = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
 
-  if (reduce) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (reduce || !mounted) {
     return <div className={className}>{children}</div>;
   }
 
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, ...offset(direction) }}
+      initial={{ opacity: 0.7, ...offset(direction) }}
       animate={{ opacity: 1, x: 0, y: 0 }}
       transition={{ duration, ease: EASE, delay }}
     >

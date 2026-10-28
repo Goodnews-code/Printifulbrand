@@ -170,18 +170,16 @@ function TestimonialCard({
 export function Testimonials() {
   const reduce = useReducedMotion() ?? false;
   const sectionRef = useRef<HTMLElement>(null);
-  const inView = useInView(sectionRef, { once: true, amount: 0.28 });
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [typingIndex, setTypingIndex] = useState(-1);
+  const inView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const [visibleCount, setVisibleCount] = useState(TESTIMONIALS.length);
+  const [typingIndex, setTypingIndex] = useState(0);
 
   useEffect(() => {
     if (!inView) return;
     if (reduce) {
-      setVisibleCount(TESTIMONIALS.length);
       setTypingIndex(TESTIMONIALS.length);
       return;
     }
-    setVisibleCount(1);
     setTypingIndex(0);
   }, [inView, reduce]);
 

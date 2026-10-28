@@ -112,7 +112,7 @@ export function Hero() {
           <FadeIn delay={0.48} className="mt-8 flex flex-wrap gap-3">
             <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={reduce ? undefined : { scale: 0.98 }}>
               <Link
-                href="#catalog"
+                href="#ready-to-order"
                 className="inline-block bg-brand-purple px-6 py-3.5 font-ui text-sm font-bold uppercase tracking-wide text-white"
               >
                 Explore Collection

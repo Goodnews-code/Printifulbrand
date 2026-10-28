@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MessageSquareText, ShoppingBag } from "lucide-react";
+import { MessageSquareText, ShoppingBag, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product, ProductReviewSummary } from "@/types";
 import { useCart } from "@/context/CartContext";
@@ -49,11 +49,20 @@ export function ProductCard({
       ? `234${digits.slice(1)}`
       : digits;
   const waMessage = encodeURIComponent(
-    `Hi Printiful, I'm interested in this custom order: "${product.title}". Could you provide more details and a quote?`,
+    mode === "showcase"
+      ? `Hi Printiful, I'm viewing your Brand Merch Showcase and interested in custom production for: "${product.title}". Could you share options and minimum orders?`
+      : `Hi Printiful, I'm interested in this custom order: "${product.title}". Could you provide more details and a quote?`,
   );
   const customOrderHref = waPhone
     ? `https://wa.me/${waPhone}?text=${waMessage}`
     : `mailto:${settings?.contact_email || "hello@printifulbrand.com"}?subject=${encodeURIComponent(`Custom Order Inquiry: ${product.title}`)}`;
+
+  const customDesignMessage = encodeURIComponent(
+    `Hi Printiful, I'm viewing "${product.title}" in your catalog and I'd like to order it with our company / brand logo and custom design. Could you share customization options and pricing?`,
+  );
+  const customDesignHref = waPhone
+    ? `https://wa.me/${waPhone}?text=${customDesignMessage}`
+    : `mailto:${settings?.contact_email || "hello@printifulbrand.com"}?subject=${encodeURIComponent(`Custom Design Request: ${product.title}`)}`;
 
   let images = (showColors || isGallery) && product.images?.length
     ? product.images
@@ -106,46 +115,6 @@ export function ProductCard({
     window.setTimeout(() => setAdded(false), 900);
   };
 
-  if (mode === "showcase") {
-    return (
-      <motion.div
-        whileHover={reduce ? undefined : { y: -6 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Link
-          href="/store"
-          className="group block overflow-hidden border border-border bg-card transition-colors hover:border-brand-purple dark:hover:border-brand-yellow"
-        >
-          <div className="relative aspect-[4/5] overflow-hidden bg-surface-alt">
-            <SmartImage
-              src={activeImage.image_url}
-              alt={product.title}
-              fillCover
-              className="transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-            />
-          </div>
-          <div className="space-y-1 p-4">
-            <p className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-              {categoryLabel}
-            </p>
-            <h3 className="font-heading text-xl font-semibold leading-tight">
-              {product.title}
-            </h3>
-            {isCustomOrder ? (
-              <p className="font-ui text-xs font-semibold text-brand-purple dark:text-brand-yellow">
-                Custom Order • Portfolio
-              </p>
-            ) : (
-              <p className="font-ui text-sm font-semibold text-brand-purple dark:text-brand-yellow">
-                {formatNaira(product.price)}
-              </p>
-            )}
-          </div>
-        </Link>
-      </motion.div>
-    );
-  }
 
   return (
     <>
@@ -263,7 +232,7 @@ export function ProductCard({
           )}
 
           <div className="mt-auto space-y-2">
-            {isCustomOrder ? (
+            {isCustomOrder || mode === "showcase" ? (
               <motion.a
                 href={customOrderHref}
                 target="_blank"
@@ -272,7 +241,7 @@ export function ProductCard({
                 className="inline-flex w-full items-center justify-center gap-2 bg-brand-purple py-3 font-ui text-sm font-semibold text-white transition-opacity hover:opacity-90 dark:bg-brand-yellow dark:text-brand-black"
               >
                 <MessageSquareText size={16} />
-                Request Custom Order
+                {mode === "showcase" ? "Enquire About This Product" : "Request Custom Order"}
               </motion.a>
             ) : (
               <motion.button
@@ -293,9 +262,9 @@ export function ProductCard({
             <button
               type="button"
               onClick={() => setReviewsOpen(true)}
-              className="inline-flex w-full items-center justify-center gap-2 border border-border py-2.5 font-ui text-sm font-medium text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
+              className="inline-flex w-full items-center justify-center gap-2 border border-border py-2 font-ui text-xs font-medium text-foreground transition-colors hover:border-brand-purple hover:text-brand-purple dark:hover:border-brand-yellow dark:hover:text-brand-yellow"
             >
-              <MessageSquareText size={15} />
+              <MessageSquareText size={14} />
               {reviewSummary && reviewSummary.count > 0
                 ? `Reviews (${reviewSummary.count})`
                 : "Reviews"}

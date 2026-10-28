@@ -4,9 +4,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Product, ProductReviewSummary } from "@/types";
-import { normalizeCategory, cn } from "@/lib/utils";
-import { PRODUCT_CATEGORIES } from "@/lib/product-attributes";
-import { useSettings } from "@/context/SettingsContext";
+import { cn } from "@/lib/utils";
 import { isPackageOnlyProduct } from "@/lib/packages";
 import { ProductCard } from "@/components/catalog/ProductCard";
 
@@ -43,70 +41,19 @@ export function ProductGrid({
   onReviewSummaryChange,
 }: ProductGridProps) {
   const reduce = useReducedMotion();
-  const { settings } = useSettings();
-  const [filter, setFilter] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("featured");
-
-  const configuredCategories = useMemo(() => {
-    const raw = settings?.product_categories;
-    if (!raw) return [...PRODUCT_CATEGORIES];
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.filter(
-          (c): c is string => typeof c === "string" && Boolean(c.trim()),
-        );
-      }
-    } catch {
-      // fallback
-    }
-    return [...PRODUCT_CATEGORIES];
-  }, [settings?.product_categories]);
-
-  const categoryFilters = useMemo(() => {
-    const list: { id: string; label: string }[] = [
-      { id: "all", label: "All Items" },
-    ];
-    const seen = new Set<string>(["all"]);
-
-    for (const cat of configuredCategories) {
-      const clean = cat.trim();
-      const lower = clean.toLowerCase();
-      if (!clean || seen.has(lower)) continue;
-      seen.add(lower);
-      list.push({ id: clean, label: clean });
-    }
-
-    for (const p of products) {
-      if (!p.category || isPackageOnlyProduct(p.title)) continue;
-      const clean = p.category.trim();
-      const lower = clean.toLowerCase();
-      if (!clean || seen.has(lower)) continue;
-      seen.add(lower);
-      list.push({ id: clean, label: clean });
-    }
-
-    return list;
-  }, [configuredCategories, products]);
 
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
       if (isPackageOnlyProduct(p.title)) return false;
-      const rawCat = (p.category || "").trim().toLowerCase();
-      const filterLower = filter.trim().toLowerCase();
-      const matchesFilter =
-        filter === "all" ||
-        rawCat === filterLower ||
-        (normalizeCategory(p.category) !== "all" &&
-          normalizeCategory(p.category) === normalizeCategory(filter));
       const q = query.trim().toLowerCase();
       const matchesQuery =
         !q ||
         p.title.toLowerCase().includes(q) ||
         (p.description || "").toLowerCase().includes(q) ||
         (p.category || "").toLowerCase().includes(q);
-      return matchesFilter && matchesQuery;
+      return matchesQuery;
     });
 
     if (sort === "price-asc") {
@@ -118,36 +65,13 @@ export function ProductGrid({
     }
 
     return list;
-  }, [products, filter, query, sort]);
+  }, [products, query, sort]);
 
   const visible =
     limit != null ? filtered.slice(0, Math.max(0, limit)) : filtered;
 
   return (
     <div>
-      <motion.div
-        className="mb-8 flex flex-wrap items-center justify-center gap-2"
-        initial={reduce ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: EASE }}
-      >
-        {categoryFilters.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setFilter(item.id)}
-            className={cn(
-              "px-3.5 py-2 font-ui text-xs font-semibold uppercase tracking-wide transition-transform active:scale-95",
-              filter === item.id
-                ? "no-hover bg-brand-purple text-white dark:bg-brand-yellow dark:text-brand-black"
-                : "border border-border text-muted",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </motion.div>
-
       {(showSearch || showSort) && (
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {showSearch && (
@@ -184,7 +108,7 @@ export function ProductGrid({
         <p className="py-16 text-center font-ui text-muted">{emptyMessage}</p>
       ) : (
         <motion.div
-          key={`${filter}-${query}-${sort}-${limit ?? "all"}-${mobileLimit ?? "m"}-${tabletLimit ?? "t"}`}
+          key={`${query}-${sort}-${limit ?? "all"}-${mobileLimit ?? "m"}-${tabletLimit ?? "t"}`}
           className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           initial="hidden"
           animate="show"

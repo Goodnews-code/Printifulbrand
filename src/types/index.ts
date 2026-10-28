@@ -27,10 +27,20 @@ export interface Product {
   price: number;
   image_url: string | null;
   category: string | null;
+  /** Which storefront section this product belongs to. */
+  section: "showcase" | "ready";
   is_active: number | boolean;
   created_at?: string;
   images?: ProductImage[];
   sizes?: ProductSize[];
+}
+
+export interface PastProject {
+  id: number;
+  image_url: string;
+  caption?: string | null;
+  sort_order: number;
+  created_at?: string;
 }
 
 export interface ProductReview {

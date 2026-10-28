@@ -22,6 +22,7 @@ const productSchema = z.object({
   price: z.number().nonnegative(),
   image_url: z.string().optional(),
   category: z.string().optional(),
+  section: z.enum(["showcase", "ready"]).optional(),
   is_active: z.boolean().optional(),
   images: z
     .array(

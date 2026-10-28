@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Grid2x2,
   ImagePlus,
   LayoutDashboard,
   LogOut,
@@ -15,7 +16,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import type { Product, ProductReview, SiteSettings } from "@/types";
+import type { Product, ProductReview, SiteSettings, PastProject } from "@/types";
 import {
   PRODUCT_CATEGORIES,
   getCategoryAttributes,
@@ -36,7 +37,7 @@ import { StarRating } from "@/components/catalog/StarRating";
 
 const TOKEN_KEY = "printiful_token";
 
-type Tab = "overview" | "products" | "reviews" | "settings";
+type Tab = "overview" | "products" | "gallery" | "reviews" | "settings";
 
 function CategorySelect({
   value,
@@ -262,6 +263,7 @@ export function AdminDashboard() {
             [
               { id: "overview", label: "Overview", icon: LayoutDashboard },
               { id: "products", label: "Products", icon: Package },
+              { id: "gallery", label: "Past Projects", icon: Grid2x2 },
               { id: "reviews", label: "Reviews", icon: MessageSquareText },
               { id: "settings", label: "Settings", icon: SettingsIcon },
             ] as const
@@ -366,6 +368,10 @@ export function AdminDashboard() {
             setMessage={setMessage}
             categories={productCategories}
           />
+        )}
+
+        {tab === "gallery" && (
+          <PastProjectsTab token={token} setMessage={setMessage} />
         )}
 
         {tab === "reviews" && (
@@ -566,6 +572,7 @@ function ProductsTab({
     price: "",
     category: categories[0] ?? "Apparels",
     image_url: "",
+    section: "showcase" as "showcase" | "ready",
     is_active: true,
   });
   const [colors, setColors] = useState<
@@ -626,6 +633,7 @@ function ProductsTab({
       price: "",
       category: categories[0] ?? "Apparels",
       image_url: "",
+      section: "showcase" as "showcase" | "ready",
       is_active: true,
     });
     setColors([]);
@@ -846,6 +854,7 @@ function ProductsTab({
         description: form.description,
         price: basePrice,
         category: form.category,
+        section: form.section,
         image_url: primaryUrl || undefined,
         is_active: form.is_active,
         images: galleryPayloadImages,
@@ -919,6 +928,7 @@ function ProductsTab({
       description: form.description,
       price: basePrice,
       category: form.category,
+      section: form.section,
       image_url: primaryUrl || undefined,
       is_active: form.is_active,
       images:
@@ -1025,6 +1035,7 @@ function ProductsTab({
       price: String(p.price),
       category: p.category || "Apparels",
       image_url: p.image_url || "",
+      section: (p.section === "ready" ? "ready" : "showcase") as "showcase" | "ready",
       is_active: p.is_active === 1 || p.is_active === true,
     });
     if (p.category === "Custom Order") {
@@ -1109,6 +1120,44 @@ function ProductsTab({
             when this product does not need them.
           </p>
         </label>
+
+        {/* ── Storefront section ──────────────────────────────────────────── */}
+        <div className="space-y-1.5 border border-border bg-surface-alt p-3">
+          <p className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Storefront section
+          </p>
+          <p className="font-ui text-[11px] text-muted">
+            Choose where this product appears on the store page.
+          </p>
+          <div className="flex gap-2 pt-0.5">
+            {(
+              [
+                { value: "showcase", label: "Brand Merch Showcase", desc: "Inspiration / no cart" },
+                { value: "ready", label: "Ready to Order", desc: "Available to buy now" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, section: opt.value }))}
+                className={cn(
+                  "flex-1 border px-3 py-2.5 text-left transition-colors",
+                  form.section === opt.value
+                    ? "border-brand-purple bg-brand-purple/10 dark:border-brand-yellow dark:bg-brand-yellow/10"
+                    : "border-border bg-surface",
+                )}
+              >
+                <p className={cn(
+                  "font-ui text-xs font-semibold",
+                  form.section === opt.value ? "text-brand-purple dark:text-brand-yellow" : "text-foreground",
+                )}>
+                  {opt.label}
+                </p>
+                <p className="mt-0.5 font-ui text-[10px] text-muted">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <textarea
           placeholder="Description"
@@ -2010,20 +2059,33 @@ function ProductsTab({
                       ? ` · ${p.sizes.map((s) => s.size_name).join(", ")}`
                       : ""}
                   </p>
-                  <span
-                    className={cn(
-                      "mt-1 inline-flex items-center gap-1.5 font-ui text-[10px] font-bold uppercase tracking-wide",
-                      live ? "text-emerald-600" : "text-muted",
-                    )}
-                  >
+                  <div className="mt-1 flex items-center gap-2">
                     <span
                       className={cn(
-                        "size-1.5 rounded-full",
-                        live ? "bg-emerald-500" : "bg-muted",
+                        "inline-flex items-center gap-1.5 font-ui text-[10px] font-bold uppercase tracking-wide",
+                        live ? "text-emerald-600" : "text-muted",
                       )}
-                    />
-                    {live ? "Live" : "Hidden"}
-                  </span>
+                    >
+                      <span
+                        className={cn(
+                          "size-1.5 rounded-full",
+                          live ? "bg-emerald-500" : "bg-muted",
+                        )}
+                      />
+                      {live ? "Live" : "Hidden"}
+                    </span>
+                    <span className="text-[10px] text-muted">·</span>
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 font-ui text-[9px] font-bold uppercase tracking-wider",
+                        p.section === "ready"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                          : "bg-brand-purple/10 text-brand-purple dark:bg-brand-yellow/10 dark:text-brand-yellow",
+                      )}
+                    >
+                      {p.section === "ready" ? "Ready to Order" : "Showcase"}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
                   <button
@@ -2070,6 +2132,182 @@ function ProductsTab({
   );
 }
 
+
+function PastProjectsTab({
+  token,
+  setMessage,
+}: {
+  token: string;
+  setMessage: (m: string) => void;
+}) {
+  const [projects, setProjects] = useState<PastProject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [caption, setCaption] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/past-projects");
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch {
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const uploadAndCreate = async (file: File) => {
+    const maxBytes = 5 * 1024 * 1024;
+    const allowed = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]);
+    if (!file.type.startsWith("image/") || !allowed.has(file.type)) {
+      setMessage(`Upload rejected: "${file.name}" is not a valid image type.`);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    if (file.size > maxBytes) {
+      setMessage(`Upload rejected: "${file.name}" exceeds 5MB limit.`);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      const upRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      const upData = await upRes.json().catch(() => ({}));
+      if (!upRes.ok) {
+        setMessage(upData.error || "Upload failed.");
+        return;
+      }
+      const createRes = await fetch("/api/past-projects", {
+        method: "POST",
+        headers: authHeaders(token),
+        body: JSON.stringify({ image_url: upData.image_url, caption: caption.trim() || undefined }),
+      });
+      if (!createRes.ok) {
+        setMessage("Image uploaded but failed to save project entry.");
+        return;
+      }
+      setCaption("");
+      if (fileRef.current) fileRef.current.value = "";
+      setMessage("Past project photo added.");
+      void load();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const remove = async (id: number) => {
+    if (!confirm("Remove this photo from Past Projects?")) return;
+    const res = await fetch(`/api/past-projects/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) { setMessage("Failed to delete."); return; }
+    setProjects((p) => p.filter((x) => x.id !== id));
+    setMessage("Photo removed.");
+  };
+
+  const saveCaption = async (id: number, newCaption: string) => {
+    await fetch(`/api/past-projects/${id}`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ caption: newCaption }),
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-heading text-2xl font-semibold">Past Projects Gallery</h2>
+        <p className="mt-1 text-sm text-muted">
+          Upload photos of previous client work. They appear in an animated masonry grid on the store page.
+        </p>
+      </div>
+
+      {/* Upload panel */}
+      <div className="border border-border bg-surface p-5 space-y-3">
+        <p className="font-ui text-sm font-semibold">Add a photo</p>
+        <label className="block space-y-1">
+          <span className="font-ui text-[11px] font-semibold uppercase tracking-wider text-muted">Caption (optional)</span>
+          <input
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="e.g. Brand merch for XYZ Co."
+            className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
+          />
+        </label>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void uploadAndCreate(file);
+          }}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileRef.current?.click()}
+          className="inline-flex items-center gap-2 bg-brand-purple px-5 py-2.5 font-ui text-sm font-semibold text-white disabled:opacity-60 hover:bg-brand-yellow hover:text-brand-black"
+        >
+          <Upload size={16} />
+          {uploading ? "Uploading…" : "Upload Photo"}
+        </button>
+        <p className="font-ui text-[11px] text-muted">Max 5MB · JPEG, PNG, WebP, GIF</p>
+      </div>
+
+      {/* Grid */}
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : projects.length === 0 ? (
+        <p className="border border-border bg-surface p-6 text-sm text-muted">No past projects yet. Upload a photo above.</p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((proj) => (
+            <div key={proj.id} className="border border-border bg-surface overflow-hidden">
+              <div className="relative aspect-video bg-surface-alt">
+                <SmartImage
+                  src={proj.image_url}
+                  alt={proj.caption || `Project ${proj.id}`}
+                  fillCover
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              </div>
+              <div className="p-3 space-y-2">
+                <input
+                  defaultValue={proj.caption ?? ""}
+                  onBlur={(e) => void saveCaption(proj.id, e.target.value)}
+                  placeholder="Caption…"
+                  className="w-full border border-border bg-surface-alt px-2 py-1.5 font-ui text-xs outline-none focus:border-brand-purple"
+                />
+                <button
+                  type="button"
+                  onClick={() => void remove(proj.id)}
+                  className="inline-flex items-center gap-1.5 border border-red-500/30 px-3 py-1.5 font-ui text-xs font-medium text-red-600 dark:text-red-300"
+                >
+                  <Trash2 size={12} /> Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SettingsTab({
   settings,
   token,
@@ -2095,10 +2333,7 @@ function SettingsTab({
     package_sb_tagline: "",
   });
 
-  // ── Category manager state ────────────────────────────────────────────────
-  const [categories, setCategories] = useState<string[]>([...PRODUCT_CATEGORIES]);
-  const [newCategory, setNewCategory] = useState("");
-  const [catSaving, setCatSaving] = useState(false);
+
 
   useEffect(() => {
     setForm({
@@ -2124,50 +2359,7 @@ function SettingsTab({
         "Poly mailers, thank you cards, and two customized tees. One package, one checkout.",
     });
 
-    // Load persisted categories, fall back to code defaults
-    const raw = settings.product_categories;
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCategories(parsed as string[]);
-          return;
-        }
-      } catch { /* ignore */ }
-    }
-    setCategories([...PRODUCT_CATEGORIES]);
   }, [settings]);
-
-  /** Persist the category list immediately (no full-form submit needed). */
-  const saveCategories = async (list: string[]) => {
-    setCatSaving(true);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: authHeaders(token),
-        body: JSON.stringify({ product_categories: JSON.stringify(list) }),
-      });
-      if (res.ok) onSaved(await res.json());
-    } finally {
-      setCatSaving(false);
-    }
-  };
-
-  const addCategory = () => {
-    const name = newCategory.trim();
-    if (!name || categories.includes(name)) return;
-    const next = [...categories, name];
-    setCategories(next);
-    setNewCategory("");
-    void saveCategories(next);
-  };
-
-  const removeCategory = (cat: string) => {
-    if (categories.length <= 1) return;
-    const next = categories.filter((c) => c !== cat);
-    setCategories(next);
-    void saveCategories(next);
-  };
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
@@ -2201,70 +2393,7 @@ function SettingsTab({
 
   return (
     <div className="max-w-2xl space-y-8">
-      {/* ── Product Categories ──────────────────────────────────────────── */}
-      <section className="space-y-4 border border-border bg-surface p-5">
-        <div>
-          <h3 className="font-heading text-xl font-semibold">
-            Product Categories
-          </h3>
-          <p className="mt-1 text-sm text-muted">
-            Add or remove categories. Changes are saved immediately and appear
-            in the product form and store filters.
-          </p>
-        </div>
 
-        <ul className="space-y-2">
-          {categories.map((cat) => (
-            <li
-              key={cat}
-              className="flex items-center justify-between gap-3 border border-border bg-surface-alt px-3 py-2"
-            >
-              <span className="font-ui text-sm">{cat}</span>
-              <button
-                type="button"
-                disabled={categories.length <= 1 || catSaving}
-                onClick={() => removeCategory(cat)}
-                title={
-                  categories.length <= 1
-                    ? "Must keep at least one category"
-                    : `Remove "${cat}"`
-                }
-                className="inline-flex items-center gap-1 border border-red-500/30 px-2.5 py-1 font-ui text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                <Trash2 size={12} />
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex gap-2">
-          <input
-            placeholder="New category name…"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCategory();
-              }
-            }}
-            className="min-w-0 flex-1 border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand-purple dark:focus:border-brand-yellow"
-          />
-          <button
-            type="button"
-            disabled={!newCategory.trim() || catSaving}
-            onClick={addCategory}
-            className="inline-flex items-center gap-1.5 bg-brand-purple px-4 py-2 font-ui text-sm font-semibold text-white disabled:opacity-50 hover:bg-brand-yellow hover:text-brand-black"
-          >
-            <Plus size={14} />
-            Add
-          </button>
-        </div>
-        {catSaving && (
-          <p className="font-ui text-xs text-muted">Saving categories…</p>
-        )}
-      </section>
 
       {/* ── Site / Store Settings ───────────────────────────────────────── */}
       <form
