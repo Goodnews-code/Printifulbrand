@@ -10,7 +10,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
-type NavId = "home" | "store" | "timeline" | "custom";
+type NavId = "home" | "store" | "timeline" | "projects";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -57,6 +57,7 @@ export function Navbar() {
     if (isStore) return "store";
     if (!isHome) return "home";
     if (hash === "timeline") return "timeline";
+    if (hash === "past-projects") return "projects";
     return "home";
   })();
 
@@ -69,9 +70,9 @@ export function Navbar() {
       label: "How We Print",
     },
     {
-      id: "custom",
-      href: "/store?tab=custom",
-      label: "Custom Design",
+      id: "projects",
+      href: isHome ? "#past-projects" : "/#past-projects",
+      label: "Past Projects",
     },
   ];
 
