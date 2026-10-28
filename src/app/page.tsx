@@ -7,7 +7,6 @@ import type { Product, ProductReviewSummary } from "@/types";
 import { Hero } from "@/components/home/Hero";
 import { BrandValues } from "@/components/home/BrandValues";
 import { Testimonials } from "@/components/home/Testimonials";
-import { Timeline } from "@/components/home/Timeline";
 import { CareGuide } from "@/components/home/CareGuide";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { PastProjectsGallery } from "@/components/gallery/PastProjectsGallery";
@@ -243,7 +242,6 @@ export default function HomePage() {
       />
       <PastProjectsSection />
       <Testimonials />
-      <Timeline />
       <CareGuide />
       <PackagePromoStrip />
     </>

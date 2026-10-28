@@ -10,7 +10,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
-type NavId = "home" | "store" | "timeline" | "projects";
+type NavId = "home" | "store" | "projects";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -56,7 +56,6 @@ export function Navbar() {
   const activeId: NavId = (() => {
     if (isStore) return "store";
     if (!isHome) return "home";
-    if (hash === "timeline") return "timeline";
     if (hash === "past-projects") return "projects";
     return "home";
   })();
@@ -64,11 +63,6 @@ export function Navbar() {
   const links: { id: NavId; href: string; label: string }[] = [
     { id: "home", href: isHome ? "#hero" : "/#hero", label: "Home" },
     { id: "store", href: "/store", label: "Catalog Store" },
-    {
-      id: "timeline",
-      href: isHome ? "#timeline" : "/#timeline",
-      label: "How We Print",
-    },
     {
       id: "projects",
       href: isHome ? "#past-projects" : "/#past-projects",

@@ -108,7 +108,7 @@ export function Footer() {
                 </li>
               ) : null}
               <li>
-                <Link href="/#timeline">Step Journey</Link>
+                <Link href="/#past-projects">Past Projects</Link>
               </li>
               <li>
                 <Link href="/store?tab=custom">Custom Orders</Link>
@@ -132,7 +132,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#timeline">Eco Commitments</Link>
+                <Link href="/store" prefetch>Ready-to-Order</Link>
               </li>
               <li>
                 <Link href="/store?tab=custom">Wholesale</Link>
