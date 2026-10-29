@@ -6,7 +6,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useTheme } from "@/context/ThemeContext";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SmartImage } from "@/components/ui/SmartImage";
-import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Reveal";
+import { FadeIn } from "@/components/motion/Reveal";
 
 const HERO_IMAGES = [
   {
@@ -62,15 +62,11 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:pt-6">
         <div className="relative order-2 lg:order-1">
-          <Stagger
-            className="relative z-10 mx-auto grid max-w-xl grid-cols-[1.1fr_0.9fr] gap-4 sm:gap-6 lg:mx-0 lg:max-w-none"
-            stagger={0.2}
-            delay={0.2}
-          >
+          <div className="relative z-10 mx-auto grid max-w-xl grid-cols-[1.1fr_0.9fr] gap-4 sm:gap-6 lg:mx-0 lg:max-w-none">
             {HERO_IMAGES.map((image) => (
-              <StaggerItem key={image.src}>
+              <div key={image.src} className="opacity-100">
                 <motion.figure
-                  className={`group relative overflow-hidden bg-surface-alt ${image.className}`}
+                  className={`group relative overflow-hidden ${image.className}`}
                   whileHover={reduce ? undefined : { y: -4 }}
                   transition={{ duration: 0.35, ease: EASE }}
                 >
@@ -79,17 +75,17 @@ export function Hero() {
                     alt={image.alt}
                     fillCover
                     priority
-                    quality={90}
+                    quality={95}
                     sizes={image.sizes}
-                    className={`transition-transform duration-500 group-hover:scale-[1.02] ${image.imageClassName}`}
+                    className={`opacity-100 transition-transform duration-500 group-hover:scale-[1.02] ${image.imageClassName}`}
                   />
                   <figcaption className="pointer-events-none absolute bottom-3 left-3 bg-black/75 px-2 py-1 font-ui text-[0.6rem] tracking-wide text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     {image.label}
                   </figcaption>
                 </motion.figure>
-              </StaggerItem>
+              </div>
             ))}
-          </Stagger>
+          </div>
         </div>
 
         <div className="order-1 flex flex-col items-start text-left lg:order-2">
@@ -123,7 +119,7 @@ export function Hero() {
                 href="/store?tab=custom"
                 className="inline-block border border-border px-6 py-3.5 font-ui text-sm font-semibold uppercase tracking-wide text-foreground"
               >
-                Custom Quote
+                Custom Design
               </Link>
             </motion.div>
           </FadeIn>

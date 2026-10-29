@@ -160,7 +160,7 @@ export function Navbar() {
                   : "bg-brand-purple text-white",
               )}
             >
-              {lightOnDark ? "Request quote" : "Request Quote"}
+              {lightOnDark ? "Custom design" : "Custom Design"}
             </Link>
 
             <button
@@ -295,7 +295,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="mt-2 inline-flex min-h-14 items-center justify-center rounded-full bg-brand-yellow px-8 py-4 font-ui text-sm font-bold uppercase tracking-wide text-brand-black"
                   >
-                    Request quote
+                    Custom design
                   </Link>
                 </motion.div>
               </nav>
